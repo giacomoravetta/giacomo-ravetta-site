@@ -1,0 +1,24 @@
+---
+import { Image } from 'astro:assets';
+import WaveImage from '../images/The_Great_Wave_off_Kanagawa.webp';
+interface Props {
+	w: number;
+}
+
+const { w } = Astro.props;
+---
+
+<div class="wave-image">
+    <Image src={WaveImage} alt="The great wave" width={w} />
+</div>
+
+<style>
+
+    div  {
+        position: absolute;
+        left: -100px;
+        width: 1000px;
+    }
+
+</style>
+

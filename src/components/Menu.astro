@@ -1,0 +1,50 @@
+---
+import Label from "./Label.astro";
+
+import svgReact from "../images/svg/react-svgrepo-com.svg";
+import svgHTML from "../images/svg/html-5-svgrepo-com.svg";
+import imgWave from "../images/The_Great_Wave_off_Kanagawa.webp";
+
+const graphicsObjSkills = [
+  {
+    svg: svgReact,
+    top: 0,
+    left: -100,
+    height: 200,
+    width: 200,
+  },
+  {
+    svg: svgHTML,
+    top: 0,
+    left: 300,
+    height: 100,
+    width: 100,
+  },
+];
+
+const aboutMeArray = [
+  {
+    svg: imgWave,
+    top: -90,
+    left: -600,
+    height: 700,
+    width: 1100,
+  },
+];
+---
+
+<nav class="wrapper-menu">
+  <Label text="HOME" graphics={graphicsObjSkills} />
+  <Label text="SKILLS" graphics={graphicsObjSkills} />
+  <Label text="SKILLS" graphics={graphicsObjSkills} />
+  <Label text="ABOUT ME" graphics={aboutMeArray} href="#about-me" />
+</nav>
+
+<style>
+  .wrapper-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+  }
+</style>
