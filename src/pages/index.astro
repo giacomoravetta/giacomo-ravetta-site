@@ -1,12 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Info from "../components/Info.astro";
-import Intro from "../components/Intro.astro";
-import Cursor from "../components/Cursor.astro";
+import Web from "../components/Web.astro";
+import Mobile from "../components/Mobile/Mobile.astro";
 ---
 
-<Layout title="Welcome to Astro.">
-  <Intro firstName="Giacomo" lastName="Ravetta" />
-  <Info />
-  <Cursor />
+<Layout title="ciao">
+  <section class="block md:hidden">
+    <Mobile />
+  </section>
+
+  <section class="hidden md:block">
+    <Web />
+  </section>
 </Layout>

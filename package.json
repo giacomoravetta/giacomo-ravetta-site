@@ -11,11 +11,12 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.3",
-    "@astrojs/solid-js": "^4.4.1",
-    "@fontsource/archivo-black": "^5.1.0",
-    "astro": "^4.15.4",
+    "@astrojs/solid-js": "^4.4.2",
+    "@astrojs/tailwind": "^5.1.1",
+    "astro": "^4.15.10",
     "motion": "^10.18.0",
     "solid-js": "^1.8.22",
+    "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2"
   }
 }

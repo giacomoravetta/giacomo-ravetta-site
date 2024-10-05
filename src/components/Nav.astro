@@ -1,0 +1,53 @@
+---
+const navLinks = [
+  { name: "home /", href: "/" },
+  { name: "bio /", href: "#bio-href" },
+  { name: "work /", href: "#work-href" },
+  { name: "contact", href: "/contact" },
+];
+---
+
+<nav>
+  <ul>
+    {
+      navLinks.map((link) => (
+        <li>
+          <a href={link.href} data-astro-reload>
+            {link.name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  nav {
+    padding: 10px;
+    display: flex;
+    color: var(--blue-color);
+    font-size: 30px;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    gap: 5px;
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--blue-color);
+    font-weight: bold;
+  }
+
+  a:hover {
+    color: #0073e6;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+  }
+</style>

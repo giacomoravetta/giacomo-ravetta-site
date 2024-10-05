@@ -1,0 +1,72 @@
+---
+import MobileProfile from "./MobileProfile.astro";
+---
+
+<section class="mobile-bio-wrapper" id="mobile-bio-href">
+  <div class="main section">
+    <div class="bio">BIO</div>
+    <div class="main section text">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vitae metus ut
+      felis commodo interdum. Suspendisse potenti. Sed consectetur magna sed
+      ornare faucibus. Nunc elementum eget erat a convallis. Mauris iaculis
+      tincidunt est, id accumsan sem suscipit sit amet. Fusce at mauris at diam
+      viverra tincidunt. Suspendisse a augue blandit enim commodo aliquet et
+      eget massa. Aenean convallis metus eu enim ornare, a bibendum velit
+      ullamcorper. Integer consectetur cursus maximus. Nulla ipsum diam, iaculis
+      ut scelerisque eu, fringilla eu ex. Integer dictum ornare tristique.
+      Vivamus eu est sit amet augue faucibus efficitur.
+    </div>
+  </div>
+  <div class="profile">
+    <MobileProfile />
+  </div>
+</section>
+
+<style>
+  .bio-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  .bio {
+    font-size: 200px;
+    color: var(--main-color);
+    -webkit-text-stroke: 5px var(--secondary-color);
+  }
+
+  .main.section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    font-size: 30px;
+    flex-basis: 60%;
+    color: var(--secondary-color);
+  }
+  .main.section.text {
+    font-size: 30px;
+    text-align: justify;
+    color: var(--secondary-color);
+  }
+</style>
+
+<script>
+  import { animate, stagger } from "motion";
+  const bioWrapper = document.querySelectorAll(".mobile-bio-wrapper")[0];
+
+  const animateBrackets = () => {
+    animate(
+      ".bracket",
+      {
+        y: [-100, 50, 0],
+        opacity: [0, 1],
+      },
+      {
+        duration: 3,
+        delay: stagger(0.1),
+      }
+    );
+  };
+  bioWrapper.addEventListener("mouseenter", animateBrackets, { once: true });
+</script>

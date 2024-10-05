@@ -1,0 +1,39 @@
+---
+import Nav from "./Nav.astro";
+import ThemeButton from "./ThemeButton.astro";
+---
+
+<div class="header">
+  <div class="name">
+    <span>GIACOMO RAVETTA</span>
+  </div>
+  <div class="nav-button">
+    <Nav />
+    <ThemeButton />
+  </div>
+</div>
+
+<style>
+  .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-basis: 10%;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    color: var(--secondary-color);
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+  .name {
+    font-size: 4vw;
+    color: var(--secondary-color);
+  }
+  .nav-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 100px;
+  }
+</style>

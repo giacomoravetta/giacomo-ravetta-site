@@ -1,0 +1,106 @@
+---
+const { slot } = Astro.props;
+---
+
+<style>
+  .marquee {
+    position: relative;
+    display: flex;
+    background-color: var(--secondary-color);
+    flex-direction: row;
+    overflow: hidden;
+    white-space: nowrap;
+    align-items: center;
+    width: 100vw;
+    height: 12vh;
+  }
+  .marquee_box {
+    position: absolute;
+    width: 100vw;
+    height: 60%;
+    border-top: 2px solid var(--main-color);
+    border-bottom: 2px solid var(--main-color);
+  }
+  .marquee__item_first {
+    position: absolute;
+    left: 0;
+    width: 100vw;
+    height: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6vw;
+    padding-right: 3vw;
+    padding-left: 3vw;
+    animation-duration: 30s;
+    animation-iteration-count: infinite;
+    animation-name: marquee-content;
+    animation-timing-function: linear;
+  }
+  .marquee__item_second {
+    position: absolute;
+    left: -100vw;
+    width: 100vw;
+    height: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6vw;
+    padding-right: 3vw;
+    padding-left: 3vw;
+    animation-duration: 30s;
+    animation-iteration-count: infinite;
+    animation-name: marquee-content;
+    animation-timing-function: linear;
+  }
+  .marquee:hover .marquee__item {
+    animation-play-state: paused;
+  }
+
+  .marquee-item {
+    width: 16vw;
+    height: 100%;
+    display: flex;
+    font-size: 2vw;
+    color: var(--main-color);
+    justify-content: center;
+    align-items: center;
+  }
+
+  /**
+		* BOTH of the marquee items are going to be translating left at the same time.
+		* And, once each of them has translated to -100%, they will both snap back into
+		* place, making it seem as if they are continuously scrolling.
+		*/
+  @keyframes marquee-content {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100vw);
+    }
+  }
+</style>
+
+<div class="marquee">
+  <div class="marquee_box"></div>
+  <div class="marquee__item_first">
+    <div class="marquee-item">🫖 DRINK TEA 🫖</div>
+    <div class="marquee-item">🫁 BREATH 🫁</div>
+    <div class="marquee-item">🔥 SCROLL DOWN 🔥</div>
+    <div class="marquee-item">👨‍💻 WRITE CODE 👨‍💻</div>
+    <div class="marquee-item">🐈 PET CAT 🐈</div>
+  </div>
+  <!--
+			Duplication of the content in order to create a seamless wrapping simulation.
+			As the element ABOVE heads off screen-left, the element BELOW will enter
+			screen-right.
+		-->
+  <div class="marquee__item_second">
+    <div class="marquee-item">🫖 DRINK TEA 🫖</div>
+    <div class="marquee-item">🫁 BREATH 🫁</div>
+    <div class="marquee-item">🔥 SCROLL DOWN 🔥</div>
+    <div class="marquee-item">👨‍💻 WRITE CODE 👨‍💻</div>
+    <div class="marquee-item">🐈 PET CAT 🐈</div>
+  </div>
+</div>
