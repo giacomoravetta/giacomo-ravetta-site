@@ -1,4 +1,5 @@
 ---
+import Links from "./Links.astro";
 import Nav from "./Nav.astro";
 import ThemeButton from "./ThemeButton.astro";
 ---
@@ -7,33 +8,39 @@ import ThemeButton from "./ThemeButton.astro";
   <div class="name">
     <span>GIACOMO RAVETTA</span>
   </div>
-  <div class="nav-button">
+
+  <div class="header-right">
     <Nav />
+    <Links />
     <ThemeButton />
   </div>
-</div>
 
-<style>
-  .header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-basis: 10%;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    color: var(--secondary-color);
-    padding-left: 30px;
-    padding-right: 30px;
-  }
-  .name {
-    font-size: 4vw;
-    color: var(--secondary-color);
-  }
-  .nav-button {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 100px;
-  }
-</style>
+  <style>
+    .header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-basis: 10%;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      color: var(--secondary-color);
+      padding-left: 30px;
+      padding-right: 30px;
+    }
+    .name {
+      display: flex;
+      flex-basis: 50%;
+      font-size: 4vw;
+      color: var(--secondary-color);
+    }
+    .header-right {
+      display: flex;
+      flex-direction: row;
+      flex-basis: 40%;
+      height: 100%;
+      align-items: center;
+      justify-content: space-between;
+    }
+  </style>
+</div>

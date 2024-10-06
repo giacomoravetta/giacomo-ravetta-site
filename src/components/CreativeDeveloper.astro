@@ -1,8 +1,5 @@
 ---
 import IconAstro from "./Icons/IconAstro.astro";
-import IconLinkedin from "./Icons/IconLinkedin.astro";
-import IconGithub from "./Icons/IconGithub.astro";
-import IconDribble from "./Icons/IconDribble.astro";
 ---
 
 <div class="hero center">
@@ -29,7 +26,7 @@ import IconDribble from "./Icons/IconDribble.astro";
       <div class="letter">R</div>
     </div>
   </div>
-  <div class="designer">AND <br />DESIGNER</div>
+  <div class="designer">UI/UX <br />DESIGNER</div>
 </div>
 
 <style>
@@ -79,18 +76,17 @@ import IconDribble from "./Icons/IconDribble.astro";
     --height-designer: 100%;
   }
 
-  .columns {
+  .links {
     position: absolute;
+    left: 0;
     display: flex;
-    flex-direction: row;
-    bottom: 0;
-    width: 100%;
-    height: 10vh;
-  }
-  .column {
-    width: 10px;
-    flex-grow: 1;
-    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    height: 30vh;
+    border-radius: 0px 25px 25px 0px;
+    width: 6vw;
     background-color: var(--secondary-color);
   }
 </style>
@@ -99,20 +95,16 @@ import IconDribble from "./Icons/IconDribble.astro";
   import { timeline, stagger } from "motion";
 
   const sequence = [
-    [
-      ".letter",
-      { opacity: [0, 1], rotate: 360, y: [200, 0] },
-      { duration: 1, delay: stagger(0.05) },
-    ],
+    [".letter", { opacity: [0, 1] }, { delay: stagger(0.025) }],
+    [".letter", { fontSize: ["20vw", "14vw"] }],
     [
       ".designer",
       {
         y: ["-200%", "10%"],
         transform: "rotate(-30deg)",
       },
-      { easing: "ease-out", duration: 4 },
-      { at: 1 },
     ],
   ];
-  timeline(sequence, { duration: 6 });
+
+  timeline(sequence, { duration: 4 });
 </script>
