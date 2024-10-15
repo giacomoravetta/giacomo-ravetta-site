@@ -1,0 +1,25 @@
+---
+interface Props {
+  color: string;
+  border?: string;
+}
+
+const { color, border } = Astro.props;
+---
+
+<div
+  class="card"
+  style=`background-color:${color}; border: ${border ? border : null }`
+>
+  <slot />
+</div>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    border-radius: 25px;
+    overflow: hidden;
+  }
+</style>
