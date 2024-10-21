@@ -1,0 +1,30 @@
+---
+import BentoCard from "../BentoCard.astro";
+---
+
+<BentoCard color="#6CB38A">
+  <div class="about-me">
+    <div class="title"><strong>About me</strong></div>
+    <div class="content">
+      <p></p>
+    </div>
+  </div>
+</BentoCard>
+
+<style>
+  .about-me {
+    display: flex;
+    flex-direction: column;
+    padding: 1.6dvw;
+  }
+  .title {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+  }
+  .content {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+  }
+</style>

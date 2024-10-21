@@ -1,0 +1,123 @@
+---
+import BentoNav from "../BentoNav.astro";
+import BentoDandD from "./BentoDandD.astro";
+import BentoHomeSecondCard from "./BentoHomeSecondCard.astro";
+import BentoHomeMarquee from "./BentoHomeMarquee.astro";
+import BentoHomeCiao from "./BentoHomeCiao.astro";
+import BentoHomeLinks from "./BentoHomeLinks.astro";
+import BentoHomeChanellina from "./BentoHomeChanellina.astro";
+import BentoProfileCard from "./BentoProfileCard.astro";
+---
+
+<div class="bento main">
+  <div class="first-row">
+    <BentoNav />
+  </div>
+
+  <div class="second row">
+    <div class="profile">
+      <BentoProfileCard />
+    </div>
+    <div class="cards">
+      <div class="ciao">
+        <BentoHomeCiao />
+      </div>
+      <div class="green">
+        <BentoHomeSecondCard />
+      </div>
+    </div>
+  </div>
+
+  <div class="third row">
+    <BentoDandD />
+  </div>
+
+  <div class="fourth row">
+    <BentoHomeMarquee />
+  </div>
+
+  <div class="fifth row">
+    <BentoHomeChanellina />
+  </div>
+
+  <div class="sixth row">
+    <BentoHomeLinks />
+  </div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .bento.main {
+      display: flex;
+      flex-direction: column;
+      width: 100dvw;
+      height: 100dvh;
+      padding: 1.6dvw;
+      gap: 1.6dvw;
+    }
+
+    .second.row {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+    .ciao {
+      flex-basis: 20%;
+    }
+    .green {
+      height: 100%;
+      flex-basis: 80%;
+    }
+
+    .cards {
+      display: flex;
+      flex-basis: 40%;
+      flex-direction: column;
+      gap: 1.6dvw;
+    }
+
+    .profile {
+      display: flex;
+      flex-basis: 60%;
+      gap: 1.6dvw;
+    }
+
+    .first.row,
+    .second.row,
+    .third.row,
+    .fourth.row,
+    .sixth.row {
+      flex-shrink: 0;
+    }
+
+    .fifth.row {
+      display: flex;
+      flex-grow: 1;
+    }
+  }
+</style>
+
+<script>
+  import { animate, timeline, stagger } from "motion";
+
+  const sequence = [
+    [
+      ".card",
+      { height: [0, "100%"], opacity: ["0", "100%"] },
+      { duration: 3, delay: stagger(0.2) },
+    ],
+    [
+      ".bracket",
+      {
+        y: [-100, 50, 0],
+        opacity: [0, 1],
+      },
+      {
+        duration: 3,
+        delay: stagger(1),
+      },
+    ],
+  ];
+
+  timeline(sequence);
+</script>
