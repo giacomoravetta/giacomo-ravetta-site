@@ -1,9 +1,9 @@
 ---
-import BentoCard from "../BentoCard.astro";
+import BentoCard from "../../BentoCard.astro";
 ---
 
 <BentoCard color="#1B365D">
-  <div class="svg-wrapper-ciao">
+  <div class="svg-wrapper-ciao mobile">
     <div class="hand">👋</div>
     <svg
       width="100%"
@@ -54,8 +54,9 @@ import BentoCard from "../BentoCard.astro";
 <script>
   import { timeline, stagger } from "motion";
 
-  const svgDiv = document.getElementsByClassName("svg-wrapper-ciao")[0];
-  svgDiv.addEventListener("mouseenter", () => {
+  const elHand = document.getElementsByClassName("svg-wrapper-ciao mobile")[0];
+
+  elHand.addEventListener("mouseenter", () => {
     const sequenceHand = [
       [
         ".svg-wrapper-ciao path",

@@ -1,0 +1,32 @@
+---
+import BentoCard from "../../BentoCard.astro";
+---
+
+<BentoCard color="#6CB38A">
+  <div class="about-me">
+    <div class="content">
+      <p>
+        “It is possible to commit no mistakes and still lose. That is not
+        weakness, that is life.” ― Jean-Luc Picard
+      </p>
+    </div>
+  </div>
+</BentoCard>
+
+<style>
+  .about-me {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.6dvw;
+    flex-grow: 1;
+  }
+
+  .content {
+    padding: 2dvw;
+    display: flex;
+    flex-grow: 1;
+    font-size: 2.2dvw;
+    font-weight: 600;
+  }
+</style>

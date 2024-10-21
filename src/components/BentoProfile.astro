@@ -10,52 +10,70 @@ import profile from "../images/giacomo_ravetta_profile_final_social.webp";
 </div>
 
 <style>
-  .profile-wrapper {
-    position: relative;
-    width: fit-content;
-  }
+  @media only screen and (max-width: 1200px) {
+    .profile-wrapper {
+      position: relative;
+      width: fit-content;
+    }
 
-  .profile-image {
-    min-width: 10%;
-    max-width: 100%;
-    border-radius: 25px 25px;
-  }
+    .profile-image {
+      min-width: 10%;
+      max-width: 100%;
+    }
 
-  .bracket {
-    position: absolute;
-    opacity: 0;
-    font-size: 22vw;
-    color: transparent;
-    --top-left-bracket: -4%;
-    --top-right-bracket: 2%;
-    --left-bracket: 12%;
-    --right-bracket: 74%;
-    -webkit-text-stroke: 2px white;
-  }
+    .bracket {
+      position: absolute;
+      opacity: 0;
+      font-size: 30dvw;
+      color: transparent;
+      --top-left-bracket: -4%;
+      --top-right-bracket: 2%;
+      --left-bracket: 10%;
+      --right-bracket: 74%;
+      -webkit-text-stroke: 1px white;
+    }
 
-  .left {
-    top: var(--top-left-bracket);
-    left: var(--left-bracket);
-  }
+    .left {
+      top: var(--top-left-bracket);
+      left: var(--left-bracket);
+    }
 
-  .right {
-    top: var(--top-right-bracket);
-    left: var(--right-bracket);
+    .right {
+      top: var(--top-right-bracket);
+      left: var(--right-bracket);
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .profile-wrapper {
+      position: relative;
+      width: fit-content;
+    }
+
+    .profile-image {
+      min-width: 10%;
+      max-width: 100%;
+    }
+
+    .bracket {
+      position: absolute;
+      opacity: 0;
+      font-size: 17dvw;
+      color: transparent;
+      --top-left-bracket: -4%;
+      --top-right-bracket: 2%;
+      --left-bracket: 10%;
+      --right-bracket: 74%;
+      -webkit-text-stroke: 1px white;
+    }
+
+    .left {
+      top: var(--top-left-bracket);
+      left: var(--left-bracket);
+    }
+
+    .right {
+      top: var(--top-right-bracket);
+      left: var(--right-bracket);
+    }
   }
 </style>
-
-<script>
-  import { animate, stagger, inView } from "motion";
-
-  animate(
-    ".bracket",
-    {
-      y: [-100, 50, 0],
-      opacity: [0, 1],
-    },
-    {
-      duration: 3,
-      delay: stagger(1),
-    }
-  );
-</script>

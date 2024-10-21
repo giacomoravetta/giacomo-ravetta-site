@@ -1,12 +1,12 @@
 ---
-import BentoNav from "../BentoNav.astro";
-import BentoDandD from "./BentoDandD.astro";
-import BentoHomeSecondCard from "./BentoHomeSecondCard.astro";
-import BentoHomeMarquee from "./BentoHomeMarquee.astro";
-import BentoHomeCiao from "./BentoHomeCiao.astro";
-import BentoHomeLinks from "./BentoHomeLinks.astro";
-import BentoHomeChanellina from "./BentoHomeChanellina.astro";
-import BentoProfileCard from "./BentoProfileCard.astro";
+import BentoNav from "../../BentoNav.astro";
+import BentoDandD from "./BentoDandDMobile.astro";
+import BentoHomeSecondCard from "./BentoHomeSecondCardMobile.astro";
+import BentoHomeMarquee from "./BentoHomeMarqueeMobile.astro";
+import BentoHomeCiao from "./BentoHomeCiaoMobile.astro";
+import BentoHomeLinks from "./BentoHomeLinksMobile.astro";
+import BentoHomeHireMe from "./BentoHomeHireMeMobile.astro";
+import BentoProfileCard from "../BentoProfileCard.astro";
 ---
 
 <div class="bento main">
@@ -37,7 +37,7 @@ import BentoProfileCard from "./BentoProfileCard.astro";
   </div>
 
   <div class="fifth row">
-    <BentoHomeChanellina />
+    <BentoHomeHireMe />
   </div>
 
   <div class="sixth row">
@@ -94,30 +94,10 @@ import BentoProfileCard from "./BentoProfileCard.astro";
       display: flex;
       flex-grow: 1;
     }
+
+    .green {
+      display: flex;
+      fex-grow: 1;
+    }
   }
 </style>
-
-<script>
-  import { animate, timeline, stagger } from "motion";
-
-  const sequence = [
-    [
-      ".card",
-      { height: [0, "100%"], opacity: ["0", "100%"] },
-      { duration: 3, delay: stagger(0.2) },
-    ],
-    [
-      ".bracket",
-      {
-        y: [-100, 50, 0],
-        opacity: [0, 1],
-      },
-      {
-        duration: 3,
-        delay: stagger(1),
-      },
-    ],
-  ];
-
-  timeline(sequence);
-</script>

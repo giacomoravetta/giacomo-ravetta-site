@@ -1,0 +1,65 @@
+---
+import BentoCard from "../../BentoCard.astro";
+---
+
+<BentoCard color="#FF5E6E">
+  <div class="hire-me-wrapper">
+    <a href="/" class="hire-me-button">
+      <div>HIRE ME</div>
+    </a>
+  </div>
+</BentoCard>
+
+<style>
+  .hire-me-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    background: radial-gradient(
+        circle at bottom left,
+        transparent 25%,
+        #f3ed7f 25.5%,
+        #f3ed7f 36%,
+        transparent 37%,
+        transparent 100%
+      ),
+      radial-gradient(
+        circle at top right,
+        transparent 34%,
+        #f3ed7f 34.5%,
+        #f3ed7f 45.5%,
+        transparent 46%,
+        transparent 100%
+      );
+    background-size: 3em 3em;
+    background-color: #ff5e6e;
+    opacity: 1;
+  }
+
+  .hire-me-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fbeee0;
+    border: 2px solid #ff5e6e;
+    border-radius: 25px;
+    box-shadow: #00000054 4px 4px 0 0;
+    color: #ff5e6e;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 3dvw;
+    height: 60%;
+    width: 60%;
+    padding: 20px 0 10px 0;
+  }
+
+  .hire-me-button:hover {
+    background-color: #fff;
+  }
+
+  .hire-me-button:active {
+    box-shadow: #000000 2px 2px 0 0;
+    transform: translate(2px, 2px);
+  }
+</style>

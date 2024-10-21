@@ -1,0 +1,76 @@
+---
+import IconLinkedin from "./Icons/Social/IconLinkedin.astro";
+import IconGithub from "./Icons/Social/IconGithub.astro";
+import IconDribble from "./Icons/Social/IconDribble.astro";
+
+interface Props {
+  width: string;
+}
+
+const { width } = Astro.props;
+---
+
+<div class="links-wrapper">
+  <div class="links">
+    <div class="link">
+      <IconGithub width={width} />
+    </div>
+    <div class="link">
+      <IconLinkedin width={width} />
+    </div>
+    <div class="link">
+      <IconDribble width={width} />
+    </div>
+  </div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .links-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+    }
+
+    .links {
+      display: flex;
+      flex-direction: row;
+      width: 90%;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2dvw;
+    }
+    .link {
+      transition: scale 0.5s;
+    }
+
+    .link:hover {
+      scale: 1.1;
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .links-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+    }
+
+    .links {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2dvw;
+    }
+    .link {
+      transition: scale 0.5s;
+    }
+
+    .link:hover {
+      scale: 1.1;
+    }
+  }
+</style>

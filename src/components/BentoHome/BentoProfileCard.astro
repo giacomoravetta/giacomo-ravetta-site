@@ -4,15 +4,20 @@ import BentoProfile from "../BentoProfile.astro";
 ---
 
 <BentoCard color="transparent" border="1px solid white">
-  <BentoProfile />
-  <div class="subtitle">
+  <div class="profile-card-wrapper">
+    <BentoProfile />
     <div class="avaiable">
       <div>Avaiable to work</div>
       <div class="pulsating-circle"></div>
     </div>
+    <div class="separator white"></div>
+    <div class="text">
+      <p>
+        Hi, my name is <strong>Giacomo Ravetta</strong>
+        <br /> Welcome to my website!
+      </p>
+    </div>
   </div>
-  <div class="separator white"></div>
-  <p>Hi, my name is <strong>Giacomo Ravetta</strong> Welcome to my website!</p>
 </BentoCard>
 
 <style>
@@ -44,7 +49,7 @@ import BentoProfile from "../BentoProfile.astro";
     p {
       padding: 20px;
       color: white;
-      font-size: 1vw;
+      font-size: 3vw;
     }
 
     .pulsating-circle {
@@ -53,26 +58,43 @@ import BentoProfile from "../BentoProfile.astro";
       position: relative;
     }
   }
+  @media only screen and (min-width: 1200px) {
+    .profile-card-wrapper {
+      display: flex;
+      flex-grow: 1;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .text {
+      display: flex;
+      flex-direction: column;
+    }
+    .avaiable {
+      display: flex;
+      padding: 20px;
+      flex-direction: row;
+      justify-content: right;
+      align-items: center;
+      color: white;
+      gap: 20px;
+    }
 
-  .avaiable {
-    display: flex;
-    padding: 1.6dvw;
-    flex-direction: row;
-    align-items: center;
-    color: white;
-    font-size: 2dvw;
-    padding: 1.6dvw;
-  }
+    .separator.white {
+      height: 1px;
+      background-color: rgb(255, 255, 255);
+    }
 
-  p {
-    padding: 3dvw;
-    color: white;
-    font-size: 3.2dvw;
-  }
+    p {
+      padding: 20px;
+      color: white;
+      font-size: 1vw;
+    }
 
-  .separator.white {
-    height: 1px;
-    background-color: rgb(255, 255, 255);
+    .pulsating-circle {
+      width: 1vh;
+      height: 1vh;
+      position: relative;
+    }
   }
 
   .pulsating-circle:before {

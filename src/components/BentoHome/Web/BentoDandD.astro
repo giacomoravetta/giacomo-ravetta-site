@@ -1,5 +1,5 @@
 ---
-import BentoCard from "../BentoCard.astro";
+import BentoCard from "../../BentoCard.astro";
 ---
 
 <div class="dandd">
@@ -41,6 +41,7 @@ import BentoCard from "../BentoCard.astro";
   @media only screen and (max-width: 1200px) {
     .dandd {
       display: flex;
+      flex-grow: 1;
       flex-direction: column;
       gap: 1.6dvw;
     }
@@ -90,6 +91,63 @@ import BentoCard from "../BentoCard.astro";
     .card-content .title.command {
       display: flex;
       align-items: center;
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .dandd {
+      display: flex;
+      flex-grow: 1;
+      flex-direction: column;
+      gap: 1.6dvw;
+    }
+    .first-line {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+    .developer {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 70%;
+    }
+    .and {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 30%;
+    }
+    .command-button {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 30%;
+    }
+
+    .designer {
+      display: flex;
+      flex-grow: 1;
+      justify-content: right;
+      flex-basis: 70%;
+    }
+    .second-line {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+    .card-content {
+      display: flex;
+      flex-grow: 1;
+      justify-content: center;
+      padding: 2dvw 2dvw;
+    }
+    .card-content .title {
+      font-size: 8dvw;
+      font-weight: 900;
+      line-height: 0.9;
+    }
+
+    .card-content .title.command {
+      display: flex;
+      align-items: center;
+      transform: translateY(+10%);
     }
   }
 </style>
