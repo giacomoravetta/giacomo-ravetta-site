@@ -3,7 +3,7 @@ import BentoCard from "../BentoCard.astro";
 import BentoProfile from "../BentoProfile.astro";
 ---
 
-<BentoCard color="transparent" border="1px solid white">
+<BentoCard border="1px solid white">
   <div class="profile-card-wrapper">
     <BentoProfile />
     <div class="avaiable">
@@ -22,23 +22,20 @@ import BentoProfile from "../BentoProfile.astro";
 
 <style>
   @media only screen and (max-width: 1200px) {
-    .subtitle {
-      color: white;
+    .profile-card-wrapper {
       display: flex;
-      flex-direction: row;
-      justify-content: right;
-      align-items: center;
-      font-size: 1vw;
-      font-weight: 500;
+      flex-grow: 1;
+      flex-direction: column;
+      gap: 2dvw;
     }
-
     .avaiable {
       display: flex;
-      padding: 20px;
       flex-direction: row;
+      justify-content: center;
       align-items: center;
       color: white;
       gap: 20px;
+      font-size: 3vw;
     }
 
     .separator.white {
@@ -47,8 +44,8 @@ import BentoProfile from "../BentoProfile.astro";
     }
 
     p {
-      padding: 20px;
       color: white;
+      padding: 3vw;
       font-size: 3vw;
     }
 

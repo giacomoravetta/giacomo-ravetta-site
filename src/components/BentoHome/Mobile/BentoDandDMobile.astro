@@ -1,18 +1,32 @@
 ---
 import BentoCard from "../../BentoCard.astro";
+
+const active = {
+  color: "#FAF1DB",
+  border: "1px solid #FAF1DB",
+  backgroundColor: "black",
+};
 ---
 
 <div class="dandd">
   <div class="first-line">
     <div class="developer">
-      <BentoCard color="#FAF1DB">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
         <div class="card-content">
           <div class="title">Developer</div>
         </div>
       </BentoCard>
     </div>
     <div class="and">
-      <BentoCard color="#FAF1DB">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
         <div class="card-content">
           <div class="title">&</div>
         </div>
@@ -21,14 +35,22 @@ import BentoCard from "../../BentoCard.astro";
   </div>
   <div class="second-line">
     <div class="command-button">
-      <BentoCard color="#FAF1DB">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
         <div class="card-content">
           <div class="title command">⌘</div>
         </div>
       </BentoCard>
     </div>
     <div class="designer">
-      <BentoCard color="#FAF1DB">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
         <div class="card-content">
           <div class="title">Designer</div>
         </div>
@@ -76,6 +98,7 @@ import BentoCard from "../../BentoCard.astro";
       flex-direction: row;
       gap: 1.6dvw;
     }
+
     .card-content {
       display: flex;
       flex-grow: 1;
@@ -131,6 +154,7 @@ import BentoCard from "../../BentoCard.astro";
       flex-direction: row;
       gap: 1.6dvw;
     }
+
     .card-content {
       display: flex;
       flex-grow: 1;

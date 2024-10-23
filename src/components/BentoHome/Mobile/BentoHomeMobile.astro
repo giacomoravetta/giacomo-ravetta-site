@@ -1,7 +1,7 @@
 ---
 import BentoNav from "../../BentoNav.astro";
 import BentoDandD from "./BentoDandDMobile.astro";
-import BentoHomeSecondCard from "./BentoHomeSecondCardMobile.astro";
+import BentoHomeWhaleMobile from "./BentoHomeWhaleMobile.astro";
 import BentoHomeMarquee from "./BentoHomeMarqueeMobile.astro";
 import BentoHomeCiao from "./BentoHomeCiaoMobile.astro";
 import BentoHomeLinks from "./BentoHomeLinksMobile.astro";
@@ -22,8 +22,8 @@ import BentoProfileCard from "../BentoProfileCard.astro";
       <div class="ciao">
         <BentoHomeCiao />
       </div>
-      <div class="green">
-        <BentoHomeSecondCard />
+      <div class="whale-wrapper">
+        <BentoHomeWhaleMobile />
       </div>
     </div>
   </div>
@@ -61,13 +61,6 @@ import BentoProfileCard from "../BentoProfileCard.astro";
       flex-direction: row;
       gap: 1.6dvw;
     }
-    .ciao {
-      flex-basis: 20%;
-    }
-    .green {
-      height: 100%;
-      flex-basis: 80%;
-    }
 
     .cards {
       display: flex;
@@ -80,6 +73,7 @@ import BentoProfileCard from "../BentoProfileCard.astro";
       display: flex;
       flex-basis: 60%;
       gap: 1.6dvw;
+      flex-grow: 1;
     }
 
     .first.row,
@@ -95,9 +89,13 @@ import BentoProfileCard from "../BentoProfileCard.astro";
       flex-grow: 1;
     }
 
-    .green {
+    .ciao {
       display: flex;
-      fex-grow: 1;
+      flex-basis: 30%;
+    }
+    .whale-wrapper {
+      display: flex;
+      flex-basis: 70%;
     }
   }
 </style>

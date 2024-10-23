@@ -1,12 +1,6 @@
 ---
-import BentoNav from "../../BentoNav.astro";
-import BentoDandD from "./BentoDandD.astro";
-import BentoHomeMarquee from "./BentoHomeMarquee.astro";
-import BentoHomeCiao from "./BentoHomeCiao.astro";
-import BentoHomeLinks from "./BentoHomeLinks.astro";
-import BentoHomeHireMe from "./BentoHomeHireMe.astro";
-import BentoProfileCard from "../BentoProfileCard.astro";
-import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
+import BentoNav from "../BentoNav.astro";
+import BentoServicesText from "./BentoServicesText.astro";
 ---
 
 <div class="bento main">
@@ -15,33 +9,11 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
       <div class="nav-wrapper">
         <BentoNav />
       </div>
-      <div class="dandd-wrapper">
-        <BentoDandD />
+      <div class="text-wrapper">
+        <BentoServicesText />
       </div>
-      <div class="marquee-wrapper">
-        <BentoHomeMarquee />
-      </div>
-    </div>
-    <div class="right">
-      <div class="profile-wrapper">
-        <BentoProfileCard />
-      </div>
-    </div>
-  </div>
-
-  <div class="second-row">
-    <div class="hire-me-social-wrapper">
-      <div class="quote">
-        <BentoHomeWhaleCard />
-      </div>
-      <div class="hire-me">
-        <BentoHomeHireMe />
-      </div>
-      <div class="social">
-        <BentoHomeLinks />
-      </div>
-      <div class="ciao">
-        <BentoHomeCiao />
+      <div class="tag-wrapper">
+        <BentoServicesText />
       </div>
     </div>
   </div>
@@ -53,7 +25,7 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
     flex-direction: column;
     width: 100dvw;
     height: 100dvh;
-    padding: 1.6dvw;
+    padding: 2dvw;
     gap: 1.6dvw;
   }
 
@@ -76,12 +48,12 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
     flex-grow: 1;
     flex-basis: 20%;
   }
-  .first-row .left .dandd-wrapper {
+  .first-row .left .text-wrapper {
     display: flex;
     flex-grow: 1;
     flex-basis: 60%;
   }
-  .first-row .left .marquee-wrapper {
+  .first-row .left .tag-wrapper {
     display: flex;
     flex-grow: 1;
     flex-basis: 20%;
@@ -114,7 +86,7 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
   .quote {
     display: flex;
     flex-grow: 1;
-    flex-basis: 10%;
+    flex-basis: 20%;
   }
 
   .hire-me {

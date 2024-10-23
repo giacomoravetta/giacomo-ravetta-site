@@ -4,16 +4,20 @@ import BentoCard from "./BentoCard.astro";
 
 <div class="nav">
   <div class="rounded me">
-    <BentoCard color="transparent" border="1px solid white">Home</BentoCard>
+    <BentoCard border="1px solid white"><a href="/">Home</a></BentoCard>
   </div>
   <div class="rounded services">
-    <BentoCard color="transparent" border="1px solid white">Services</BentoCard>
+    <BentoCard border="1px solid white"
+      ><a href="/services">Services</a></BentoCard
+    >
   </div>
   <div class="rounded skills">
-    <BentoCard color="transparent" border="1px solid white">Skills</BentoCard>
+    <BentoCard border="1px solid white"><a href="/skills">Skills</a></BentoCard>
   </div>
   <div class="rounded contacts">
-    <BentoCard color="transparent" border="1px solid white">Contacts</BentoCard>
+    <BentoCard border="1px solid white"
+      ><a href="/services">Contacts</a></BentoCard
+    >
   </div>
 </div>
 
@@ -38,5 +42,13 @@ import BentoCard from "./BentoCard.astro";
     max-height: 10dvh;
     text-align: center;
     font-size: calc(12px + 2.8dvw);
+  }
+  .rounded:hover {
+    color: black;
+    background-color: white;
+  }
+  .rounded:active {
+    color: black;
+    background-color: white;
   }
 </style>

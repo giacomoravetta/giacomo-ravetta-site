@@ -2,7 +2,7 @@
 import BentoCard from "../../BentoCard.astro";
 ---
 
-<BentoCard color="#1B365D">
+<BentoCard backgroundColor="#1B365D">
   <div class="svg-wrapper-ciao mobile">
     <div class="hand">👋</div>
     <svg
@@ -54,32 +54,36 @@ import BentoCard from "../../BentoCard.astro";
 <script>
   import { timeline, stagger } from "motion";
 
-  const elHand = document.getElementsByClassName("svg-wrapper-ciao mobile")[0];
+  document.addEventListener("astro:page-load", () => {
+    const elHand = document.getElementsByClassName(
+      "svg-wrapper-ciao mobile"
+    )[0];
 
-  elHand.addEventListener("mouseenter", () => {
-    const sequenceHand = [
-      [
-        ".svg-wrapper-ciao path",
-        { y: [0, -10, 10, 0] },
-        { duration: 1, delay: stagger(0.1) },
-      ],
-      [
-        ".hand",
-        { left: ["50%"], translateX: "-50%", translateY: "-50%" },
-        { duration: 1 },
-      ],
-      [
-        ".hand",
-        {
-          rotate: [0, -20, 20, -20, 20, 0],
-          translateX: "-50%",
-          translateY: "-50%",
-        },
-        { duration: 1.6 },
-      ],
-      [".hand", { left: ["120%"] }, { duration: 1 }],
-    ];
+    elHand.addEventListener("mouseenter", () => {
+      const sequenceHand = [
+        [
+          ".svg-wrapper-ciao path",
+          { y: [0, -10, 10, 0] },
+          { duration: 1, delay: stagger(0.1) },
+        ],
+        [
+          ".hand",
+          { left: ["50%"], translateX: "-50%", translateY: "-50%" },
+          { duration: 1 },
+        ],
+        [
+          ".hand",
+          {
+            rotate: [0, -20, 20, -20, 20, 0],
+            translateX: "-50%",
+            translateY: "-50%",
+          },
+          { duration: 1.6 },
+        ],
+        [".hand", { left: ["120%"] }, { duration: 1 }],
+      ];
 
-    timeline(sequenceHand, { duration: 5 });
+      timeline(sequenceHand, { duration: 5 });
+    });
   });
 </script>
