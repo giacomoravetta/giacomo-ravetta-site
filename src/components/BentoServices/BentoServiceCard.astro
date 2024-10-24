@@ -1,0 +1,66 @@
+---
+import BentoCard from "../BentoCard.astro";
+
+interface Props {
+  service: string;
+  claim: string;
+  description: string;
+}
+
+const { service, claim, description } = Astro.props as Props;
+---
+
+<BentoCard border="1px solid var(--yellow-color)">
+  <div class="inner-card">
+    <h1>{service}</h1>
+    <h2>{claim}</h2>
+    <div class="separator"></div>
+    <p>{description}</p>
+  </div>
+</BentoCard>
+
+<style>
+  @media only screen and (min-width: 1200px) {
+    h1 {
+      font-size: 1.4dvw;
+      font-weight: 900;
+    }
+    h2 {
+      font-size: 1.2dvw;
+      font-weight: 700;
+    }
+    p {
+      font-size: 0.9dvw;
+      text-align: justify;
+      font-weight: 500;
+    }
+  }
+  @media only screen and (max-width: 1200px) {
+    h1 {
+      font-size: 3.5dvw;
+      font-weight: 900;
+    }
+    h2 {
+      font-size: 3dvw;
+      font-weight: 700;
+    }
+    p {
+      font-size: 2.8dvw;
+      text-align: justify;
+      font-weight: 500;
+    }
+  }
+
+  .inner-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1dvw;
+    padding: 2dvw;
+    color: var(--yellow-color);
+  }
+
+  .separator {
+    height: 1px;
+    background-color: var(--yellow-color);
+  }
+</style>
