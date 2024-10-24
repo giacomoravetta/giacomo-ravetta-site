@@ -3,51 +3,61 @@ import BentoCard from "./BentoCard.astro";
 ---
 
 <div class="nav">
-  <div class="rounded me">
-    <BentoCard border="1px solid white"><a href="/">Home</a></BentoCard>
+  <div class="item">
+    <BentoCard border="1px solid white"><a href="/">Home</a> </BentoCard>
   </div>
-  <div class="rounded services">
+  <div class="item">
     <BentoCard border="1px solid white"
-      ><a href="/services">Services</a></BentoCard
+      ><a href="/services">Services</a>
+    </BentoCard>
+  </div>
+  <div class="item">
+    <BentoCard border="1px solid white">
+      <a href="/skills">Skills</a></BentoCard
     >
   </div>
-  <div class="rounded skills">
-    <BentoCard border="1px solid white"><a href="/skills">Skills</a></BentoCard>
-  </div>
-  <div class="rounded contacts">
+  <div class="item">
     <BentoCard border="1px solid white"
-      ><a href="/services">Contacts</a></BentoCard
+      ><a href="/contacts">Contacts</a></BentoCard
     >
   </div>
 </div>
 
 <style>
+  @media only screen and (max-width: 1200px) {
+    .item {
+      font-size: 3dvw;
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .item {
+      font-size: 1.4dvw;
+    }
+  }
   .nav {
     display: flex;
     flex-grow: 1;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
-    gap: 1.6dvw;
+    justify-content: space-between;
   }
-
-  .rounded {
+  .item {
+    color: white;
+    width: 23%;
+    border-radius: 25px;
+  }
+  a {
     display: flex;
-    flex-grow: 1;
-    height: 100%;
     justify-content: center;
     align-items: center;
-    color: white;
-    border-radius: 25px;
-    max-height: 10dvh;
-    text-align: center;
-    font-size: 6dvw;
+    flex-grow: 1;
   }
-  .rounded:hover {
+
+  .item:hover {
     color: black;
     background-color: white;
   }
-  .rounded:active {
+  .item:active {
     color: black;
     background-color: white;
   }

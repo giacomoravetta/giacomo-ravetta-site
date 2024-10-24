@@ -116,14 +116,12 @@ import BentoCard from "../../BentoCard.astro";
 </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("astro:page-load", () => {
     const whale = document.querySelector(".whale-image-mobile");
-
+    const whaleWrapper = document.querySelector(".whale-mobile");
     const handleClick = () => {
-      // Add the animate class to trigger CSS animation
       whale.classList.add("animate");
 
-      // Remove the class after the animation ends for potential re-triggering
       whale.addEventListener(
         "animationend",
         () => {
@@ -133,6 +131,6 @@ import BentoCard from "../../BentoCard.astro";
       );
     };
 
-    whale.addEventListener("click", handleClick);
+    whaleWrapper.addEventListener("click", handleClick);
   });
 </script>

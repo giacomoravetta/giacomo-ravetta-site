@@ -1,80 +1,113 @@
 ---
+import BentoCard from "../BentoCard.astro";
 import BentoNav from "../BentoNav.astro";
-import BentoServicesText from "./BentoServicesText.astro";
 ---
 
-<div class="bento main">
-  <div class="first-row">
-    <div class="left">
-      <div class="nav-wrapper">
-        <BentoNav />
+<div class="bento-wrapper">
+  <div class="bento main">
+    <div class="first-row">
+      <div class="left">
+        <div class="nav-wrapper">
+          <BentoNav />
+        </div>
+        <div class="dandd-wrapper">
+          <BentoCard backgroundColor="red" />
+        </div>
+        <div class="marquee-wrapper">
+          <BentoCard backgroundColor="red" />
+        </div>
       </div>
-      <div class="text-wrapper">
-        <BentoServicesText />
+      <div class="right">
+        <div class="profile-wrapper">
+          <BentoCard backgroundColor="red" />
+        </div>
       </div>
-      <div class="tag-wrapper">
-        <BentoServicesText />
+    </div>
+
+    <div class="second-row">
+      <div class="hire-me-social-wrapper">
+        <div class="whale">
+          <BentoCard backgroundColor="red" />
+        </div>
+        <div class="hire-me">
+          <BentoCard backgroundColor="red" />
+        </div>
+        <div class="social">
+          <BentoCard backgroundColor="red" />
+        </div>
+        <div class="ciao">
+          <BentoCard backgroundColor="red" />
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <style>
+  .bento-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100dvw;
+    height: 100dvh;
+  }
+
   .bento.main {
     display: flex;
     flex-direction: column;
-    width: 100dvw;
-    height: 100dvh;
-    padding: 2dvw;
+    width: 94dvw;
+    height: 94dvh;
     gap: 1.6dvw;
   }
 
   .first-row {
     display: flex;
     flex-direction: row;
-    gap: 1dvw;
-    flex-basis: 60%;
+    flex-basis: calc(75% - 1.6dvw);
+    gap: 1.6dvw;
+    max-height: calc(75% - 1.6dvw);
+    min-height: calc(75% - 1.6dvw);
+  }
+
+  .second-row {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
   }
 
   .first-row .left {
     display: flex;
     flex-direction: column;
     flex-basis: 70%;
-    gap: 1.6dvw;
     max-width: 70%;
+    gap: 1.6dvw;
   }
+
   .first-row .left .nav-wrapper {
     display: flex;
     flex-grow: 1;
-    flex-basis: 20%;
+    flex-basis: calc(10% - 1.6dvw);
+    max-height: calc(10% - 1.6dvw);
+    min-height: calc(10% - 1.6dvw);
   }
-  .first-row .left .text-wrapper {
+  .first-row .left .dandd-wrapper {
     display: flex;
     flex-grow: 1;
-    flex-basis: 60%;
+    flex-basis: calc(60% - 1.6dvw);
   }
-  .first-row .left .tag-wrapper {
+  .first-row .left .marquee-wrapper {
     display: flex;
     flex-grow: 1;
-    flex-basis: 20%;
-  }
-  .first-row .right .profile-wrapper {
-    display: flex;
-    flex-grow: 1;
+    flex-basis: calc(20% - 1.6dvw);
   }
 
   .first-row .right {
     display: flex;
-    flex-direction: column;
-    flex-basis: 30%;
-    max-width: 30%;
+    flex-basis: calc(30% - 1.6dvw);
   }
-  .second-row {
+  .first-row .right .profile-wrapper {
     display: flex;
-    flex-direction: row;
-    gap: 1.6dvw;
     flex-grow: 1;
-    flex-basis: 30%;
   }
 
   .hire-me-social-wrapper {
@@ -83,12 +116,12 @@ import BentoServicesText from "./BentoServicesText.astro";
     gap: 1.6dvw;
     flex-basis: 80%;
   }
-  .quote {
+
+  .whale {
     display: flex;
     flex-grow: 1;
-    flex-basis: 20%;
+    flex-basis: 10%;
   }
-
   .hire-me {
     display: flex;
     flex-grow: 1;
@@ -99,6 +132,7 @@ import BentoServicesText from "./BentoServicesText.astro";
     flex-grow: 1;
     flex-basis: 10%;
   }
+
   .ciao {
     display: flex;
     flex-grow: 1;

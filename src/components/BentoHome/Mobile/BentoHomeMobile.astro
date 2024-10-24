@@ -9,53 +9,60 @@ import BentoHomeHireMe from "./BentoHomeHireMeMobile.astro";
 import BentoProfileCard from "../BentoProfileCard.astro";
 ---
 
-<div class="bento main">
-  <div class="first-row">
-    <BentoNav />
-  </div>
-
-  <div class="second row">
-    <div class="profile">
-      <BentoProfileCard />
+<div class="bento-wrapper">
+  <div class="bento main">
+    <div class="first-row">
+      <BentoNav />
     </div>
-    <div class="cards">
-      <div class="ciao">
-        <BentoHomeCiao />
+
+    <div class="second row">
+      <div class="profile">
+        <BentoProfileCard />
       </div>
-      <div class="whale-wrapper">
-        <BentoHomeWhaleMobile />
+      <div class="cards">
+        <div class="ciao">
+          <BentoHomeCiao />
+        </div>
+        <div class="whale-wrapper">
+          <BentoHomeWhaleMobile />
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="third row">
-    <BentoDandD />
-  </div>
+    <div class="third row">
+      <BentoDandD />
+    </div>
 
-  <div class="fourth row">
-    <BentoHomeMarquee />
-  </div>
+    <div class="fourth row">
+      <BentoHomeMarquee />
+    </div>
 
-  <div class="fifth row">
-    <BentoHomeHireMe />
-  </div>
+    <div class="fifth row">
+      <BentoHomeHireMe />
+    </div>
 
-  <div class="sixth row">
-    <BentoHomeLinks />
+    <div class="sixth row">
+      <BentoHomeLinks />
+    </div>
   </div>
 </div>
 
 <style>
   @media only screen and (max-width: 1200px) {
+    .bento-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100dvw;
+      height: 100dvh;
+    }
     .bento.main {
       display: flex;
       flex-direction: column;
-      width: 100dvw;
-      height: 100dvh;
-      padding: 1.6dvw;
+      width: 96dvw;
+      height: 96dvh;
       gap: 1.6dvw;
     }
-
     .second.row {
       display: flex;
       flex-direction: row;
