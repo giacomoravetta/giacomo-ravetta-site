@@ -1,25 +1,26 @@
 ---
 import BentoCard from "./BentoCard.astro";
+
+interface Props {
+  color: string;
+  border: string;
+}
+
+const { color, border } = Astro.props as Props;
 ---
 
-<div class="nav">
+<div class="nav" style=`--nav-color:${color}`>
   <div class="item">
-    <BentoCard border="1px solid white"><a href="/">Home</a> </BentoCard>
+    <BentoCard border={border}><a href="/">Home</a> </BentoCard>
   </div>
   <div class="item">
-    <BentoCard border="1px solid white"
-      ><a href="/services">Services</a>
-    </BentoCard>
+    <BentoCard border={border}><a href="/bio">Bio</a></BentoCard>
   </div>
   <div class="item">
-    <BentoCard border="1px solid white">
-      <a href="/skills">Skills</a></BentoCard
-    >
+    <BentoCard border={border}><a href="/services">Services</a> </BentoCard>
   </div>
   <div class="item">
-    <BentoCard border="1px solid white"
-      ><a href="/contacts">Contacts</a></BentoCard
-    >
+    <BentoCard border={border}><a href="/contacts">Contacts</a></BentoCard>
   </div>
 </div>
 
@@ -42,7 +43,7 @@ import BentoCard from "./BentoCard.astro";
     justify-content: space-between;
   }
   .item {
-    color: white;
+    color: var(--nav-color);
     width: 23%;
     border-radius: 25px;
   }
@@ -51,14 +52,16 @@ import BentoCard from "./BentoCard.astro";
     justify-content: center;
     align-items: center;
     flex-grow: 1;
+    -webkit-user-select: all;
+    user-select: all;
   }
 
   .item:hover {
-    color: black;
-    background-color: white;
+    color: var(--secondary-color);
+    background-color: var(--nav-color);
   }
   .item:active {
-    color: black;
-    background-color: white;
+    color: var(--secondary-color);
+    background-color: var(--nav-color);
   }
 </style>
