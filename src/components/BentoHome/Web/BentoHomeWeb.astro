@@ -14,7 +14,10 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
     <div class="first-row">
       <div class="left">
         <div class="nav-wrapper">
-          <BentoNav />
+          <BentoNav
+            color="var(--main-color)"
+            border="1px solid var(--main-color)"
+          />
         </div>
         <div class="dandd-wrapper">
           <BentoDandD />
@@ -99,7 +102,7 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
   .first-row .left .dandd-wrapper {
     display: flex;
     flex-grow: 1;
-    flex-basis: calc(60% - 1.6dvw);
+    flex-basis: calc(80% - 1.6dvw);
   }
   .first-row .left .marquee-wrapper {
     display: flex;

@@ -3,7 +3,7 @@ import BentoCard from "../../BentoCard.astro";
 ---
 
 <div class="marquee-wrapper">
-  <BentoCard color="transparent" border="1px solid white">
+  <BentoCard border="1px solid white">
     <div class="marquee">
       <div class="marquee__group">
         <p>👨‍💻 WRITE CODE 👨‍💻</p>
@@ -56,7 +56,10 @@ import BentoCard from "../../BentoCard.astro";
   }
 
   .marquee__group p {
-    margin: 0.05rem 0;
+    margin: 0;
+    display: inline-block;
+    line-height: 1;
+    padding-top: 0.2em;
   }
 
   @media (prefers-reduced-motion: reduce) {
