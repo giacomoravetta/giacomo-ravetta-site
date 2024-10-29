@@ -1,0 +1,79 @@
+---
+import { Image } from "astro:assets";
+import profile from "../images/giacomo_ravetta_profile_final_social.webp";
+---
+
+<div class="profile-wrapper">
+  <Image src={profile} alt="Hi, I am Giacomo" class="profile-image" />
+  <div class="bracket left">&#123</div>
+  <div class="bracket right">&#125</div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .profile-wrapper {
+      position: relative;
+      width: fit-content;
+    }
+
+    .profile-image {
+      min-width: 10%;
+      max-width: 100%;
+    }
+
+    .bracket {
+      position: absolute;
+      opacity: 0;
+      font-size: 30dvw;
+      color: transparent;
+      --top-left-bracket: -4%;
+      --top-right-bracket: 2%;
+      --left-bracket: 10%;
+      --right-bracket: 74%;
+      -webkit-text-stroke: 1px white;
+    }
+
+    .left {
+      top: var(--top-left-bracket);
+      left: var(--left-bracket);
+    }
+
+    .right {
+      top: var(--top-right-bracket);
+      left: var(--right-bracket);
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .profile-wrapper {
+      position: relative;
+      width: fit-content;
+    }
+
+    .profile-image {
+      min-width: 10%;
+      max-width: 100%;
+    }
+
+    .bracket {
+      position: absolute;
+      opacity: 0;
+      font-size: 17dvw;
+      color: transparent;
+      --top-left-bracket: -4%;
+      --top-right-bracket: 2%;
+      --left-bracket: 10%;
+      --right-bracket: 74%;
+      -webkit-text-stroke: 1px white;
+    }
+
+    .left {
+      top: var(--top-left-bracket);
+      left: var(--left-bracket);
+    }
+
+    .right {
+      top: var(--top-right-bracket);
+      left: var(--right-bracket);
+    }
+  }
+</style>

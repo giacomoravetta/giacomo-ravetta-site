@@ -1,0 +1,174 @@
+---
+import BentoCard from "../../BentoCard.astro";
+
+const active = {
+  color: "#FAF1DB",
+  border: "1px solid #FAF1DB",
+  backgroundColor: "black",
+};
+---
+
+<div class="dandd">
+  <div class="first-line">
+    <div class="developer">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
+        <div class="card-content">
+          <div class="title">Developer</div>
+        </div>
+      </BentoCard>
+    </div>
+    <div class="and">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
+        <div class="card-content">
+          <div class="title">&</div>
+        </div>
+      </BentoCard>
+    </div>
+  </div>
+  <div class="second-line">
+    <div class="command-button">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
+        <div class="card-content">
+          <div class="title command">⌘</div>
+        </div>
+      </BentoCard>
+    </div>
+    <div class="designer">
+      <BentoCard
+        backgroundColor="#FAF1DB"
+        border="1px solid #FAF1DB"
+        active={active}
+      >
+        <div class="card-content">
+          <div class="title">Designer</div>
+        </div>
+      </BentoCard>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .dandd {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6dvw;
+    }
+    .first-line {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+    .developer {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 70%;
+    }
+    .and {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 30%;
+    }
+    .command-button {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 30%;
+    }
+
+    .designer {
+      display: flex;
+      flex-grow: 1;
+      justify-content: right;
+      flex-basis: 70%;
+    }
+    .second-line {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+
+    .card-content {
+      display: flex;
+      flex-grow: 1;
+      justify-content: center;
+      margin: 4dvw 2dvw;
+    }
+    .card-content .title {
+      font-size: 12dvw;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .card-content .title.command {
+      display: flex;
+      align-items: center;
+      transform: translateY(+10%);
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .dandd {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6dvw;
+    }
+    .first-line {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+    .developer {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 70%;
+    }
+    .and {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 30%;
+    }
+    .command-button {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 30%;
+    }
+
+    .designer {
+      display: flex;
+      flex-grow: 1;
+      justify-content: right;
+      flex-basis: 70%;
+    }
+    .second-line {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+
+    .card-content {
+      display: flex;
+      flex-grow: 1;
+      justify-content: center;
+      padding: 2dvw 2dvw;
+    }
+    .card-content .title {
+      font-size: 8dvw;
+      font-weight: 900;
+      line-height: 0.9;
+    }
+    .card-content .title.command {
+      display: flex;
+      align-items: center;
+    }
+  }
+</style>

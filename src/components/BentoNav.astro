@@ -1,0 +1,71 @@
+---
+import BentoCard from "./BentoCard.astro";
+
+interface Props {
+  color: string;
+  border: string;
+  backgroundColor: string;
+}
+
+const { color, border, backgroundColor } = Astro.props as Props;
+---
+
+<div
+  class="nav"
+  style=`--nav-color:${color};--background-color:${backgroundColor}`
+>
+  <div class="item">
+    <BentoCard border={border}><a href="/">Home</a> </BentoCard>
+  </div>
+  <div class="item">
+    <BentoCard border={border}><a href="/bio">Bio</a></BentoCard>
+  </div>
+  <div class="item">
+    <BentoCard border={border}><a href="/services">Services</a> </BentoCard>
+  </div>
+  <div class="item">
+    <BentoCard border={border}><a href="/contacts">Contacts</a></BentoCard>
+  </div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .item {
+      font-size: 3dvw;
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .item {
+      font-size: 1.4dvw;
+    }
+  }
+  .nav {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .item {
+    color: var(--nav-color);
+    width: 23%;
+    border-radius: 25px;
+  }
+  a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    -webkit-user-select: all;
+    user-select: all;
+  }
+
+  .item:hover {
+    color: var(--background-color);
+    background-color: var(--nav-color);
+  }
+  .item:active {
+    color: var(--background-color);
+    background-color: var(--nav-color);
+  }
+</style>

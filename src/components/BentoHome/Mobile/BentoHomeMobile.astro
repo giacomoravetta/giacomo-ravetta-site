@@ -1,0 +1,111 @@
+---
+import BentoNav from "../../BentoNav.astro";
+import BentoDandD from "./BentoDandDMobile.astro";
+import BentoHomeWhaleMobile from "./BentoHomeWhaleMobile.astro";
+import BentoHomeMarquee from "./BentoHomeMarqueeMobile.astro";
+import BentoHomeCiao from "./BentoHomeCiaoMobile.astro";
+import BentoHomeLinks from "./BentoHomeLinksMobile.astro";
+import BentoHomeHireMe from "./BentoHomeHireMeMobile.astro";
+import BentoProfileCard from "../BentoProfileCard.astro";
+---
+
+<div class="bento-wrapper">
+  <div class="bento main">
+    <div class="first-row">
+      <BentoNav
+        color="var(--main-color)"
+        border="1px solid var(--main-color)"
+      />
+    </div>
+
+    <div class="second row">
+      <div class="profile">
+        <BentoProfileCard />
+      </div>
+      <div class="cards">
+        <div class="ciao">
+          <BentoHomeCiao />
+        </div>
+        <div class="whale-wrapper">
+          <BentoHomeWhaleMobile />
+        </div>
+      </div>
+    </div>
+
+    <div class="third row">
+      <BentoDandD />
+    </div>
+
+    <div class="fourth row">
+      <BentoHomeMarquee />
+    </div>
+
+    <div class="fifth row">
+      <BentoHomeHireMe />
+    </div>
+
+    <div class="sixth row">
+      <BentoHomeLinks />
+    </div>
+  </div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .bento-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100dvw;
+      height: 100dvh;
+    }
+    .bento.main {
+      display: flex;
+      flex-direction: column;
+      width: 96dvw;
+      height: 96dvh;
+      gap: 1.6dvw;
+    }
+    .second.row {
+      display: flex;
+      flex-direction: row;
+      gap: 1.6dvw;
+    }
+
+    .cards {
+      display: flex;
+      flex-basis: 40%;
+      flex-direction: column;
+      gap: 1.6dvw;
+    }
+
+    .profile {
+      display: flex;
+      flex-basis: 60%;
+      gap: 1.6dvw;
+      flex-grow: 1;
+    }
+
+    .first.row,
+    .second.row,
+    .third.row,
+    .fourth.row,
+    .sixth.row {
+      flex-shrink: 0;
+    }
+
+    .fifth.row {
+      display: flex;
+      flex-grow: 1;
+    }
+
+    .ciao {
+      display: flex;
+      flex-basis: 30%;
+    }
+    .whale-wrapper {
+      display: flex;
+      flex-basis: 70%;
+    }
+  }
+</style>

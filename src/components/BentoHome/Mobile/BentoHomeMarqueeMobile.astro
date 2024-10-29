@@ -1,0 +1,73 @@
+---
+import BentoCard from "../../BentoCard.astro";
+---
+
+<BentoCard border="1px solid white">
+  <div class="marquee marquee__wrapper">
+    <div class="marquee__group">
+      <p>👨‍💻 WRITE CODE 👨‍💻</p>
+      <p aria-hidden="true">🫖 DRINK TEA 🫖</p>
+      <p aria-hidden="true">🫁 BREATH 🫁</p>
+      <p aria-hidden="true">🐈 PET CAT 🐈</p>
+    </div>
+
+    <div aria-hidden="true" class="marquee__group">
+      <p>👨‍💻 WRITE CODE 👨‍💻</p>
+      <p>🫖 DRINK TEA 🫖</p>
+      <p>🫁 BREATH 🫁</p>
+      <p>🐈 PET CAT 🐈</p>
+    </div>
+  </div>
+</BentoCard>
+
+<style>
+  .marquee {
+    --duration: 60s;
+    --gap: 10dvw;
+    display: flex;
+    gap: var(--gap);
+    overflow: hidden;
+    flex-grow: 1;
+    align-items: center;
+  }
+
+  .marquee__group {
+    flex-shrink: 0;
+    display: flex;
+    color: #fff;
+    font-size: calc(12px + 2dvw);
+    text-transform: uppercase;
+    align-items: center;
+    justify-content: space-around;
+    padding: 1dvw 0;
+    gap: var(--gap);
+    duration: 20s;
+    min-width: 100%;
+    animation: scroll var(--duration) linear infinite;
+  }
+
+  .marquee__group p {
+    margin: 0.05rem 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee__group {
+      animation-play-state: paused;
+    }
+  }
+
+  .marquee--reverse .marquee__group {
+    animation-direction: reverse;
+    animation-delay: calc(var(--duration) / -2);
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+</style>

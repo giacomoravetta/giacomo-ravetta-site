@@ -1,0 +1,44 @@
+---
+interface ActiveState {
+  backgroundColor: string;
+  border: string;
+  color: string;
+}
+
+interface Props {
+  backgroundColor?: string;
+  border?: string;
+  active?: ActiveState;
+}
+
+const { backgroundColor, border, active } = Astro.props;
+---
+
+<div
+  class="card"
+  style={`--activeBackgroundColor: ${active?.backgroundColor || backgroundColor};--activeColor: ${active?.color || null}; --activeBorder: ${active?.border || border}; background-color: ${backgroundColor}; border: ${border};`}
+>
+  <slot />
+</div>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-grow: 1;
+    border-radius: 25px;
+    overflow: hidden;
+    justify-content: center;
+
+    &:hover {
+      background-color: var(--activeBackgroundColor) !important;
+      color: var(--activeColor) !important;
+      border: var(--activeBorder) !important;
+    }
+    &:active {
+      background-color: var(--activeBackgroundColor) !important;
+      color: var(--activeColor) !important;
+      border: var(--activeBorder) !important;
+    }
+  }
+</style>
