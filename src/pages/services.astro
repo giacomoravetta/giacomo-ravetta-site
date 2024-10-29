@@ -1,0 +1,35 @@
+---
+import Layout from "../layouts/Layout.astro";
+import BentoServices from "../components/BentoServices/Web/BentoServices.astro";
+import BentoServicesMobile from "../components/BentoServices/Mobile/BentoServicesMobile.astro";
+---
+
+<Layout title="Services">
+  <div class="home">
+    <div class="web">
+      <BentoServices />
+    </div>
+    <div class="mobile">
+      <BentoServicesMobile />
+    </div>
+  </div>
+</Layout>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .web {
+      display: none;
+    }
+    .card {
+      opacity: 0;
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .mobile {
+      display: none;
+    }
+    .card {
+      opacity: 0;
+    }
+  }
+</style>

@@ -1,9 +1,57 @@
 ---
+import BentoHomeMobile from "../components/BentoHome/Mobile/BentoHomeMobile.astro";
+import BentoHomeWeb from "../components/BentoHome/Web/BentoHomeWeb.astro";
 import Layout from "../layouts/Layout.astro";
-import Web from "../components/Web.astro";
-import Mobile from "../components/Mobile/Mobile.astro";
 ---
 
 <Layout title="Giacomo Ravetta">
-  <Web />
+  <div class="home">
+    <div class="mobile">
+      <BentoHomeMobile />
+    </div>
+    <div class="web">
+      <BentoHomeWeb />
+    </div>
+  </div>
 </Layout>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .web {
+      display: none;
+    }
+    .card {
+      opacity: 0;
+    }
+  }
+  @media only screen and (min-width: 1200px) {
+    .mobile {
+      display: none;
+    }
+    .card {
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  import { timeline, stagger } from "motion";
+
+  document.addEventListener("astro:page-load", () => {
+    const sequence = [
+      [
+        ".bracket",
+        {
+          y: [-100, 50, 0],
+          opacity: [0, 1],
+        },
+        {
+          duration: 3,
+          delay: stagger(1),
+        },
+      ],
+    ];
+
+    timeline(sequence);
+  });
+</script>
