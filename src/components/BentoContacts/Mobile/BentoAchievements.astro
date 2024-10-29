@@ -1,0 +1,32 @@
+---
+import BentoCard from "../../BentoCard.astro";
+---
+
+<BentoCard border="1px solid var(--blue-color)">
+  <div class="why-whale">
+    <h2>Why the whale?</h2>
+    <p>
+      I read online that whales are animals that live in a place where they
+      can’t breathe. To breathe, they have to go to a place where they can’t
+      live. This is the best description I’ve found of myself.
+    </p>
+  </div>
+</BentoCard>
+
+<style>
+  .why-whale {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--blue-color);
+    gap: 1.6dvw;
+    padding: 2dvw;
+  }
+  h2 {
+    font-size: 2dvw;
+  }
+  p {
+    font-size: 1.2dvw;
+  }
+</style>

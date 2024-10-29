@@ -1,0 +1,32 @@
+---
+import BentoCard from "../../BentoCard.astro";
+import { Image } from "astro:assets";
+import blueWhale from "../../../images/blue-whale-hor.webp";
+---
+
+<BentoCard border="1px solid var(--blue-color)">
+  <div class="whales-wrapper">
+    <div class="contacts-whale-wrapper">
+      <Image src={blueWhale} width={419} alt="A whale" />
+    </div>
+    <div class="contacts-whale-wrapper">
+      <Image src={blueWhale} width={419} alt="A whale" />
+    </div>
+    <div class="contacts-whale-wrapper">
+      <Image src={blueWhale} width={419} alt="A whale" />
+    </div>
+  </div>
+</BentoCard>
+
+<style>
+  .whales-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .contacts-whale-wrapper {
+    padding: 2dvw;
+  }
+</style>
