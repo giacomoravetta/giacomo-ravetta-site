@@ -1,0 +1,74 @@
+---
+import BentoNav from "../../BentoNav.astro";
+import BentoSkillsCard from "./BentoSkillsCard.astro";
+import BentoBioCard from "../BentoBioCard.astro";
+import BentoAchievements from "./BentoAchievements.astro";
+---
+
+<div class="bento-wrapper">
+  <div class="bento main">
+    <div class="first-row">
+      <BentoNav
+        color="var(--blue-color)"
+        border="1px solid var(--blue-color)"
+        backgroundColor="#FAF1DB"
+      />
+    </div>
+
+    <div class="second-row">
+      <div class="first column">
+        <BentoBioCard />
+      </div>
+
+      <div class="second column">
+        <BentoAchievements />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .bento-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100dvw;
+      height: 100dvh;
+      background-color: #faf1db;
+    }
+    .bento.main {
+      display: flex;
+      flex-direction: column;
+      width: 96dvw;
+      height: 96dvh;
+      gap: 1.6dvw;
+    }
+
+    .first-row {
+      display: flex;
+    }
+
+    .second-row {
+      display: flex;
+      flex-direction: row;
+      flex-grow: 1;
+      gap: 1.6dvw;
+      overflow: hidden;
+    }
+
+    .first.column {
+      display: flex;
+      flex-grow: 1;
+      flex-basis: 70%;
+      overflow: hidden;
+    }
+    .second.column {
+      display: flex;
+      flex-basis: 30%;
+      flex-grow: 1;
+      justify-content: center;
+      align-items:;
+    }
+  }
+</style>

@@ -1,0 +1,64 @@
+---
+import BentoCard from "../BentoCard.astro";
+---
+
+<BentoCard border="1px solid var(--blue-color)">
+  <div class="inner-card">
+    <p>
+      With a strong foundation in Photography and Graphic Design from CFP Bauer
+      I’ve always been drawn to visual storytelling. Early in my career, I honed
+      my skills in post-production at a photography studio, where I learned to
+      refine details, capture emotion, and communicate through imagery. This
+      experience nurtured my creative eye and laid the groundwork for a future
+      that would soon merge design and technology.
+    </p>
+    <p>
+      My journey into web development began unexpectedly. While working with
+      visual projects, I discovered coding’s potential to bring ideas to life in
+      dynamic, interactive ways. This newfound passion led to an internship at
+      Accurat, a data visualization design agency, where I gained hands-on
+      experience with data design and frontend development. I’ve had the
+      privilege of collaborating with esteemed design agencies like Pentagram,
+      deepening my skills in both technical and visual fields, and allowing me
+      to bridge design and code seamlessly.
+    </p>
+    <p>
+      Now working as a freelance developer and designer, I bring a holistic
+      approach to every project, aiming to craft digital experiences that are
+      not only visually compelling but also intuitively functional. My goal is
+      to merge creativity and technology in ways that engage and inspire.
+    </p>
+  </div>
+
+  <style>
+    @media only screen and (min-width: 1200px) {
+      p {
+        font-size: 1.4dvw;
+        text-align: justify;
+        font-weight: 3500;
+      }
+    }
+
+    @media only screen and (max-width: 1200px) {
+      p {
+        font-size: 2dvw;
+        text-align: justify;
+        font-weight: 500;
+      }
+    }
+
+    .inner-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1dvw;
+      padding: 3dvw 6dvw;
+      color: var(--blue-color);
+    }
+
+    .separator {
+      height: 1px;
+      background-color: var(--blue-color);
+    }
+  </style>
+</BentoCard>
