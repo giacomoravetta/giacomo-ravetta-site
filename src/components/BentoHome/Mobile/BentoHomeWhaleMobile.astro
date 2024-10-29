@@ -52,85 +52,66 @@ import BentoCard from "../../BentoCard.astro";
     align-items: center;
   }
 
-  @keyframes swim {
-    0% {
-      transform: translateY(0) rotate(0deg) scale(1);
-      opacity: 1;
-    }
+  .whale-mobile-wrapper:hover {
+    -webkit-animation: shake-horizontal 3s
+      cubic-bezier(0.455, 0.03, 0.515, 0.955) both;
+    animation: shake-horizontal 3s cubic-bezier(0.455, 0.03, 0.515, 0.955) both;
+  }
 
-    10% {
-      transform: translateY(-50%) rotate(-15deg);
-      opacity: 1;
+  @-webkit-keyframes shake-horizontal {
+    0%,
+    100% {
+      -webkit-transform: translateX(0);
+      transform: translateX(0);
     }
-
-    20% {
-      transform: translateY(-100%) rotate(15deg);
-      opacity: 1;
-    }
-
-    24% {
-      transform: translateY(-150%) rotate(-15deg);
-      opacity: 0;
-    }
-
-    26% {
-      transform: translateY(110%);
-      opacity: 0;
-    }
-
-    28% {
-      opacity: 1;
-    }
-
-    35% {
-      transform: translateY(100%) scale(1.5);
-    }
-
-    60% {
-      transform: translateY(75%) scale(3);
-    }
-
+    10%,
+    30%,
+    50%,
     70% {
-      transform: translateY(30%) scale(3);
+      -webkit-transform: translateX(-10px);
+      transform: translateX(-10px);
+    }
+    20%,
+    40%,
+    60% {
+      -webkit-transform: translateX(10px);
+      transform: translateX(10px);
     }
     80% {
-      transform: translateY(15%) translateX(10%) scale(2);
+      -webkit-transform: translateX(8px);
+      transform: translateX(8px);
     }
     90% {
-      transform: translateY(2%) translateX(-10%) rotate(10deg) scale(1);
-    }
-    92% {
-      transform: translateY(0) rotate(20deg) scale(1);
-    }
-    99% {
-      transform: rotate(20deg);
-    }
-    100% {
-      transform: rotate(0deg);
+      -webkit-transform: translateX(-8px);
+      transform: translateX(-8px);
     }
   }
-
-  .whale-image-mobile.animate {
-    animation: swim 15s linear;
+  @keyframes shake-horizontal {
+    0%,
+    100% {
+      -webkit-transform: translateX(0);
+      transform: translateX(0);
+    }
+    10%,
+    30%,
+    50%,
+    70% {
+      -webkit-transform: translateX(-10px);
+      transform: translateX(-10px);
+    }
+    20%,
+    40%,
+    60% {
+      -webkit-transform: translateX(10px);
+      transform: translateX(10px);
+    }
+    80% {
+      -webkit-transform: translateX(8px);
+      transform: translateX(8px);
+    }
+    90% {
+      -webkit-transform: translateX(-8px);
+      transform: translateX(-8px);
+    }
   }
 </style>
-
-<script>
-  document.addEventListener("astro:page-load", () => {
-    const whale = document.querySelector(".whale-image-mobile");
-    const whaleWrapper = document.querySelector(".whale-mobile");
-    const handleClick = () => {
-      whale.classList.add("animate");
-
-      whale.addEventListener(
-        "animationend",
-        () => {
-          whale.classList.remove("animate");
-        },
-        { once: true }
-      );
-    };
-
-    whaleWrapper.addEventListener("click", handleClick);
-  });
-</script>
