@@ -4,12 +4,16 @@ import BentoCard from "./BentoCard.astro";
 interface Props {
   color: string;
   border: string;
+  backgroundColor: string;
 }
 
-const { color, border } = Astro.props as Props;
+const { color, border, backgroundColor } = Astro.props as Props;
 ---
 
-<div class="nav" style=`--nav-color:${color}`>
+<div
+  class="nav"
+  style=`--nav-color:${color};--background-color:${backgroundColor}`
+>
   <div class="item">
     <BentoCard border={border}><a href="/">Home</a> </BentoCard>
   </div>
@@ -57,11 +61,11 @@ const { color, border } = Astro.props as Props;
   }
 
   .item:hover {
-    color: var(--secondary-color);
+    color: var(--background-color);
     background-color: var(--nav-color);
   }
   .item:active {
-    color: var(--secondary-color);
+    color: var(--background-color);
     background-color: var(--nav-color);
   }
 </style>
