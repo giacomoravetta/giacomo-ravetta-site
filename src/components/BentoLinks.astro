@@ -5,68 +5,16 @@ import IconDribble from "./Icons/Social/IconDribble.astro";
 
 ---
 
-<div class="links-wrapper">
-  <div class="links flex flex-row">
+<div class="links-wrapper flex justify-center items-center w-full">
+  <div class="links flex flex-row justify-between w-[80%]">
     <div class="link">
-        <IconGithub className="w-[6dvw] md:w-[2dvw]" />
+        <IconGithub className="w-[6dvw] md:w-[4dvw]" />
     </div>
     <div class="link">
-      <IconLinkedin className="w-[6dvw] md:w-[2dvw]"/>
+      <IconLinkedin className="w-[6dvw] md:w-[4dvw]"/>
     </div>
     <div class="link">
-      <IconDribble className="w-[6dvw] md:w-[2dvw]" />
+      <IconDribble className="w-[6dvw] md:w-[4dvw]" />
     </div>
   </div>
 </div>
-
-<style>
-  @media only screen and (max-width: 1200px) {
-    .links-wrapper {
-      height: 100%;
-      display: flex;
-      flex-grow: 1;
-      flex-direction: row;
-      justify-content: center;
-    }
-
-    .links {
-      display: flex;
-      flex-direction: row;
-      width: 90%;
-      align-items: center;
-      justify-content: space-between;
-      padding: 2dvw;
-    }
-    .link {
-      transition: scale 0.5s;
-    }
-
-    .link:hover {
-      scale: 1.1;
-    }
-  }
-  @media only screen and (min-width: 1200px) {
-    .links-wrapper {
-      height: 100%;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-    }
-
-    .links {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      align-items: center;
-      justify-content: space-between;
-      padding: 2dvw;
-    }
-    .link {
-      transition: scale 0.5s;
-    }
-
-    .link:hover {
-      scale: 1.1;
-    }
-  }
-</style>

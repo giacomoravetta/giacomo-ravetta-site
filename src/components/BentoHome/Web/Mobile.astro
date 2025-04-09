@@ -12,12 +12,17 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
     <div class="flex flex-col w-[94dvw] gap-[1.6dvw] md:h-[94dvh]">
         <div class="relative flex flex-row gap-[1.6dvw]  md:h-[75dvh]">
             <div class="flex flex-col w-full gap-[1.6dvw]">
-                <div class="flex justify-between items-center border-white border-1 rounded-md h-[4dvh] text-white px-4 md:rounded-[25px]">
-                  <div class="flex items-center h-full gap-1">
+                <div class="flex justify-between items-center border-white border-1 rounded-md h-[6dvh] text-white overflow-hidden">
+                  <div class="flex items-center h-full gap-1 pl-2">
                       <p class="font-inter font-black text-[4dvw] md:text-4xl m-0">GIACOMO RAVETTA </p>
                       <p class="pipe font-inter font-black text-[2dvw] md:text-4xl">|</p>
                   </div>
-                  <a href="mailto:info@giacomoravetta.com" class="flex items-center h-full  text-[2dvw] md:text-4xl">info@giacomoravetta.com</a>
+                  <a href="mailto:info@giacomoravetta.com"
+                     class="flex items-center h-full text-[1.6dvw] text-black bg-white px-4
+                            transition-all duration-300 ease-in-out
+                            hover:bg-black hover:text-white hover:tracking-wider hover:px-6 hover:scale-105">
+                     info@giacomoravetta.com
+                  </a>
                 </div>
 
                  <BentoProfileCard />

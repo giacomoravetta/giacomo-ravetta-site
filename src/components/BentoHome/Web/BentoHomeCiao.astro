@@ -56,48 +56,21 @@ import { animate, stagger } from "motion";
 
 document.addEventListener("astro:page-load", () => {
   let activeElHand = null;
-  let animationInProgress = false;
 
   // Animation function to be reused for both mouse and touch events
   const playAnimation = () => {
-    if (animationInProgress) return;
-    animationInProgress = true;
-
-    console.log("Animation triggered");
-
     // Target only paths and hand within this specific element
-    const paths = activeElHand.querySelectorAll("path");
-    const hand = activeElHand.querySelector(".hand");
+    const paths = document.querySelectorAll('.your-path-class');
+    const hand = document.querySelector('.your-hand-class');
 
-    const sequenceHand = [
-      [
-        paths,
-        { y: [0, -10, 10, 0] },
-        { duration: 1, delay: stagger(0.1) },
-      ],
-      [
-        hand,
-        { left: ["50%"], translateX: "-50%", translateY: "-50%" },
-        { duration: 1 },
-      ],
-      [
-        hand,
-        {
-          rotate: [0, -20, 20, -20, 20, 0],
-          translateX: "-50%",
-          translateY: "-50%",
-        },
-        { duration: 1.6 },
-      ],
-      [hand, { left: ["120%"] }, { duration: 1 }],
+    const sequenceHand:any = [
+      [paths, { y: [0, -10, 10, 0] }, { duration: 1, delay: stagger(0.1) }],
+      [hand, { left: ["50%"], translateX: "-50%", translateY: "-50%" }, { duration: 1 }],
+      [hand, { rotate: [0, -20, 20, -20, 20, 0], translateX: "-50%", translateY: "-50%" }, { duration: 1.6 }],
+      [hand, { left: ["120%"] }, { duration: 1 }]
     ];
 
-    animate(sequenceHand, {
-      duration: 5,
-      onComplete: () => {
-        animationInProgress = false;
-      }
-    });
+    animate(sequenceHand);
   };
 
   // Handler function for the mouseenter event
@@ -126,7 +99,7 @@ document.addEventListener("astro:page-load", () => {
     activeElHand = Array.from(allElements).find(el => {
       const style = window.getComputedStyle(el);
       return style.display !== 'none' &&
-             style.visibility !== 'hidden'
+             style.visibility !== 'hidden';
     });
 
     // Add event listeners to the new active element

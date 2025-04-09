@@ -10,12 +10,12 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
 
 <div class="flex flex-col h-[100dvh] w-full gap-[1.6dvw] p-[1.6dvw]">
     <!-- Header -->
-    <div class="border-white border-1 rounded-xl h-[8dvh] text-white px-4 md:rounded-[25px] flex justify-between items-center">
-        <div class="flex items-center h-full gap-1">
+    <div class="border-white border-1 rounded-xl h-[8dvh] text-white  flex justify-between items-center overflow-hidden">
+        <div class="flex items-center h-full gap-1 pl-2">
             <p class="font-inter font-black text-[2dvw] md:text-4xl m-0">GIACOMO RAVETTA </p>
             <p class="pipe font-inter font-black text-[2dvw] md:text-4xl">|</p>
         </div>
-        <a href="mailto:info@giacomoravetta.com" class="flex items-center h-full text-[2dvw] md:text-4xl">info@giacomoravetta.com</a>
+        c
     </div>
 
     <!-- Middle section with profile and D&D -->
@@ -24,6 +24,7 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
             <BentoDandD  />
 
             <BentoHomeWhaleCard />
+
 
         </div>
         <div class="w-[40%]">
@@ -38,8 +39,10 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
 
     <!-- Bottom row with 4 components -->
     <div class="flex gap-[1.6dvw] h-[10dvh] w-full">
+         <BentoHomeLinks />
          <BentoHomeCiao/>
          <BentoHomeHireMe />
+
 
     </div>
 </div>
