@@ -8,114 +8,53 @@ const active = {
 };
 ---
 
-<div class="dandd">
-  <div class="first-line">
-    <div class="developer">
+<div class="flex flex-grow flex-col gap-[1.6dvw] ">
+  <div class="flex flex-grow flex-row gap-[1.6dvw]">
+    <div class="flex flex-grow basis-[70%]">
       <BentoCard
         backgroundColor="#FAF1DB"
         border="1px solid #FAF1DB"
         active={active}
       >
-        <div class="card-content">
-          <div class="title">Developer</div>
+        <div class="flex flex-grow justify-center p-[2dvw]">
+          <div class="text-[8dvw] font-black leading-none flex justify-center items-center md:text-[8dvw]">Developer</div>
         </div>
       </BentoCard>
     </div>
-    <div class="and">
+    <div class="flex flex-grow basis-[30%]">
       <BentoCard
         backgroundColor="#FAF1DB"
         border="1px solid #FAF1DB"
         active={active}
       >
-        <div class="card-content">
-          <div class="title">&</div>
+        <div class="flex flex-grow justify-center p-[2dvw]">
+          <div class="text-[8dvw] font-black leading-none flex justify-center items-center">&</div>
         </div>
       </BentoCard>
     </div>
   </div>
-  <div class="second-line">
-    <div class="command-button">
+  <div class="flex flex-row gap-[1.6dvw] flex-grow">
+    <div class="flex flex-grow basis-[30%]">
       <BentoCard
         backgroundColor="#FAF1DB"
         border="1px solid #FAF1DB"
         active={active}
       >
-        <div class="card-content">
-          <div class="title command">⌘</div>
+        <div class="flex flex-grow justify-center p-[2dvw]">
+          <div class="text-[8dvw] font-black leading-none translate-y-[10%] flex justify-center items-center">⌘</div>
         </div>
       </BentoCard>
     </div>
-    <div class="designer">
+    <div class="flex flex-grow justify-end basis-[70%]">
       <BentoCard
         backgroundColor="#FAF1DB"
         border="1px solid #FAF1DB"
         active={active}
       >
-        <div class="card-content">
-          <div class="title">Designer</div>
+        <div class="flex flex-grow justify-center p-[2dvw]">
+          <div class="text-[8dvw] font-black leading-none flex justify-center items-center">Designer</div>
         </div>
       </BentoCard>
     </div>
   </div>
 </div>
-
-<style>
-  .dandd {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-    gap: 1.6dvw;
-  }
-  .first-line {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: row;
-    gap: 1.6dvw;
-  }
-  .developer {
-    display: flex;
-    flex-grow: 1;
-    flex-basis: 70%;
-  }
-  .and {
-    display: flex;
-    flex-grow: 1;
-    flex-basis: 30%;
-  }
-  .command-button {
-    display: flex;
-    flex-grow: 1;
-    flex-basis: 30%;
-  }
-
-  .designer {
-    display: flex;
-    flex-grow: 1;
-    justify-content: right;
-    flex-basis: 70%;
-  }
-
-  .second-line {
-    display: flex;
-    flex-direction: row;
-    gap: 1.6dvw;
-    flex-grow: 1;
-  }
-  .card-content {
-    display: flex;
-    flex-grow: 1;
-    justify-content: center;
-    padding: 2dvw 2dvw;
-  }
-  .card-content .title {
-    font-size: 8dvw;
-    font-weight: 900;
-    line-height: 1;
-  }
-
-  .card-content .title.command {
-    display: flex;
-    align-items: center;
-    transform: translateY(+10%);
-  }
-</style>

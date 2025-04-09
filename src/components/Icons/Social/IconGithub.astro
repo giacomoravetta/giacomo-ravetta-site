@@ -2,10 +2,11 @@
 interface Props {
   width: string;
 }
-const { width } = Astro.props;
+
+const { className } = Astro.props;
 ---
 
-<div class="github" style=`width: ${width}`>
+<div class={`github + ${className}`}>
   <a href="https://github.com/giacomoravetta" target="_blank">
     <svg viewBox="0 0 98 96">
       <path

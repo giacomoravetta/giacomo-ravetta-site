@@ -3,23 +3,18 @@ import IconLinkedin from "./Icons/Social/IconLinkedin.astro";
 import IconGithub from "./Icons/Social/IconGithub.astro";
 import IconDribble from "./Icons/Social/IconDribble.astro";
 
-interface Props {
-  width: string;
-}
-
-const { width } = Astro.props;
 ---
 
 <div class="links-wrapper">
-  <div class="links">
+  <div class="links flex flex-row">
     <div class="link">
-      <IconGithub width={width} />
+        <IconGithub className="w-[6dvw] md:w-[2dvw]" />
     </div>
     <div class="link">
-      <IconLinkedin width={width} />
+      <IconLinkedin className="w-[6dvw] md:w-[2dvw]"/>
     </div>
     <div class="link">
-      <IconDribble width={width} />
+      <IconDribble className="w-[6dvw] md:w-[2dvw]" />
     </div>
   </div>
 </div>

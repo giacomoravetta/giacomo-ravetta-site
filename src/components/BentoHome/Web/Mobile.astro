@@ -1,0 +1,62 @@
+---
+import BentoDandD from "./BentoDandD.astro";
+import BentoHomeMarquee from "./BentoHomeMarquee.astro";
+import BentoHomeCiao from "./BentoHomeCiao.astro";
+import BentoHomeLinks from "./BentoHomeLinks.astro";
+import BentoHomeHireMe from "./BentoHomeHireMe.astro";
+import BentoProfileCard from "../BentoProfileCard.astro";
+import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
+---
+
+<div class="flex justify-center items-center w-[100dvw] py-[1.6dvw] md:h-[100dvh]">
+    <div class="flex flex-col w-[94dvw] gap-[1.6dvw] md:h-[94dvh]">
+        <div class="relative flex flex-row gap-[1.6dvw]  md:h-[75dvh]">
+            <div class="flex flex-col w-full gap-[1.6dvw]">
+                <div class="flex justify-between items-center border-white border-1 rounded-md h-[4dvh] text-white px-4 md:rounded-[25px]">
+                  <div class="flex items-center h-full gap-1">
+                      <p class="font-inter font-black text-[4dvw] md:text-4xl m-0">GIACOMO RAVETTA </p>
+                      <p class="pipe font-inter font-black text-[2dvw] md:text-4xl">|</p>
+                  </div>
+                  <a href="mailto:info@giacomoravetta.com" class="flex items-center h-full  text-[2dvw] md:text-4xl">info@giacomoravetta.com</a>
+                </div>
+
+                 <BentoProfileCard />
+
+                <div class="flex h-[40dvh] md:h-full ">
+                    <BentoDandD />
+                </div>
+                <div class="flex flex-grow h-[20dhv] ">
+                    <BentoHomeMarquee />
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flex flex-grow gap-[1.6dvw] flex-col md:flex-row">
+            <div class="realtive flex flex-grow order-2 h-[20dvh] ">
+                <BentoHomeWhaleCard  />
+            </div>
+            <div class="flex flex-grow order-1 md:order-2 md:w-[20%]">
+                <BentoHomeHireMe />
+            </div>
+            <div class="flex flex-grow order-3 md:order-3">
+                <BentoHomeLinks />
+            </div>
+            <div class="flex flex-grow order-4 md:order-4 md:w-[25%]">
+                <BentoHomeCiao />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.pipe {
+  animation: blink 1.5s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+</style>

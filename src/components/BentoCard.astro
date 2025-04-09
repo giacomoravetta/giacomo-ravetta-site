@@ -15,7 +15,7 @@ const { backgroundColor, border, active } = Astro.props;
 ---
 
 <div
-  class="card"
+  class="card rounded-sm md:rounded-xl h-full"
   style={`--activeBackgroundColor: ${active?.backgroundColor || backgroundColor};--activeColor: ${active?.color || null}; --activeBorder: ${active?.border || border}; background-color: ${backgroundColor}; border: ${border};`}
 >
   <slot />
@@ -26,7 +26,6 @@ const { backgroundColor, border, active } = Astro.props;
     position: relative;
     display: flex;
     flex-grow: 1;
-    border-radius: 25px;
     overflow: hidden;
     justify-content: center;
 

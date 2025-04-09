@@ -2,10 +2,10 @@
 interface Props {
   width: string;
 }
-const { width } = Astro.props;
+const { className } = Astro.props;
 ---
 
-<div class="linkedin" style=`width: ${width}`>
+<div class={`linkedin + ${className}`}>
   <a
     href="https://www.linkedin.com/in/giacomo-ravetta-2876631a7/"
     target="_blank"

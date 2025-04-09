@@ -52,35 +52,106 @@ import BentoCard from "../../BentoCard.astro";
 </style>
 
 <script>
-  import { timeline, stagger } from "motion";
-  document.addEventListener("astro:page-load", () => {
-    const elHand = document.getElementsByClassName("svg-wrapper-ciao web")[0];
+import { animate, stagger } from "motion";
 
-    elHand.addEventListener("mouseenter", () => {
-      const sequenceHand: any = [
-        [
-          ".svg-wrapper-ciao path",
-          { y: [0, -10, 10, 0] },
-          { duration: 1, delay: stagger(0.1) },
-        ],
-        [
-          ".hand",
-          { left: ["50%"], translateX: "-50%", translateY: "-50%" },
-          { duration: 1 },
-        ],
-        [
-          ".hand",
-          {
-            rotate: [0, -20, 20, -20, 20, 0],
-            translateX: "-50%",
-            translateY: "-50%",
-          },
-          { duration: 1.6 },
-        ],
-        [".hand", { left: ["120%"] }, { duration: 1 }],
-      ];
+document.addEventListener("astro:page-load", () => {
+  let activeElHand = null;
+  let animationInProgress = false;
 
-      timeline(sequenceHand, { duration: 5 });
+  // Animation function to be reused for both mouse and touch events
+  const playAnimation = () => {
+    if (animationInProgress) return;
+    animationInProgress = true;
+
+    console.log("Animation triggered");
+
+    // Target only paths and hand within this specific element
+    const paths = activeElHand.querySelectorAll("path");
+    const hand = activeElHand.querySelector(".hand");
+
+    const sequenceHand = [
+      [
+        paths,
+        { y: [0, -10, 10, 0] },
+        { duration: 1, delay: stagger(0.1) },
+      ],
+      [
+        hand,
+        { left: ["50%"], translateX: "-50%", translateY: "-50%" },
+        { duration: 1 },
+      ],
+      [
+        hand,
+        {
+          rotate: [0, -20, 20, -20, 20, 0],
+          translateX: "-50%",
+          translateY: "-50%",
+        },
+        { duration: 1.6 },
+      ],
+      [hand, { left: ["120%"] }, { duration: 1 }],
+    ];
+
+    animate(sequenceHand, {
+      duration: 5,
+      onComplete: () => {
+        animationInProgress = false;
+      }
     });
+  };
+
+  // Handler function for the mouseenter event
+  const handleMouseEnter = () => {
+    playAnimation();
+  };
+
+  // Handler for touch events
+  const handleTouch = (e) => {
+    // Prevent default to avoid any unwanted behavior
+    e.preventDefault();
+    playAnimation();
+  };
+
+  // Function to find the visible element
+  const findVisibleElement = () => {
+    const allElements = document.querySelectorAll(".svg-wrapper-ciao.web");
+
+    // Remove previous event listeners if they exist
+    if (activeElHand) {
+      activeElHand.removeEventListener("mouseenter", handleMouseEnter);
+      activeElHand.removeEventListener("touchstart", handleTouch);
+    }
+
+    // Find the visible one
+    activeElHand = Array.from(allElements).find(el => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' &&
+             style.visibility !== 'hidden'
+    });
+
+    // Add event listeners to the new active element
+    if (activeElHand) {
+      activeElHand.addEventListener("mouseenter", handleMouseEnter);
+      activeElHand.addEventListener("touchstart", handleTouch);
+      console.log("Found visible element and attached listeners");
+    } else {
+      console.log("No visible element found");
+    }
+  };
+
+  // Run initially
+  findVisibleElement();
+
+  // Re-check on window resize
+  window.addEventListener("resize", () => {
+    console.log("Window resized, rechecking visible element");
+    findVisibleElement();
   });
+
+  // Also recheck on orientation change for mobile devices
+  window.addEventListener("orientationchange", () => {
+    console.log("Orientation changed, rechecking visible element");
+    findVisibleElement();
+  });
+});
 </script>

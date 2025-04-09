@@ -2,10 +2,10 @@
 interface Props {
   width: string;
 }
-const { width } = Astro.props;
+const { className } = Astro.props;
 ---
 
-<div class="dribble" style=`width: ${width}`>
+<div class={`dribble + ${className}`}>
   <a href="https://dribbble.com/giacomoravetta" target="_blank">
     <svg viewBox="0 0 56.693 56.693"
       ><path

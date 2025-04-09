@@ -5,12 +5,12 @@ import profile from "../images/giacomo_ravetta_profile_final_social.webp";
 
 <div class="profile-wrapper">
   <Image src={profile} alt="Hi, I am Giacomo" class="profile-image" />
-  <div class="bracket left">&#123</div>
-  <div class="bracket right">&#125</div>
+  <div class="bracket  left">&#123</div>
+  <div class="bracket  right">&#125</div>
 </div>
 
 <style>
-  @media only screen and (max-width: 1200px) {
+
     .profile-wrapper {
       position: relative;
       width: fit-content;
@@ -24,7 +24,7 @@ import profile from "../images/giacomo_ravetta_profile_final_social.webp";
     .bracket {
       position: absolute;
       opacity: 0;
-      font-size: 30dvw;
+      font-size:50dvw;
       color: transparent;
       --top-left-bracket: -4%;
       --top-right-bracket: 2%;
@@ -32,6 +32,7 @@ import profile from "../images/giacomo_ravetta_profile_final_social.webp";
       --right-bracket: 74%;
       -webkit-text-stroke: 1px white;
     }
+
 
     .left {
       top: var(--top-left-bracket);
@@ -42,8 +43,21 @@ import profile from "../images/giacomo_ravetta_profile_final_social.webp";
       top: var(--top-right-bracket);
       left: var(--right-bracket);
     }
-  }
-  @media only screen and (min-width: 1200px) {
+
+  @media only screen and (min-width: 768px) {
+
+    .bracket {
+    position: absolute;
+    opacity: 0;
+    font-size:17dvw;
+    color: transparent;
+    --top-left-bracket: -4%;
+    --top-right-bracket: 2%;
+    --left-bracket: 10%;
+    --right-bracket: 74%;
+    -webkit-text-stroke: 1px white;
+    }
+
     .profile-wrapper {
       position: relative;
       width: fit-content;
@@ -54,17 +68,6 @@ import profile from "../images/giacomo_ravetta_profile_final_social.webp";
       max-width: 100%;
     }
 
-    .bracket {
-      position: absolute;
-      opacity: 0;
-      font-size: 17dvw;
-      color: transparent;
-      --top-left-bracket: -4%;
-      --top-right-bracket: 2%;
-      --left-bracket: 10%;
-      --right-bracket: 74%;
-      -webkit-text-stroke: 1px white;
-    }
 
     .left {
       top: var(--top-left-bracket);

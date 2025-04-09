@@ -21,7 +21,7 @@ import BentoProfile from "../BentoProfile.astro";
 </BentoCard>
 
 <style>
-  @media only screen and (max-width: 1200px) {
+
     .profile-card-wrapper {
       display: flex;
       flex-grow: 1;
@@ -35,7 +35,7 @@ import BentoProfile from "../BentoProfile.astro";
       align-items: center;
       color: white;
       gap: 2dvw;
-      font-size: 2vw;
+      font-size: 1.5vw;
       padding: 0 20px;
     }
 
@@ -50,7 +50,7 @@ import BentoProfile from "../BentoProfile.astro";
       justify-content: center;
       align-items: center;
       color: white;
-      font-size: 3dvw;
+      font-size: 3.5dvw;
       text-align: center;
       padding: 0 0 1dvw 0;
     }
@@ -60,30 +60,33 @@ import BentoProfile from "../BentoProfile.astro";
       height: 1vh;
       position: relative;
     }
-  }
-  @media only screen and (min-width: 1200px) {
+
+  @media only screen and (min-width: 786px) {
     .profile-card-wrapper {
       display: flex;
       flex-grow: 1;
       flex-direction: column;
       gap: 1dvw;
     }
+
     .text {
       display: flex;
       flex-grow: 1;
       justify-content: center;
       align-items: center;
       color: white;
-      font-size: 1.6dvw;
+      font-size: 1.5dvw;
       text-align: center;
-      padding: 0 0 1.6dvw 0;
+      padding: 0 0 1dvw 0;
     }
+
     .avaiable {
       display: flex;
       flex-direction: row;
       justify-content: right;
       align-items: center;
       color: white;
+      font-size: 1.5dvw;
       padding: 0 20px;
       gap: 2dvw;
     }
