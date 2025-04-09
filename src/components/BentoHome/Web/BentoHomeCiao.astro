@@ -54,77 +54,54 @@ import BentoCard from "../../BentoCard.astro";
 <script>
 import { animate, stagger } from "motion";
 
-document.addEventListener("astro:page-load", () => {
-  let activeElHand = null;
 
-  // Animation function to be reused for both mouse and touch events
-  const playAnimation = () => {
-    // Target only paths and hand within this specific element
-    const paths = document.querySelectorAll('.your-path-class');
-    const hand = document.querySelector('.your-hand-class');
+  const containers = document.querySelectorAll(".svg-wrapper-ciao");
+  const visibleContainers = Array.from(containers).filter(container => {
+    const style = window.getComputedStyle(container);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  });
 
-    const sequenceHand:any = [
-      [paths, { y: [0, -10, 10, 0] }, { duration: 1, delay: stagger(0.1) }],
-      [hand, { left: ["50%"], translateX: "-50%", translateY: "-50%" }, { duration: 1 }],
-      [hand, { rotate: [0, -20, 20, -20, 20, 0], translateX: "-50%", translateY: "-50%" }, { duration: 1.6 }],
-      [hand, { left: ["120%"] }, { duration: 1 }]
-    ];
+  // For each container, set up the animation
+  visibleContainers.forEach(container => {
+    // Direct hover handler
 
-    animate(sequenceHand);
-  };
+    container.addEventListener("mouseenter", () => {
 
-  // Handler function for the mouseenter event
-  const handleMouseEnter = () => {
-    playAnimation();
-  };
 
-  // Handler for touch events
-  const handleTouch = (e) => {
-    // Prevent default to avoid any unwanted behavior
-    e.preventDefault();
-    playAnimation();
-  };
+      // Find elements within this specific container
+      const paths = container.querySelectorAll('path');
+      const hand = container.querySelector('.hand');
 
-  // Function to find the visible element
-  const findVisibleElement = () => {
-    const allElements = document.querySelectorAll(".svg-wrapper-ciao.web");
+      if (!paths.length || !hand) {
+        console.error("Required elements not found in container:", container);
+        console.log("Paths found:", paths.length);
+        console.log("Hand found:", !!hand);
+        return;
+      }
 
-    // Remove previous event listeners if they exist
-    if (activeElHand) {
-      activeElHand.removeEventListener("mouseenter", handleMouseEnter);
-      activeElHand.removeEventListener("touchstart", handleTouch);
-    }
-
-    // Find the visible one
-    activeElHand = Array.from(allElements).find(el => {
-      const style = window.getComputedStyle(el);
-      return style.display !== 'none' &&
-             style.visibility !== 'hidden';
+      // Run the animation
+      animate([[paths, { y: [0, -10, 10, 0] }, { duration: 1, delay: stagger(0.1) }],[ hand, { left: "50%", translateX: "-50%", translateY: "-50%" }, { duration: 1 }],[hand, { rotate: [0, -20, 20, -20, 20, 0], translateX: "-50%", translateY: "-50%" }, { duration: 1.6 }], [hand, { left: "120%" }, { duration: 1 }],
+        [hand, { left: "120%" }, { duration: 1 }],[hand, { rotate: [0, -20, 20, -20, 20, 0], translateX: "-50%", translateY: "-50%" }, { duration: 1.6 }],[hand, { left: "120%" }, { duration: 1 }]]
+        );
     });
 
-    // Add event listeners to the new active element
-    if (activeElHand) {
-      activeElHand.addEventListener("mouseenter", handleMouseEnter);
-      activeElHand.addEventListener("touchstart", handleTouch);
-      console.log("Found visible element and attached listeners");
-    } else {
-      console.log("No visible element found");
-    }
-  };
+    // Touch handler
+    container.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      console.log("Touch detected on", container);
 
-  // Run initially
-  findVisibleElement();
+      // Same animation logic as above
+      const paths = container.querySelectorAll('path');
+      const hand = container.querySelector('.hand');
 
-  // Re-check on window resize
-  window.addEventListener("resize", () => {
-    console.log("Window resized, rechecking visible element");
-    findVisibleElement();
+      if (!paths.length || !hand) return;
+
+      animate(paths, { y: [0, -10, 10, 0] }, { duration: 1, delay: stagger(0.1) });
+
+
   });
 
-  // Also recheck on orientation change for mobile devices
-  window.addEventListener("orientationchange", () => {
-    console.log("Orientation changed, rechecking visible element");
-    findVisibleElement();
-  });
 });
+
+
 </script>

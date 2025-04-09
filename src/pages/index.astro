@@ -21,9 +21,19 @@ import Layout from "../layouts/Layout.astro";
 <script>
   import { animate, stagger } from "motion";
 
-  document.addEventListener("astro:page-load", () => {
+  // Wrap animation logic in a reusable function
+  function animateVisibleBrackets() {
+    const containers = document.querySelectorAll(".bracket");
 
-    animate(".bracket",
+    const visibleContainers = Array.from(containers).filter(container => {
+      const style = window.getComputedStyle(container);
+      const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+      return isVisible;
+    });
+
+    // Animate all elements at once (not in a loop)
+    if (visibleContainers.length > 0) {
+      animate(visibleContainers,
         {
           y: [-100, 50, 0],
           opacity: [0, 1],
@@ -31,7 +41,22 @@ import Layout from "../layouts/Layout.astro";
         {
           duration: 3,
           delay: stagger(1),
-        },
-    )
+        }
+      );
+    }
+  }
+
+  // Handle window resize with debounce
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      animateVisibleBrackets();
+    }, 250); // 250ms debounce
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    animateVisibleBrackets();
   });
 </script>
