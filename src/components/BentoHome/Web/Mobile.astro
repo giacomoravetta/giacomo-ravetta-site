@@ -9,7 +9,7 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
 ---
 
 <div class="flex justify-center items-center w-[100dvw] py-[1.6dvw] md:h-[100dvh]">
-    <div class="flex flex-col w-[94dvw] gap-[1.6dvw] md:h-[94dvh]">
+    <div class="flex flex-col w-[94dvw] gap-2 md:h-[94dvh]">
         <div class="relative flex flex-row gap-[1.6dvw]  md:h-[75dvh]">
             <div class="flex flex-col w-full gap-[2dvw]">
                 <div class="flex justify-between items-center border-white border-1 rounded-md h-[6dvh] text-white overflow-hidden">
@@ -24,19 +24,19 @@ import BentoHomeWhaleCard from "./BentoHomeWhaleCard.astro";
                      info@giacomoravetta.com
                   </a>
                 </div>
-
-                 <BentoProfileCard />
-
-                <div class="flex h-[40dvh] md:h-full ">
-                    <BentoDandD />
-                </div>
-                <div class="flex flex-grow h-[20dhv] ">
-                    <BentoHomeMarquee />
-                </div>
             </div>
         </div>
 
-        <div class="flex flex-grow gap-[1.6dvw] flex-col md:flex-row">
+        <BentoProfileCard />
+
+       <div class="flex h-[40dvh] md:h-full ">
+           <BentoDandD />
+       </div>
+       <div class="flex flex-grow h-[20dhv] ">
+           <BentoHomeMarquee />
+       </div>
+
+        <div class="flex flex-grow gap-2 flex-col md:flex-row">
             <div class="realtive flex flex-grow order-2 h-[20dvh] ">
                 <BentoHomeWhaleCard  />
             </div>
