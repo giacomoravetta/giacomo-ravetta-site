@@ -1,60 +1,334 @@
 ---
 import BentoCard from "../../BentoCard.astro";
 
+// Active state when key is pressed
 const active = {
-  color: "#FAF1DB",
-  border: "1px solid #FAF1DB",
-  backgroundColor: "black",
+  color: "#333",
+  border: "1px solid #b8b0a1",
+  backgroundColor: "#d1c8b2",
 };
 ---
 
-<div class="flex flex-grow flex-col gap-[1.6dvw] ">
+<div class="flex flex-grow flex-col gap-[1.6dvw]">
   <div class="flex flex-grow flex-row gap-[1.6dvw]">
     <div class="flex flex-grow basis-[70%]">
-      <BentoCard
-        backgroundColor="#FAF1DB"
-        border="1px solid #FAF1DB"
-        active={active}
-      >
-        <div class="flex flex-grow justify-center p-[2dvw]">
-          <div class="text-[8dvw] font-black leading-none flex justify-center items-center md:text-[8dvw]">Developer</div>
-        </div>
-      </BentoCard>
+      <div class="key-3d">
+        <BentoCard
+          backgroundColor="#FAF1DB"
+          border="1px solid #b8b0a1"
+          active={active}
+        >
+          <div class="flex flex-grow justify-center p-[2dvw]">
+            <div class="text-[8dvw] text-[#222] font-black leading-none flex justify-center items-center md:text-[8dvw]">Developer</div>
+          </div>
+        </BentoCard>
+      </div>
     </div>
     <div class="flex flex-grow basis-[30%]">
-      <BentoCard
-        backgroundColor="#FAF1DB"
-        border="1px solid #FAF1DB"
-        active={active}
-      >
-        <div class="flex flex-grow justify-center p-[2dvw]">
-          <div class="text-[8dvw] font-black leading-none flex justify-center items-center">&</div>
-        </div>
-      </BentoCard>
+      <div class="key-3d">
+        <BentoCard
+          backgroundColor="#FAF1DB"
+          border="1px solid #b8b0a1"
+          active={active}
+        >
+          <div class="flex flex-grow justify-center p-[2dvw]">
+            <div class="text-[8dvw] text-[#222] font-black leading-none flex justify-center items-center">&</div>
+          </div>
+        </BentoCard>
+      </div>
     </div>
   </div>
   <div class="flex flex-row gap-[1.6dvw] flex-grow">
     <div class="flex flex-grow basis-[30%]">
-      <BentoCard
-        backgroundColor="#FAF1DB"
-        border="1px solid #FAF1DB"
-        active={active}
-      >
-        <div class="flex flex-grow justify-center p-[2dvw]">
-          <div class="text-[8dvw] font-black leading-none translate-y-[10%] flex justify-center items-center">⌘</div>
-        </div>
-      </BentoCard>
+      <div class="key-3d">
+        <BentoCard
+          backgroundColor="#FAF1DB"
+          border="1px solid #b8b0a1"
+          active={active}
+        >
+          <div class="flex flex-grow justify-center p-[2dvw]">
+            <div class="text-[8dvw] text-[#222] font-black leading-none translate-y-[10%] flex justify-center items-center">⌘</div>
+          </div>
+        </BentoCard>
+      </div>
     </div>
     <div class="flex flex-grow justify-end basis-[70%]">
-      <BentoCard
-        backgroundColor="#FAF1DB"
-        border="1px solid #FAF1DB"
-        active={active}
-      >
-        <div class="flex flex-grow justify-center p-[2dvw]">
-          <div class="text-[8dvw] font-black leading-none flex justify-center items-center">Designer</div>
-        </div>
-      </BentoCard>
+      <div class="key-3d">
+        <BentoCard
+          backgroundColor="#FAF1DB"
+          border="1px solid #b8b0a1"
+          active={active}
+        >
+          <div class="flex flex-grow justify-center p-[2dvw]">
+            <div class="text-[8dvw] text-[#222] font-black leading-none flex justify-center items-center">Designer</div>
+          </div>
+        </BentoCard>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  /* Container for the 3D key */
+  .key-3d {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border-radius: 8px;
+    /* Position the key slightly above its base */
+    transform: translateY(-5px);
+    transition: transform 0.15s ease;
+  }
+
+  /* Create key's visible edge (sides and bottom) using pseudo-elements */
+  .key-3d::before {
+    content: '';
+    position: absolute;
+    top: 5px; /* Same as the negative translateY of parent */
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ccc1aa;
+    border-radius: 8px;
+    z-index: -1;
+  }
+
+  /* Bottom edge with shadow */
+  .key-3d::after {
+    content: '';
+    position: absolute;
+    top: 10px; /* 5px lower than the ::before element */
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    filter: blur(4px);
+    z-index: -2;
+  }
+
+  /* Hover effect - slightly lift the key */
+  .key-3d:hover {
+    transform: translateY(-7px);
+  }
+
+  /* Pressed state - push the key down */
+  .key-3d:active,
+  .key-3d.pressed {
+    transform: translateY(0);
+    transition: transform 0.1s ease;
+  }
+
+  /* Ensure the BentoCard takes full size */
+  .key-3d :global(.card) {
+    height: 100%;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    z-index: 10; /* Keep it above the pseudo-elements */
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.7),
+      inset 0 -1px 0 rgba(0,0,0,0.15);
+  }
+
+  /* Add subtle key gradient */
+  .key-3d :global(.card::before) {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,0.25) 0%,
+      rgba(255,255,255,0.1) 50%,
+      rgba(0,0,0,0.08) 100%);
+    pointer-events: none;
+  }
+
+  /* Add subtle shine effect */
+  .key-3d :global(.card::after) {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.03) 40%,
+      rgba(255,255,255,0.12) 50%,
+      rgba(255,255,255,0.03) 60%,
+      rgba(255,255,255,0) 100%
+    );
+    transform: rotate(45deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.5s;
+  }
+
+  /* Show shine effect on hover */
+  .key-3d:hover :global(.card::after) {
+    opacity: 1;
+    animation: shine 2s ease forwards;
+  }
+
+  @keyframes shine {
+    0% {
+      transform: translateY(-100%) translateX(-100%) rotate(45deg);
+    }
+    100% {
+      transform: translateY(100%) translateX(100%) rotate(45deg);
+    }
+  }
+</style>
+
+<script>
+  // Audio buffers for the click sounds
+  let clickDownBuffer = null;
+  let clickUpBuffer = null;
+  let audioCtx = null;
+
+  // Initialize audio context and load sounds
+  function initAudio() {
+    try {
+      // Create audio context
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Create the clicky sound when key is pressed
+      const clickDownLength = 0.08;
+      clickDownBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * clickDownLength, audioCtx.sampleRate);
+      const clickDownData = clickDownBuffer.getChannelData(0);
+
+      // First click - sharper attack
+      for (let i = 0; i < clickDownData.length; i++) {
+        // Initial click - high amplitude attack then rapid decay
+        if (i < clickDownLength * audioCtx.sampleRate * 0.1) {
+          clickDownData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / (clickDownLength * audioCtx.sampleRate * 0.1), 2);
+        } else {
+          // Rapid falloff with some noise
+          clickDownData[i] = (Math.random() * 2 - 1) * 0.1 * Math.pow(1 - i / clickDownData.length, 8);
+        }
+      }
+
+      // Create the clicky sound when key is released
+      const clickUpLength = 0.1;
+      clickUpBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * clickUpLength, audioCtx.sampleRate);
+      const clickUpData = clickUpBuffer.getChannelData(0);
+
+      // Create a slightly different sound for key release
+      for (let i = 0; i < clickUpData.length; i++) {
+        if (i < clickUpLength * audioCtx.sampleRate * 0.05) {
+          // Initial sharp attack
+          clickUpData[i] = (Math.random() * 2 - 1) * 0.8 * Math.pow(1 - i / (clickUpLength * audioCtx.sampleRate * 0.05), 1.5);
+        } else {
+          // Longer resonance tail
+          clickUpData[i] = (Math.random() * 2 - 1) * 0.2 * Math.pow(1 - i / clickUpData.length, 4);
+        }
+      }
+    } catch (e) {
+      console.log('Audio not supported', e);
+    }
+  }
+
+  // Play the click down sound
+  function playClickDown() {
+    if (!audioCtx) initAudio();
+    if (!audioCtx || !clickDownBuffer) return;
+
+    try {
+      const source = audioCtx.createBufferSource();
+      source.buffer = clickDownBuffer;
+
+      // Create a bandpass filter for that mechanical keyboard tone
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.value = 3500; // Frequency for the "click" sound
+      filter.Q.value = 2; // Resonance
+
+      // Create gain node for volume control
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0.3; // Set volume
+
+      // Connect the nodes
+      source.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      source.start();
+    } catch (e) {
+      console.log('Error playing sound', e);
+    }
+  }
+
+  // Play the click up sound
+  function playClickUp() {
+    if (!audioCtx) initAudio();
+    if (!audioCtx || !clickUpBuffer) return;
+
+    try {
+      const source = audioCtx.createBufferSource();
+      source.buffer = clickUpBuffer;
+
+      // Different filter settings for up sound
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.value = 2500; // Slightly lower frequency
+      filter.Q.value = 1.5;
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0.2; // Slightly quieter
+
+      source.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      source.start();
+    } catch (e) {
+      console.log('Error playing sound', e);
+    }
+  }
+
+  // Add event listeners when the document is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const keys = document.querySelectorAll('.key-3d');
+
+    // Initialize audio on first user interaction
+    document.addEventListener('click', initAudio, { once: true });
+
+    keys.forEach(key => {
+      // Play click down sound on press
+      key.addEventListener('mousedown', () => {
+        playClickDown();
+        key.classList.add('pressed');
+      });
+
+      key.addEventListener('touchstart', () => {
+        playClickDown();
+        key.classList.add('pressed');
+      }, { passive: true });
+
+      // Play click up sound on release
+      key.addEventListener('mouseup', () => {
+        playClickUp();
+        key.classList.remove('pressed');
+      });
+
+      key.addEventListener('touchend', () => {
+        playClickUp();
+        key.classList.remove('pressed');
+      });
+
+      // Remove pressed state if mouse leaves
+      key.addEventListener('mouseleave', () => {
+        if (key.classList.contains('pressed')) {
+          key.classList.remove('pressed');
+        }
+      });
+    });
+  });
+</script>
