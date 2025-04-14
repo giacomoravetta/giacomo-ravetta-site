@@ -197,7 +197,7 @@ const active = {
   function initAudio() {
     try {
       // Create audio context
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx = new (window.AudioContext)();
 
       // Create the clicky sound when key is pressed
       const clickDownLength = 0.08;
