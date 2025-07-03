@@ -1,21 +1,71 @@
 ---
-import Mobile from "../components/BentoHome/Web/Mobile.astro";
-import BentoHomeWeb from "../components/BentoHome/Web/BentoHomeWeb.astro";
+
 import Layout from "../layouts/Layout.astro";
+
+import BentoDandD from "../components/BentoDandD.astro";
+import BentoHomeMarquee from "../components/BentoHomeMarquee.astro";
+import BentoHomeCiao from "../components/BentoHomeCiao.astro";
+import BentoHomeLinks from "../components/BentoHomeLinks.astro";
+import BentoHomeHireMe from "../components/BentoHomeHireMe.astro";
+import BentoProfileCard from "../components/BentoProfileCard.astro";
+import BentoHomeWhaleCard from "../components/BentoHomeWhaleCard.astro";
+import Nav from "../components/Nav.astro";
+
+
 ---
 
 <Layout title="Giacomo Ravetta">
-  <div class="home">
-    <!-- Show on mobile, hide on md breakpoint and up -->
-    <div class="block md:hidden">
-      <Mobile />
+
+
+
+    <div class="flex flex-col h-[100dvh] w-full gap-[1.6dvw] p-[1.6dvw]">
+
+        <div class="flex items-center h-full gap-1 pl-2">
+              <p class="font-inter font-black text-[2dvw] text-4xl m-0">GIACOMO RAVETTA</p>
+              <p class="pipe font-inter font-black text-[2dvw] text-4xl">|</p>
+          </div>
+
+        <Nav />
+
+        <!-- Middle section with profile and D&D -->
+        <div class="flex flex-row gap-[1.6dvw] h-[64dvh]">
+            <div class="flex flex-col gap-[1.6dvh] h-full w-[80%]">
+                <BentoDandD  />
+
+                <BentoHomeWhaleCard />
+
+
+            </div>
+            <div class="w-[40%]">
+                <BentoProfileCard  />
+            </div>
+        </div>
+
+        <!-- Marquee section -->
+
+            <BentoHomeMarquee />
+
+
+        <!-- Bottom row with 4 components -->
+        <div class="flex gap-[1.6dvw] h-[10dvh] w-full">
+             <BentoHomeLinks />
+             <BentoHomeCiao/>
+             <BentoHomeHireMe />
+
+
+        </div>
     </div>
 
-    <!-- Hide on mobile, show on md breakpoint and up -->
-    <div class="hidden md:block">
-      <BentoHomeWeb />
-    </div>
-  </div>
+    <style>
+    .pipe {
+      animation: blink 1.5s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    </style>
 </Layout>
 
 <script>
