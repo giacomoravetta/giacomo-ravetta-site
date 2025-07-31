@@ -1,0 +1,48 @@
+---
+interface Props {
+  border?: string;
+  class?: string;
+  reverse?: boolean;
+}
+
+const { border = "1px solid white", class: className = "", reverse = false } = Astro.props;
+
+import BentoCard from "../../BentoCard.astro";
+---
+
+
+  <BentoCard border={border} class={className}>
+    <div class="flex items-center justify-center w-full h-full">
+      <div class={`flex gap-[10vw] overflow-hidden w-full items-center ${reverse ? 'marquee-reverse' : ''}`}>
+        <div class="flex-shrink-0 flex text-white text-[calc(12px+2vw)] uppercase items-center justify-around gap-[10vw] animate-[scroll_60s_linear_infinite] motion-reduce:animate-none">
+          <p class="m-0 flex items-center justify-center">👨‍💻 WRITE CODE 👨‍💻</p>
+          <p class="m-0 flex items-center justify-center" aria-hidden="true">🫖 DRINK TEA 🫖</p>
+          <p class="m-0 flex items-center justify-center" aria-hidden="true">🫁 BREATH 🫁</p>
+          <p class="m-0 flex items-center justify-center" aria-hidden="true">🐈 PET CAT 🐈</p>
+        </div>
+        <div class="flex-shrink-0 flex text-white text-[calc(12px+2vw)] uppercase items-center justify-around gap-[10vw] animate-[scroll_60s_linear_infinite] motion-reduce:animate-none" aria-hidden="true">
+          <p class="m-0 flex items-center justify-center">👨‍💻 WRITE CODE 👨‍💻</p>
+          <p class="m-0 flex items-center justify-center">🫖 DRINK TEA 🫖</p>
+          <p class="m-0 flex items-center justify-center">🫁 BREATH 🫁</p>
+          <p class="m-0 flex items-center justify-center">🐈 PET CAT 🐈</p>
+        </div>
+      </div>
+    </div>
+  </BentoCard>
+
+
+<style>
+  .marquee-reverse .flex-shrink-0 {
+    animation-direction: reverse;
+    animation-delay: -30s;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% - 10vw));
+    }
+  }
+</style>

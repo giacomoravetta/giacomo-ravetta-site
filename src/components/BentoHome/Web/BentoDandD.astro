@@ -1,7 +1,12 @@
 ---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+
 import BentoCard from "../../BentoCard.astro";
 
-// Active state when key is pressed
 const active = {
   color: "#333",
   border: "1px solid #b8b0a1",
@@ -9,58 +14,58 @@ const active = {
 };
 ---
 
-<div class="flex flex-grow flex-col gap-[1.6dvw]">
-  <div class="flex flex-grow flex-row gap-[1.6dvw]">
-    <div class="flex flex-grow basis-[70%]">
+<div class={`flex flex-col gap-[1dvw] h-full w-full ${className}`}>
+  <div class="flex flex-row gap-[1dvw] flex-1">
+    <div class="flex basis-[70%] flex-1">
       <div class="key-3d">
         <BentoCard
           backgroundColor="#FAF1DB"
           border="1px solid #b8b0a1"
           active={active}
         >
-          <div class="flex flex-grow justify-center p-[2dvw]">
-            <div class="text-[8dvw] text-[#222] font-black leading-none flex justify-center items-center md:text-[8dvw]">Developer</div>
+          <div class="flex flex-grow justify-center p-[2dvw] h-full">
+            <div class="text-[8dvw] md:text-[6dvw] lg:text-[4dvw] text-[#222] font-black leading-none flex justify-center items-center">Developer</div>
           </div>
         </BentoCard>
       </div>
     </div>
-    <div class="flex flex-grow basis-[30%]">
+    <div class="flex basis-[30%] flex-1">
       <div class="key-3d">
         <BentoCard
           backgroundColor="#FAF1DB"
           border="1px solid #b8b0a1"
           active={active}
         >
-          <div class="flex flex-grow justify-center p-[2dvw]">
-            <div class="text-[8dvw] text-[#222] font-black leading-none flex justify-center items-center">&</div>
+          <div class="flex flex-grow justify-center p-[2dvw] h-full">
+            <div class="text-[8dvw] md:text-[6dvw] lg:text-[4dvw] text-[#222] font-black leading-none flex justify-center items-center">&</div>
           </div>
         </BentoCard>
       </div>
     </div>
   </div>
-  <div class="flex flex-row gap-[1.6dvw] flex-grow">
-    <div class="flex flex-grow basis-[30%]">
+  <div class="flex flex-row gap-[1dvw] flex-1">
+    <div class="flex basis-[30%] flex-1">
       <div class="key-3d">
         <BentoCard
           backgroundColor="#FAF1DB"
           border="1px solid #b8b0a1"
           active={active}
         >
-          <div class="flex flex-grow justify-center p-[2dvw]">
-            <div class="text-[8dvw] text-[#222] font-black leading-none translate-y-[10%] flex justify-center items-center">⌘</div>
+          <div class="flex flex-grow justify-center p-[2dvw] h-full">
+            <div class="text-[8dvw] md:text-[6dvw] lg:text-[4dvw] text-[#222] font-black leading-none translate-y-[10%] flex justify-center items-center">⌘</div>
           </div>
         </BentoCard>
       </div>
     </div>
-    <div class="flex flex-grow justify-end basis-[70%]">
+    <div class="flex basis-[70%] flex-1">
       <div class="key-3d">
         <BentoCard
           backgroundColor="#FAF1DB"
           border="1px solid #b8b0a1"
           active={active}
         >
-          <div class="flex flex-grow justify-center p-[2dvw]">
-            <div class="text-[8dvw] text-[#222] font-black leading-none flex justify-center items-center">Designer</div>
+          <div class="flex flex-grow justify-center p-[2dvw] h-full">
+            <div class="text-[8dvw] md:text-[6dvw] lg:text-[4dvw] text-[#222] font-black leading-none flex justify-center items-center">Designer</div>
           </div>
         </BentoCard>
       </div>
@@ -135,7 +140,7 @@ const active = {
   }
 
   /* Add subtle key gradient */
-  .key-3d :global(.card::before) {
+  .key-3d :global(.card)::before {
     content: '';
     position: absolute;
     top: 0;
@@ -147,10 +152,11 @@ const active = {
       rgba(255,255,255,0.1) 50%,
       rgba(0,0,0,0.08) 100%);
     pointer-events: none;
+    z-index: 1;
   }
 
   /* Add subtle shine effect */
-  .key-3d :global(.card::after) {
+  .key-3d :global(.card)::after {
     content: '';
     position: absolute;
     top: -50%;
@@ -169,10 +175,11 @@ const active = {
     pointer-events: none;
     opacity: 0;
     transition: opacity 1.5s;
+    z-index: 1;
   }
 
   /* Show shine effect on hover */
-  .key-3d:hover :global(.card::after) {
+  .key-3d:hover :global(.card)::after {
     opacity: 1;
     animation: shine 2s ease forwards;
   }
@@ -185,6 +192,25 @@ const active = {
       transform: translateY(100%) translateX(100%) rotate(45deg);
     }
   }
+
+  /* Responsive text sizing for better mobile experience */
+  @media (max-width: 768px) {
+    .key-3d {
+      transform: translateY(-3px);
+    }
+
+    .key-3d:hover {
+      transform: translateY(-4px);
+    }
+
+    .key-3d::before {
+      top: 3px;
+    }
+
+    .key-3d::after {
+      top: 6px;
+    }
+  }
 </style>
 
 <script>
@@ -192,12 +218,20 @@ const active = {
   let clickDownBuffer = null;
   let clickUpBuffer = null;
   let audioCtx = null;
+  let isAudioInitialized = false;
 
   // Initialize audio context and load sounds
   function initAudio() {
+    if (isAudioInitialized) return;
+
     try {
-      // Create audio context
-      audioCtx = new (window.AudioContext)();
+      // Create audio context (with fallback for older browsers)
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Resume context if it's suspended (required by some browsers)
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
 
       // Create the clicky sound when key is pressed
       const clickDownLength = 0.08;
@@ -230,17 +264,24 @@ const active = {
           clickUpData[i] = (Math.random() * 2 - 1) * 0.2 * Math.pow(1 - i / clickUpData.length, 4);
         }
       }
+
+      isAudioInitialized = true;
     } catch (e) {
-      console.log('Audio not supported', e);
+      console.log('Audio not supported:', e);
     }
   }
 
   // Play the click down sound
   function playClickDown() {
-    if (!audioCtx) initAudio();
+    if (!audioCtx && !isAudioInitialized) initAudio();
     if (!audioCtx || !clickDownBuffer) return;
 
     try {
+      // Resume context if suspended
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
       const source = audioCtx.createBufferSource();
       source.buffer = clickDownBuffer;
 
@@ -261,16 +302,21 @@ const active = {
 
       source.start();
     } catch (e) {
-      console.log('Error playing sound', e);
+      console.log('Error playing down sound:', e);
     }
   }
 
   // Play the click up sound
   function playClickUp() {
-    if (!audioCtx) initAudio();
+    if (!audioCtx && !isAudioInitialized) initAudio();
     if (!audioCtx || !clickUpBuffer) return;
 
     try {
+      // Resume context if suspended
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
       const source = audioCtx.createBufferSource();
       source.buffer = clickUpBuffer;
 
@@ -289,7 +335,7 @@ const active = {
 
       source.start();
     } catch (e) {
-      console.log('Error playing sound', e);
+      console.log('Error playing up sound:', e);
     }
   }
 
@@ -297,35 +343,52 @@ const active = {
   document.addEventListener('DOMContentLoaded', () => {
     const keys = document.querySelectorAll('.key-3d');
 
-    // Initialize audio on first user interaction
-    document.addEventListener('click', initAudio, { once: true });
+    // Initialize audio on first user interaction (required by browsers)
+    const initAudioOnInteraction = () => {
+      initAudio();
+      document.removeEventListener('click', initAudioOnInteraction);
+      document.removeEventListener('touchstart', initAudioOnInteraction);
+    };
+
+    document.addEventListener('click', initAudioOnInteraction, { once: true });
+    document.addEventListener('touchstart', initAudioOnInteraction, { once: true });
 
     keys.forEach(key => {
-      // Play click down sound on press
-      key.addEventListener('mousedown', () => {
+      // Mouse events
+      key.addEventListener('mousedown', (e) => {
+        e.preventDefault();
         playClickDown();
         key.classList.add('pressed');
       });
 
-      key.addEventListener('touchstart', () => {
-        playClickDown();
-        key.classList.add('pressed');
-      }, { passive: true });
-
-      // Play click up sound on release
       key.addEventListener('mouseup', () => {
         playClickUp();
         key.classList.remove('pressed');
       });
 
-      key.addEventListener('touchend', () => {
-        playClickUp();
-        key.classList.remove('pressed');
-      });
-
-      // Remove pressed state if mouse leaves
       key.addEventListener('mouseleave', () => {
         if (key.classList.contains('pressed')) {
+          playClickUp();
+          key.classList.remove('pressed');
+        }
+      });
+
+      // Touch events
+      key.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        playClickDown();
+        key.classList.add('pressed');
+      }, { passive: false });
+
+      key.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        playClickUp();
+        key.classList.remove('pressed');
+      }, { passive: false });
+
+      key.addEventListener('touchcancel', () => {
+        if (key.classList.contains('pressed')) {
+          playClickUp();
           key.classList.remove('pressed');
         }
       });

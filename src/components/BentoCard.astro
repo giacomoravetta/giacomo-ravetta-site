@@ -9,35 +9,31 @@ interface Props {
   backgroundColor?: string;
   border?: string;
   active?: ActiveState;
+  class?: string;
 }
 
-const { backgroundColor, border, active } = Astro.props;
+const { backgroundColor, border, active, class: className = "" } = Astro.props;
+
+// Generate dynamic classes based on props
+const baseClasses = "relative flex flex-grow overflow-hidden justify-center rounded-sm md:rounded-xl h-full transition-all duration-200 ease-out";
+
+// Create CSS custom properties for hover/active states
+const customProperties = {
+  '--active-bg': active?.backgroundColor || backgroundColor || 'transparent',
+  '--active-color': active?.color || 'inherit',
+  '--active-border': active?.border || border || 'transparent',
+};
+
+const inlineStyles = {
+  backgroundColor: backgroundColor || 'transparent',
+  border: border || 'none',
+  ...customProperties
+};
 ---
 
 <div
-  class="card rounded-sm md:rounded-xl h-full"
-  style={`--activeBackgroundColor: ${active?.backgroundColor || backgroundColor};--activeColor: ${active?.color || null}; --activeBorder: ${active?.border || border}; background-color: ${backgroundColor}; border: ${border};`}
+  class={`${baseClasses} ${className} hover:[background-color:var(--active-bg)!important] hover:[color:var(--active-color)!important] hover:[border:var(--active-border)!important] active:[background-color:var(--active-bg)!important] active:[color:var(--active-color)!important] active:[border:var(--active-border)!important]`}
+  style={inlineStyles}
 >
   <slot />
 </div>
-
-<style>
-  .card {
-    position: relative;
-    display: flex;
-    flex-grow: 1;
-    overflow: hidden;
-    justify-content: center;
-
-    &:hover {
-      background-color: var(--activeBackgroundColor) !important;
-      color: var(--activeColor) !important;
-      border: var(--activeBorder) !important;
-    }
-    &:active {
-      background-color: var(--activeBackgroundColor) !important;
-      color: var(--activeColor) !important;
-      border: var(--activeBorder) !important;
-    }
-  }
-</style>

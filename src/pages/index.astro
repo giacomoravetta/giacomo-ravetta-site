@@ -1,21 +1,15 @@
 ---
-import Mobile from "../components/BentoHome/Web/Mobile.astro";
-import BentoHomeWeb from "../components/BentoHome/Web/BentoHomeWeb.astro";
+
+import BentoHome from "../components/BentoHome/Web/BentoHome.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Giacomo Ravetta">
   <div class="home">
-    <!-- Show on mobile, hide on md breakpoint and up -->
-    <div class="block md:hidden">
-      <Mobile />
+
+      <BentoHome />
     </div>
 
-    <!-- Hide on mobile, show on md breakpoint and up -->
-    <div class="hidden md:block">
-      <BentoHomeWeb />
-    </div>
-  </div>
 </Layout>
 
 <script>

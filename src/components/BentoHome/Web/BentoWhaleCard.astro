@@ -1,0 +1,130 @@
+---
+interface Props {
+  backgroundColor?: string;
+  class?: string;
+}
+const { backgroundColor = "#FFC845", class: className = "" } = Astro.props;
+import BentoCard from "../../BentoCard.astro";
+---
+
+<BentoCard backgroundColor={backgroundColor} class={className}>
+  <div class="whale-container flex items-center justify-center w-full h-full bg-[#e5e5f7] opacity-80 bg-[repeating-radial-gradient(circle_at_0_0,transparent_0,#e5e5f7_10px),repeating-linear-gradient(#ffc845,#444cf7)] overflow-hidden">
+    <!-- Whale wrapper -->
+    <div class="whale-wrapper relative w-[80%] h-[80%] flex items-center justify-center" id="whaleWrapper">
+      <!-- Main whale image -->
+      <img
+        src="/blue-whale-hor.webp"
+        alt="A whale swimming peacefully"
+        class="whale-image max-w-full max-h-full object-contain"
+        id="whaleImage"
+      />
+    </div>
+  </div>
+</BentoCard>
+
+<style>
+  .whale-container {
+    position: relative;
+  }
+</style>
+
+<script>
+import { gsap } from "gsap";
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if GSAP is loaded
+  if (typeof gsap === 'undefined') {
+    console.warn('GSAP not loaded, falling back to CSS animations');
+    return;
+  }
+
+  const whaleWrapper = document.getElementById('whaleWrapper');
+  const whaleImage = document.getElementById('whaleImage');
+
+  if (!whaleWrapper || !whaleImage) return;
+
+  let isHovered = false;
+  let swimmingAnimation;
+
+  // Swimming animation - only controls y position now
+  function createSwimmingAnimation() {
+    return gsap.timeline({ repeat: -1, yoyo: true })
+      .to(whaleImage, {
+        duration: 4,
+        y: -15,
+        ease: "power2.inOut"
+      })
+      .to(whaleImage, {
+        duration: 3.5,
+        y: 10,
+        ease: "power2.inOut"
+      });
+  }
+
+  // Separate rotation animation for swimming
+  const rotationAnimation = gsap.timeline({ repeat: -1, yoyo: true })
+    .to(whaleImage, {
+      duration: 4,
+      rotation: 2,
+      ease: "power2.inOut"
+    })
+    .to(whaleImage, {
+      duration: 3.5,
+      rotation: -1,
+      ease: "power2.inOut"
+    });
+
+  // Start animations
+  swimmingAnimation = createSwimmingAnimation();
+  swimmingAnimation.play();
+  rotationAnimation.play();
+
+  // Hover interactions - only control scale
+  whaleWrapper.addEventListener('mouseenter', () => {
+    isHovered = true;
+    gsap.to(whaleImage, {
+      duration: 0.6,
+      scale: 1.08,
+      ease: "power2.out"
+    });
+  });
+
+  whaleWrapper.addEventListener('mouseleave', () => {
+    isHovered = false;
+    gsap.to(whaleImage, {
+      duration: 0.8,
+      scale: 1,
+      ease: "elastic.out(1, 0.3)"
+    });
+  });
+
+  // Touch events for mobile
+  whaleWrapper.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isHovered = true;
+    gsap.to(whaleImage, {
+      duration: 0.6,
+      scale: 1.08,
+      ease: "power2.out"
+    });
+  }, { passive: false });
+
+  whaleWrapper.addEventListener('touchend', () => {
+    isHovered = false;
+    gsap.to(whaleImage, {
+      duration: 0.8,
+      scale: 1,
+      ease: "elastic.out(1, 0.3)"
+    });
+  });
+
+  // Accessibility: Respect reduced motion preference
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (prefersReducedMotion) {
+    swimmingAnimation.pause();
+    rotationAnimation.pause();
+    gsap.set(whaleImage, { clearProps: "all" });
+  }
+});
+</script>
