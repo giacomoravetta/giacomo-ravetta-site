@@ -5,6 +5,7 @@ interface Props {
 }
 const { backgroundColor = "#FFC845", class: className = "" } = Astro.props;
 import BentoCard from "../../BentoCard.astro";
+import whale from "/public/images/blue-whale-hor.webp";
 ---
 
 <BentoCard backgroundColor={backgroundColor} class={className}>
@@ -13,7 +14,7 @@ import BentoCard from "../../BentoCard.astro";
     <div class="whale-wrapper relative w-[80%] h-[80%] flex items-center justify-center" id="whaleWrapper">
       <!-- Main whale image -->
       <img
-        src="/blue-whale-hor.webp"
+        src={whale.src}
         alt="A whale swimming peacefully"
         class="whale-image max-w-full max-h-full object-contain"
         id="whaleImage"
