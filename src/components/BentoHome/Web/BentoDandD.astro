@@ -226,7 +226,7 @@ const active = {
 
     try {
       // Create audio context (with fallback for older browsers)
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx = new (window.AudioContext);
 
       // Resume context if it's suspended (required by some browsers)
       if (audioCtx.state === 'suspended') {
