@@ -1,56 +1,95 @@
 ---
-
 import BentoHome from "../components/BentoHome/Web/BentoHome.astro";
 import Layout from "../layouts/Layout.astro";
 ---
-
 <Layout title="Giacomo Ravetta">
-  <div class="home">
-
-      <BentoHome />
-    </div>
-
 </Layout>
-
 <script>
-  import { animate, stagger } from "motion";
+ import * as THREE from 'three';
+ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-  // Wrap animation logic in a reusable function
-  function animateVisibleBrackets() {
-    const containers = document.querySelectorAll(".bracket");
+ const scene = new THREE.Scene();
 
-    const visibleContainers = Array.from(containers).filter(container => {
-      const style = window.getComputedStyle(container);
-      const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
-      return isVisible;
-    });
+ const renderer = new THREE.WebGLRenderer();
+ renderer.setSize( window.innerWidth, window.innerHeight );
+ document.body.appendChild( renderer.domElement );
 
-    // Animate all elements at once (not in a loop)
-    if (visibleContainers.length > 0) {
-      animate(visibleContainers,
-        {
-          y: [-100, 50, 0],
-          opacity: [0, 1],
-        },
-        {
-          duration: 3,
-          delay: stagger(1),
-        }
-      );
-    }
-  }
 
-  // Handle window resize with debounce
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      animateVisibleBrackets();
-    }, 250); // 250ms debounce
-  });
 
-  document.addEventListener('DOMContentLoaded', () => {
+ // Add lights to see materials properly
+ const ambientLight = new THREE.AmbientLight( 0x404040, 45 ); // soft white light
+ scene.add( ambientLight );
 
-    animateVisibleBrackets();
-  });
+ const directionalLight = new THREE.DirectionalLight( 0xffffff, 20 );
+ directionalLight.position.set( 5, 5, 5 );
+ scene.add( directionalLight );
+
+ // Animation mixer and clock for handling animations
+ let mixer;
+ const clock = new THREE.Clock();
+
+ const loader = new GLTFLoader();
+ loader.load( '/monkey.glb', function ( gltf ) {
+   scene.add( gltf.scene );
+
+   // Debug: Check materials
+   gltf.scene.traverse( ( child ) => {
+     if ( child.isMesh ) {
+       console.log('Mesh found:', child.name);
+       console.log('Material:', child.material);
+
+       // Enable shadows if needed
+       child.castShadow = true;
+       child.receiveShadow = true;
+
+       // If material is missing or appears black, apply a basic material
+       if ( !child.material || child.material.color.getHex() === 0x000000 ) {
+         child.material = new THREE.MeshStandardMaterial({
+           color: 0x8B4513, // Brown color as fallback
+           roughness: 0.5,
+           metalness: 0.1
+         });
+       }
+     }
+   });
+
+   // Check if the model has animations
+   if ( gltf.animations && gltf.animations.length > 0 ) {
+     // Create an AnimationMixer for the loaded model
+     mixer = new THREE.AnimationMixer( gltf.scene );
+
+     // Add all animations to the mixer
+     gltf.animations.forEach( ( clip ) => {
+       const action = mixer.clipAction( clip );
+       action.play(); // Start playing the animation
+     });
+
+     // Or if you want to play a specific animation by name:
+     // const action = mixer.clipAction( gltf.animations[0] );
+     // action.play();
+
+     console.log('Available animations:', gltf.animations.map(clip => clip.name));
+   } else {
+     console.log('No animations found in the GLTF file');
+   }
+ }, undefined, function ( error ) {
+   console.error( error );
+ } );
+
+ camera.position.z = 5;
+
+ function animate() {
+   // Update the animation mixer if it exists
+   if ( mixer ) {
+     const delta = clock.getDelta();
+     mixer.update( delta );
+   }
+
+   // Your existing scene rotation
+   scene.rotation.y += 0.001;
+
+   renderer.render( scene, camera );
+ }
+
+ renderer.setAnimationLoop( animate );
 </script>
