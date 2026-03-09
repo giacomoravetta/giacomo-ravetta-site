@@ -374,17 +374,15 @@ const active = {
       });
 
       // Touch events
-      key.addEventListener('touchstart', (e) => {
-        e.preventDefault();
+      key.addEventListener('touchstart', () => {
         playClickDown();
         key.classList.add('pressed');
-      }, { passive: false });
+      }, { passive: true });
 
-      key.addEventListener('touchend', (e) => {
-        e.preventDefault();
+      key.addEventListener('touchend', () => {
         playClickUp();
         key.classList.remove('pressed');
-      }, { passive: false });
+      }, { passive: true });
 
       key.addEventListener('touchcancel', () => {
         if (key.classList.contains('pressed')) {

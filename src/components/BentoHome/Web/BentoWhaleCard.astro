@@ -100,15 +100,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Touch events for mobile
-  whaleWrapper.addEventListener('touchstart', (e) => {
-    e.preventDefault();
+  whaleWrapper.addEventListener('touchstart', () => {
     isHovered = true;
     gsap.to(whaleImage, {
       duration: 0.6,
       scale: 1.08,
       ease: "power2.out"
     });
-  }, { passive: false });
+  }, { passive: true });
 
   whaleWrapper.addEventListener('touchend', () => {
     isHovered = false;
