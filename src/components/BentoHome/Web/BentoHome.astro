@@ -8,7 +8,7 @@ import BentoProfileCard from "../BentoProfileCard.astro";
 import BentoWhaleCard from "./BentoWhaleCard.astro";
 ---
 
-<div class="flex flex-col min-h-[100dvh] md:h-[100dvh] w-full gap-2 md:gap-[1.6dvw] p-2 md:p-[1.6dvw] md:overflow-hidden">
+<div class="flex flex-col min-h-[100dvh] md:h-[100dvh] md:min-h-[680px] w-full gap-2 md:gap-[clamp(0.5rem,1.6dvw,1.25rem)] p-2 md:p-[clamp(0.5rem,1.6dvw,1.25rem)] md:overflow-hidden">
     <!-- Header - Fixed height -->
     <div class="border-white border-1 rounded-md md:rounded-xl h-[6dvh] md:h-[8dvh] text-white flex justify-between items-center overflow-hidden flex-shrink-0">
         <div class="flex items-center h-full gap-1 pl-2">
@@ -45,14 +45,14 @@ import BentoWhaleCard from "./BentoWhaleCard.astro";
     </div>
 
     <!-- Main content area - Takes remaining space -->
-    <div class="flex flex-col md:flex-row gap-2 md:gap-[1.6dvw] flex-1 min-h-0">
+    <div class="flex flex-col md:flex-row gap-2 md:gap-[clamp(0.5rem,1.6dvw,1.25rem)] flex-1 min-h-0">
         <!-- Profile Card - Full height on mobile, 30% width on desktop -->
         <div class=" md:h-auto w-full md:w-[30%] md:order-2 flex-shrink-0">
             <BentoProfileCard class="h-full" />
         </div>
 
         <!-- Left column - D&D and Whale - Below profile on mobile, 70% width on desktop -->
-        <div class="flex flex-col gap-2 md:gap-[1.6dvw] md:flex-1 md:w-[70%] md:order-1 md:min-h-0">
+        <div class="flex flex-col gap-2 md:gap-[clamp(0.5rem,1.6dvw,1.25rem)] md:flex-1 md:w-[70%] md:order-1 md:min-h-0">
             <div class="h-[40vh] md:h-auto md:flex-1 md:min-h-0">
                 <BentoDandD class="h-full" />
             </div>
@@ -63,14 +63,14 @@ import BentoWhaleCard from "./BentoWhaleCard.astro";
     </div>
 
     <!-- Bottom section - Marquee and buttons -->
-    <div class="flex flex-col gap-2 md:gap-[1.6dvw] flex-shrink-0">
+    <div class="flex flex-col gap-2 md:gap-[clamp(0.5rem,1.6dvw,1.25rem)] flex-shrink-0">
         <!-- Marquee -->
         <div class="h-[8dvh] md:h-[10dvh]">
             <BentoMarquee />
         </div>
 
         <!-- Bottom buttons -->
-        <div class="flex flex-col md:flex-row gap-2 md:gap-[1.6dvw] h-[12dvh] md:h-[8dvh]">
+        <div class="flex flex-col md:flex-row gap-2 md:gap-[clamp(0.5rem,1.6dvw,1.25rem)] h-[12dvh] md:h-[8dvh]">
             <div class="flex-1">
                 <BentoLinksCard class="h-full" />
             </div>

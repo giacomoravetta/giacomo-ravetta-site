@@ -11,13 +11,13 @@ import BentoProfile from "../BentoProfile.astro";
 ---
 
 <BentoCard border={border} class={className}>
-  <div class="flex flex-col justify-between h-full gap-2 p-5 ">
-    <div class="flex-shrink-0">
+  <div class="flex flex-col justify-between h-full gap-3 md:gap-4 p-4 md:p-5">
+    <div class="flex-shrink-0 md:flex-1 md:min-h-0">
       <BentoProfile />
 
     </div>
-    <div class="text-white flex justify-center items-center text-center flex-1 min-h-0">
-      <p class="text-[clamp(1rem,4vw,2rem)] md:text-[clamp(1.2rem,1.5vw,1.8rem)] leading-tight">
+    <div class="text-white flex justify-center items-center text-center flex-1 min-h-0 md:flex-none">
+      <p class="text-[clamp(1rem,4vw,2rem)] md:text-[clamp(1rem,1.4vw,1.6rem)] leading-tight">
         Hi, my name is <strong>Giacomo Ravetta</strong> <br /> Welcome to my website!
       </p>
     </div>
