@@ -125,74 +125,6 @@ const active = {
     transition: transform 0.1s ease;
   }
 
-  /* Ensure the BentoCard takes full size */
-  .key-3d :global(.card) {
-    height: 100%;
-    width: 100%;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-    z-index: 10; /* Keep it above the pseudo-elements */
-    box-shadow:
-      0 1px 2px rgba(0,0,0,0.1),
-      inset 0 1px 0 rgba(255,255,255,0.7),
-      inset 0 -1px 0 rgba(0,0,0,0.15);
-  }
-
-  /* Add subtle key gradient */
-  .key-3d :global(.card)::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to bottom,
-      rgba(255,255,255,0.25) 0%,
-      rgba(255,255,255,0.1) 50%,
-      rgba(0,0,0,0.08) 100%);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* Add subtle shine effect */
-  .key-3d :global(.card)::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      135deg,
-      rgba(255,255,255,0) 0%,
-      rgba(255,255,255,0.03) 40%,
-      rgba(255,255,255,0.12) 50%,
-      rgba(255,255,255,0.03) 60%,
-      rgba(255,255,255,0) 100%
-    );
-    transform: rotate(45deg);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 1.5s;
-    z-index: 1;
-  }
-
-  /* Show shine effect on hover */
-  .key-3d:hover :global(.card)::after {
-    opacity: 1;
-    animation: shine 2s ease forwards;
-  }
-
-  @keyframes shine {
-    0% {
-      transform: translateY(-100%) translateX(-100%) rotate(45deg);
-    }
-    100% {
-      transform: translateY(100%) translateX(100%) rotate(45deg);
-    }
-  }
-
   /* Responsive text sizing for better mobile experience */
   @media (max-width: 768px) {
     .key-3d {
@@ -215,9 +147,9 @@ const active = {
 
 <script>
   // Audio buffers for the click sounds
-  let clickDownBuffer = null;
-  let clickUpBuffer = null;
-  let audioCtx = null;
+  let clickDownBuffer: AudioBuffer | null = null;
+  let clickUpBuffer: AudioBuffer | null = null;
+  let audioCtx: AudioContext | null = null;
   let isAudioInitialized = false;
 
   // Initialize audio context and load sounds

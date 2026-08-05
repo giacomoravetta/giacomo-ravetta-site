@@ -5,7 +5,7 @@ interface Props {
 }
 const { backgroundColor = "#FFC845", class: className = "" } = Astro.props;
 import BentoCard from "../../BentoCard.astro";
-import whale from "/public/images/blue-whale-hor.webp";
+import whale from "../../../assets/images/blue-whale-hor.webp";
 ---
 
 <BentoCard backgroundColor={backgroundColor} class={className}>
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!whaleWrapper || !whaleImage) return;
 
-  let isHovered = false;
   let swimmingAnimation;
 
   // Swimming animation - only controls y position now
@@ -82,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Hover interactions - only control scale
   whaleWrapper.addEventListener('mouseenter', () => {
-    isHovered = true;
     gsap.to(whaleImage, {
       duration: 0.6,
       scale: 1.08,
@@ -91,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   whaleWrapper.addEventListener('mouseleave', () => {
-    isHovered = false;
     gsap.to(whaleImage, {
       duration: 0.8,
       scale: 1,
@@ -101,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Touch events for mobile
   whaleWrapper.addEventListener('touchstart', () => {
-    isHovered = true;
     gsap.to(whaleImage, {
       duration: 0.6,
       scale: 1.08,
@@ -110,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: true });
 
   whaleWrapper.addEventListener('touchend', () => {
-    isHovered = false;
     gsap.to(whaleImage, {
       duration: 0.8,
       scale: 1,
