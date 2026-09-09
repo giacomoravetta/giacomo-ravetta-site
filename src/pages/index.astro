@@ -1,8 +1,11 @@
 ---
-import BentoHome from "../components/BentoHome/Web/BentoHome.astro";
-import Layout from "../layouts/Layout.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<Layout title="Giacomo Ravetta">
-    <BentoHome />
-</Layout>
+<BaseLayout title="Giacomo Ravetta">
+  <main class="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+    <h1 class="text-4xl font-semibold tracking-tight md:text-6xl">Giacomo Ravetta</h1>
+    <p class="text-lg text-muted">Designer &amp; developer.</p>
+    <p class="text-sm text-muted">New site under construction.</p>
+  </main>
+</BaseLayout>

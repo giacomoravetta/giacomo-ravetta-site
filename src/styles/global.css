@@ -17,4 +17,17 @@
 
 @theme {
   --font-inter: "InterVariable", "sans-serif";
+
+  --color-background: oklch(14% 0 0);
+  --color-foreground: oklch(96% 0 0);
+  --color-muted: oklch(65% 0 0);
+  --color-accent: oklch(75% 0.15 220);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    scroll-behavior: smooth;
+  }
 }
