@@ -56,7 +56,7 @@ const panels = images.map((p) => ({
               style={`--chars: ${p.label.length}`}
               data-label
             >
-              {p.label}
+              <span class="label-text">{p.label}</span>
             </p>
           )}
         </figure>
@@ -133,35 +133,31 @@ const panels = images.map((p) => ({
     position: absolute;
     z-index: 2; /* above the paint layer; panels must not form stacking contexts */
     margin: 0;
-    padding: 0.5em 0.9em;
-    border-radius: 999px;
-    background: rgb(255 255 255 / 0.08);
-    border: 1px solid rgb(255 255 255 / 0.14);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
-    font-size: clamp(1rem, 1.6vw, 1.25rem);
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-weight: 600;
     color: var(--color-foreground);
+    text-shadow: 0 2px 24px rgb(0 0 0 / 0.6);
     pointer-events: none;
   }
 
   /* Side labels read vertically (top → bottom) along the outer edges, centred.
      The font size is derived from the character count so the word spans ~70dvh
-     (average Inter lowercase advance ≈ 0.56em). */
+     (average Inter semibold lowercase advance ≈ 0.47em). */
   .label-side {
     /* Centred without CSS translate (GSAP folds individual transform props into
        its own transform): the box is 70dvh + vertical padding tall. */
     top: 50%;
     margin-top: -35dvh;
     writing-mode: vertical-rl;
-    text-orientation: mixed;
     white-space: nowrap;
-    padding: 0.35em 0.18em;
-    font-size: calc(70dvh / (var(--chars, 9) * 0.56));
-    font-weight: 600;
+    font-size: calc(70dvh / (var(--chars, 9) * 0.47));
     letter-spacing: -0.02em;
     line-height: 1;
+  }
+  /* Glyphs turned anticlockwise so the word reads bottom → top. The rotation lives
+     on an inner span, so GSAP's transform tweens on the label never touch it. */
+  .label-side .label-text {
+    display: block;
+    rotate: 180deg;
   }
   .label-left {
     left: calc(1.5rem + var(--overflow));
@@ -177,9 +173,7 @@ const panels = images.map((p) => ({
     width: fit-content;
     margin-inline: auto;
     white-space: nowrap;
-    padding: 0.4em 0.8em;
     font-size: clamp(1.5rem, 3.2vw, 2.75rem);
-    font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.1;
   }
