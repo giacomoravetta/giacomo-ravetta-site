@@ -261,27 +261,13 @@ const panels = images.map((p) => ({
     }
   }
 
+  /* Phones get the scroll-driven Svelte version instead (see MobileTriptych.svelte). */
   @media (max-width: 767px) {
     .triptych {
-      margin-top: 0;
-      display: block;
-      height: auto;
-    }
-    .grid {
-      grid-template-columns: 1fr;
-      width: 100%;
-      aspect-ratio: auto;
-    }
-    .panel[data-panel="left"] {
-      aspect-ratio: 1164 / 2145;
-    }
-    .panel[data-panel="center"] {
-      aspect-ratio: 1478 / 2145;
-    }
-    .panel[data-panel="right"] {
-      aspect-ratio: 1160 / 2145;
+      display: none;
     }
   }
+
 </style>
 
 <script>

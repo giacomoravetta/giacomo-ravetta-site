@@ -2,6 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "giacomo-ravetta-site",
   "compatibility_date": "2025-07-31",
+  // Svelte's server renderer imports node:async_hooks; needed by the dev runtime.
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./dist/client",
   },

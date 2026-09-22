@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
+import svelte from "@astrojs/svelte";
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,6 +11,7 @@ export default defineConfig({
   // must not add its SESSION KV binding (the deploy fails without a namespace id).
   output: "static",
   session: false,
+  integrations: [svelte()],
   // Prefetch every internal link on hover/focus (Astro falls back to "tap" on slow connections or data-saver).
   prefetch: {
     prefetchAll: true,

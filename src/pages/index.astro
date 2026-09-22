@@ -1,12 +1,24 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Triptych from "../components/Triptych.astro";
+import MobileTriptych from "../components/MobileTriptych.svelte";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import { getTriptychImages } from "../lib/triptych-images";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const images = await getTriptychImages();
+// Same variants as the desktop triptych, so both share the cache and the head preloads.
+const mobilePanels = images.map((p) => ({
+  key: p.key,
+  src: p.img.src,
+  srcset: p.img.srcSet.attribute,
+  sizes: p.sizes,
+  width: Number(p.img.attributes.width),
+  height: Number(p.img.attributes.height),
+  alt: t(`hero.alt.${p.key}`),
+  label: t(`hero.${p.key}`),
+}));
 ---
 
 <BaseLayout title={t("home.title")} fullBleed>
@@ -25,5 +37,9 @@ const images = await getTriptychImages();
       ))
     }
   </Fragment>
+  <!-- Desktop: pointer-driven brush triptych. Phones: scroll-driven Svelte version. -->
   <Triptych lang={lang} images={images} />
+  <div class="md:hidden">
+    <MobileTriptych client:media="(max-width: 767px)" panels={mobilePanels} />
+  </div>
 </BaseLayout>
