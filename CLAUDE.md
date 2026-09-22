@@ -1,6 +1,6 @@
 # giacomo-ravetta-site
 
-Personal site of Giacomo Ravetta. Astro 7 + Tailwind 4 + GSAP, deployed to Cloudflare via `@astrojs/cloudflare`. Bilingual (English at `/`, Italian at `/it/`) through Astro's built-in i18n and the dictionary in `src/i18n/ui.ts`.
+Personal site of Giacomo Ravetta. Astro 7 + Tailwind 4 + GSAP, fully static, deployed to Cloudflare via `@astrojs/cloudflare`. Bilingual (English at `/`, Italian at `/it/`) through Astro's built-in i18n and the dictionary in `src/i18n/ui.ts`.
 
 ## Working rules
 
@@ -11,7 +11,7 @@ Personal site of Giacomo Ravetta. Astro 7 + Tailwind 4 + GSAP, deployed to Cloud
 ## Commands
 
 - `npm run dev` — dev server on http://localhost:4321 (Astro daemonises it; `npx astro dev stop` to stop).
-- `npm run build` — `astro check` + production build. Run this to validate changes. Note: the build clears `node_modules/.vite`, which breaks an already running dev server (every page 500s) — restart it after building.
+- `npm run build` — `astro check` + production build. Run this to validate changes. The build uses its own Vite cache dir (`node_modules/.vite-build`) so it no longer breaks a running dev server.
 
 ## Structure
 
