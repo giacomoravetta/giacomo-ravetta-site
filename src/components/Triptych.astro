@@ -51,7 +51,11 @@ const panels = images.map((p) => ({
               {p.label}
             </h1>
           ) : (
-            <p class:list={["label", "label-side", `label-${p.key}`]} data-label>
+            <p
+              class:list={["label", "label-side", `label-${p.key}`]}
+              style={`--chars: ${p.label.length}`}
+              data-label
+            >
               {p.label}
             </p>
           )}
@@ -142,26 +146,36 @@ const panels = images.map((p) => ({
     pointer-events: none;
   }
 
-  /* Side labels read vertically along the outer edges, vertically centred. */
+  /* Side labels read vertically (top → bottom) along the outer edges, centred.
+     The font size is derived from the character count so the word spans ~70dvh
+     (average Inter lowercase advance ≈ 0.56em). */
   .label-side {
+    /* Centred without CSS translate (GSAP folds individual transform props into
+       its own transform): the box is 70dvh + vertical padding tall. */
     top: 50%;
+    margin-top: -35dvh;
     writing-mode: vertical-rl;
+    text-orientation: mixed;
     white-space: nowrap;
+    padding: 0.35em 0.18em;
+    font-size: calc(70dvh / (var(--chars, 9) * 0.56));
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
   }
   .label-left {
     left: calc(1.5rem + var(--overflow));
-    translate: 0 -50%;
-    rotate: 180deg; /* reads bottom → top */
   }
   .label-right {
     right: calc(1.5rem + var(--overflow));
-    translate: 0 -50%;
   }
 
   .label-center {
-    left: 50%;
+    left: 0;
+    right: 0;
     bottom: 1.5rem;
-    translate: -50% 0;
+    width: fit-content;
+    margin-inline: auto;
     white-space: nowrap;
     padding: 0.4em 0.8em;
     font-size: clamp(1.5rem, 3.2vw, 2.75rem);
@@ -509,9 +523,15 @@ const panels = images.map((p) => ({
           const isCenter = panel.dataset.panel === "center";
           const split = isCenter ? SplitText.create(label, { type: "chars", charsClass: "char" }) : null;
           const targets: HTMLElement[] = split ? (split.chars as HTMLElement[]) : [label];
-          // Side labels slide in from their edge; the centre chars rise from below.
-          const inFrom = panel.dataset.panel === "left" ? { x: -14, y: 0 } : panel.dataset.panel === "right" ? { x: 14, y: 0 } : { x: 0, y: 14 };
-          const outTo = { x: -inFrom.x * 0.6, y: -inFrom.y * 0.6 };
+          // Entrances: left label sweeps in from the left, right label from the right,
+          // the centre letters rise from the bottom. Leaving reverses a shorter path.
+          const inFrom =
+            panel.dataset.panel === "left"
+              ? { xPercent: -140, yPercent: 0 }
+              : panel.dataset.panel === "right"
+                ? { xPercent: 140, yPercent: 0 }
+                : { xPercent: 0, yPercent: 120 };
+          const outTo = { xPercent: inFrom.xPercent * 0.5, yPercent: inFrom.yPercent * 0.5 };
           // For the split label the chars carry the reveal; the wrapper (glass pill) fades as a whole.
           if (split) gsap.set(targets, { autoAlpha: 0 });
 
@@ -524,7 +544,7 @@ const panels = images.map((p) => ({
             gsap.fromTo(
               targets,
               { ...inFrom, autoAlpha: 0 },
-              { x: 0, y: 0, autoAlpha: 1, duration: 0.5, ease: "power3.out", stagger: split ? 0.025 : 0 },
+              { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", stagger: split ? 0.03 : 0 },
             );
           };
           const leave = () => {
