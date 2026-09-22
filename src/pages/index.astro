@@ -1,11 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import Triptych from "../components/Triptych.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
-<BaseLayout title="Giacomo Ravetta">
-  <main class="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-    <h1 class="text-4xl font-semibold tracking-tight md:text-6xl">Giacomo Ravetta</h1>
-    <p class="text-lg text-muted">Designer &amp; developer.</p>
-    <p class="text-sm text-muted">New site under construction.</p>
-  </main>
+<BaseLayout title={t("home.title")} fullBleed>
+  <Triptych lang={lang} />
+  <div class="mx-auto w-full max-w-5xl px-6 py-16">
+    <Hero lang={lang} />
+  </div>
 </BaseLayout>

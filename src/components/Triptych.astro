@@ -1,0 +1,505 @@
+---
+/**
+ * Home hero: "The Battle of Shijo Nawate" triptych.
+ * Panels rest desaturated. A canvas on top paints the colour version through a
+ * textured brush stroke that follows the cursor and slowly dries (fades). When the
+ * pointer is nearly still the brush grows until it fills the hovered panel, and
+ * shrinks back as soon as it moves. Hovering a panel also reveals its label.
+ * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
+ */
+import { getImage } from "astro:assets";
+import type { Lang } from "../i18n/ui";
+import { useTranslations } from "../i18n/utils";
+import leftSrc from "../assets/shijo-nawate/left.webp";
+import centerSrc from "../assets/shijo-nawate/center.webp";
+import rightSrc from "../assets/shijo-nawate/right.webp";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const widths = [640, 960, 1280, 1600];
+const defs = [
+  { key: "left", src: leftSrc, sizes: "(max-width: 767px) 100vw, 31vw", label: t("hero.left"), alt: t("hero.alt.left") },
+  { key: "center", src: centerSrc, sizes: "(max-width: 767px) 100vw, 39vw", label: t("hero.center"), alt: t("hero.alt.center") },
+  { key: "right", src: rightSrc, sizes: "(max-width: 767px) 100vw, 30vw", label: t("hero.right"), alt: t("hero.alt.right") },
+] as const;
+
+const panels = await Promise.all(
+  defs.map(async (d) => {
+    const img = await getImage({ src: d.src, widths, sizes: d.sizes, format: "webp" });
+    return { ...d, img };
+  }),
+);
+---
+
+<section class="triptych" data-triptych aria-label={t("site.tagline")}>
+  <div class="grid">
+    {
+      panels.map((p) => (
+        <figure class="panel" data-panel={p.key}>
+          <img
+            class="layer layer-base"
+            src={p.img.src}
+            srcset={p.img.srcSet.attribute}
+            sizes={p.sizes}
+            width={p.img.attributes.width}
+            height={p.img.attributes.height}
+            alt={p.alt}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            data-image
+          />
+          {p.key === "center" ? (
+            <h1 class="label label-center" data-label>
+              {p.label}
+            </h1>
+          ) : (
+            <p class="label" data-label>
+              {p.label}
+            </p>
+          )}
+        </figure>
+      ))
+    }
+  </div>
+
+  <!-- Colour "paint" layer: the script draws the colour images through a brush-stroke mask. -->
+  <canvas class="paint" aria-hidden="true" data-paint></canvas>
+</section>
+
+<style>
+  /* Full viewport; the triptych covers it and each panel is cropped (centred) as needed. */
+  .triptych {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-background);
+    /* Slide under the translucent sticky header so it blurs the artwork. */
+    margin-top: calc(-1 * var(--header-h, 4.5rem));
+  }
+
+  /* Columns follow the three panel widths (1164 / 1478 / 1160); the row is the viewport. */
+  .grid {
+    display: grid;
+    grid-template-columns: 1164fr 1478fr 1160fr;
+    width: 100%;
+    height: 100svh;
+  }
+
+  .panel {
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .layer {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .layer-base {
+    filter: grayscale(1);
+    opacity: 0.55;
+  }
+
+  .paint {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .label {
+    position: absolute;
+    z-index: 2; /* above the paint layer; panels must not form stacking contexts */
+    left: 1.5rem;
+    bottom: 1.5rem;
+    margin: 0;
+    padding: 0.5em 0.9em;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.14);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground);
+    pointer-events: none;
+  }
+
+  .label-center {
+    left: 50%;
+    right: auto;
+    bottom: 1.5rem;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 0.4em 0.8em;
+    font-size: clamp(1.5rem, 3.2vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  /* Interactive mode: labels start hidden, GSAP reveals them. */
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .label {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  /* Touch or reduced motion: everything in colour, labels visible, no paint layer. */
+  @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .layer-base {
+      filter: none;
+      opacity: 1;
+    }
+    .paint {
+      display: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .triptych {
+      margin-top: 0;
+    }
+    .grid {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+    .panel[data-panel="left"] {
+      aspect-ratio: 1164 / 2145;
+    }
+    .panel[data-panel="center"] {
+      aspect-ratio: 1478 / 2145;
+    }
+    .panel[data-panel="right"] {
+      aspect-ratio: 1160 / 2145;
+    }
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { SplitText } from "gsap/SplitText";
+
+  gsap.registerPlugin(SplitText);
+
+  const root = document.querySelector<HTMLElement>("[data-triptych]");
+
+  if (root) {
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)",
+      () => {
+        const canvas = root.querySelector<HTMLCanvasElement>("[data-paint]")!;
+        const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-panel]"));
+        const images = panels.map((p) => p.querySelector<HTMLImageElement>("[data-image]")!);
+
+        const STILL_SPEED = 0.25; // px/ms; below this the pointer counts as "barely moving"
+        const STILL_AFTER = 90; // ms without a move → speed decays to 0
+        const DRY = 0.028; // per-frame alpha removed from the stroke (how fast paint "dries")
+        const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+
+        const baseRadius = () => gsap.utils.clamp(64, 110, window.innerWidth * 0.055);
+
+        // ---- Brush tip: a rough, bristly stamp pre-rendered once (unit size 256px). ----
+        const TIP = 256;
+        const tip = document.createElement("canvas");
+        tip.width = tip.height = TIP;
+        {
+          const c = tip.getContext("2d")!;
+          const rnd = gsap.utils.random;
+          // Soft body
+          const g = c.createRadialGradient(TIP / 2, TIP / 2, 0, TIP / 2, TIP / 2, TIP / 2);
+          g.addColorStop(0, "rgba(0,0,0,0.9)");
+          g.addColorStop(0.55, "rgba(0,0,0,0.55)");
+          g.addColorStop(1, "rgba(0,0,0,0)");
+          c.fillStyle = g;
+          c.fillRect(0, 0, TIP, TIP);
+          // Bristles: scattered soft dabs that break the edge
+          for (let i = 0; i < 70; i++) {
+            const a = rnd(0, Math.PI * 2);
+            const d = rnd(TIP * 0.18, TIP * 0.46);
+            const x = TIP / 2 + Math.cos(a) * d;
+            const y = TIP / 2 + Math.sin(a) * d;
+            const r = rnd(TIP * 0.04, TIP * 0.12);
+            const bg = c.createRadialGradient(x, y, 0, x, y, r);
+            bg.addColorStop(0, `rgba(0,0,0,${rnd(0.25, 0.6)})`);
+            bg.addColorStop(1, "rgba(0,0,0,0)");
+            c.fillStyle = bg;
+            c.fillRect(x - r, y - r, r * 2, r * 2);
+          }
+        }
+
+        // ---- Canvases: `stroke` accumulates the mask, `canvas` composites colour through it. ----
+        const stroke = document.createElement("canvas");
+        const sctx = stroke.getContext("2d")!;
+        const ctx = canvas.getContext("2d")!;
+        let W = 0;
+        let H = 0;
+        let rects: { x: number; y: number; w: number; h: number }[] = [];
+
+        const resize = () => {
+          const r = root.getBoundingClientRect();
+          W = Math.round(r.width);
+          H = Math.round(r.height);
+          canvas.width = stroke.width = Math.round(W * DPR);
+          canvas.height = stroke.height = Math.round(H * DPR);
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          rects = panels.map((p) => {
+            const b = p.getBoundingClientRect();
+            return { x: b.left - r.left, y: b.top - r.top, w: b.width, h: b.height };
+          });
+        };
+        resize();
+
+        // Draw a colour image into its panel with the same crop as CSS object-fit: cover (centred).
+        const drawPanel = (img: HTMLImageElement, rc: (typeof rects)[number]) => {
+          const iw = img.naturalWidth;
+          const ih = img.naturalHeight;
+          if (!iw || !ih) return;
+          const scale = Math.max(rc.w / iw, rc.h / ih);
+          const dw = iw * scale;
+          const dh = ih * scale;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(rc.x, rc.y, rc.w, rc.h);
+          ctx.clip();
+          ctx.drawImage(img, rc.x + (rc.w - dw) / 2, rc.y + (rc.h - dh) / 2, dw, dh);
+          ctx.restore();
+        };
+
+        // ---- Pointer / brush state ----
+        const pos = { x: 0, y: 0 }; // eased brush position
+        const size = { r: baseRadius() };
+        let raw = { x: 0, y: 0 };
+        let prev = { x: 0, y: 0 };
+        let angle = 0;
+        let active = -1;
+        let grown = false;
+        let visible = false;
+        let speed = 0;
+        let lastMove = 0;
+        let alive = 0; // frames left to keep compositing after the stroke has dried
+        // Panel the brush is confined to while it is larger than the base size, so a
+        // shrinking (still huge) brush never floods the neighbouring panels.
+        let clipRect: (typeof rects)[number] | undefined;
+
+        const shrinkBrush = (duration: number) =>
+          gsap.to(size, {
+            r: baseRadius(),
+            duration,
+            ease: "power2.out",
+            overwrite: true,
+            onComplete: () => (clipRect = undefined),
+          });
+
+        const xTo = gsap.quickTo(pos, "x", { duration: 0.35, ease: "power3.out" });
+        const yTo = gsap.quickTo(pos, "y", { duration: 0.35, ease: "power3.out" });
+
+        // Stamp the tip at (x, y) with radius r, rotated along the stroke, optionally clipped to a panel.
+        const stamp = (x: number, y: number, r: number, a: number, alpha: number, clip?: (typeof rects)[number]) => {
+          sctx.save();
+          if (clip) {
+            sctx.beginPath();
+            sctx.rect(clip.x, clip.y, clip.w, clip.h);
+            sctx.clip();
+          }
+          sctx.globalAlpha = alpha;
+          sctx.translate(x, y);
+          sctx.rotate(a);
+          // Slightly elongated along the movement direction, like a dragged brush.
+          sctx.scale(1.15, 0.9);
+          sctx.drawImage(tip, -r, -r, r * 2, r * 2);
+          sctx.restore();
+        };
+
+        const tick = () => {
+          if (!visible && alive <= 0) return;
+
+          // Dry: fade the whole stroke a little each frame.
+          sctx.save();
+          sctx.setTransform(1, 0, 0, 1, 0, 0);
+          sctx.globalCompositeOperation = "destination-out";
+          sctx.fillStyle = `rgba(0,0,0,${DRY})`;
+          sctx.fillRect(0, 0, stroke.width, stroke.height);
+          sctx.restore();
+
+          if (visible) {
+            // Still-detection drives grow / shrink of the brush.
+            if (performance.now() - lastMove > STILL_AFTER) speed = 0;
+            const still = speed < STILL_SPEED;
+            if (active >= 0 && still && !grown) {
+              grown = true;
+              const rc = rects[active];
+              const px = pos.x - rc.x;
+              const py = pos.y - rc.y;
+              const far = Math.max(
+                Math.hypot(px, py),
+                Math.hypot(rc.w - px, py),
+                Math.hypot(px, rc.h - py),
+                Math.hypot(rc.w - px, rc.h - py),
+              );
+              clipRect = rc;
+              gsap.to(size, { r: far * 1.15, duration: 4, ease: "power1.inOut", overwrite: true });
+            } else if (active >= 0 && !still && grown) {
+              grown = false;
+              shrinkBrush(0.6);
+            }
+
+            // Lay paint along the eased path so fast moves leave a continuous stroke.
+            const dx = pos.x - prev.x;
+            const dy = pos.y - prev.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist > 0.5) angle = Math.atan2(dy, dx);
+            const clip = size.r > baseRadius() * 1.05 ? clipRect : undefined;
+            const step = Math.max(4, size.r * 0.18);
+            const n = Math.max(1, Math.ceil(dist / step));
+            for (let i = 1; i <= n; i++) {
+              const t = i / n;
+              const jitter = size.r * 0.06;
+              stamp(
+                prev.x + dx * t + gsap.utils.random(-jitter, jitter),
+                prev.y + dy * t + gsap.utils.random(-jitter, jitter),
+                size.r * gsap.utils.random(0.92, 1.08),
+                angle + gsap.utils.random(-0.25, 0.25),
+                grown ? 0.5 : 0.3,
+                clip,
+              );
+            }
+            prev = { x: pos.x, y: pos.y };
+            alive = 90;
+          } else {
+            alive--;
+          }
+
+          // Composite: colour images, kept only where the stroke mask has paint.
+          ctx.clearRect(0, 0, W, H);
+          ctx.globalCompositeOperation = "source-over";
+          images.forEach((img, i) => drawPanel(img, rects[i]));
+          ctx.globalCompositeOperation = "destination-in";
+          ctx.drawImage(stroke, 0, 0, W, H);
+          ctx.globalCompositeOperation = "source-over";
+        };
+
+        const onMove = (e: PointerEvent) => {
+          const rr = root.getBoundingClientRect();
+          const x = e.clientX - rr.left;
+          const y = e.clientY - rr.top;
+          const now = performance.now();
+          if (!visible) {
+            visible = true;
+            pos.x = x;
+            pos.y = y;
+            prev = { x, y };
+            speed = 0;
+            gsap.to(canvas, { autoAlpha: 1, duration: 0.4, ease: "power2.out", overwrite: "auto" });
+          } else {
+            const dt = Math.max(1, now - lastMove);
+            const inst = Math.hypot(x - raw.x, y - raw.y) / dt;
+            speed = speed * 0.5 + inst * 0.5; // smoothed
+          }
+          raw = { x, y };
+          lastMove = now;
+          xTo(x);
+          yTo(y);
+        };
+        const onLeave = () => {
+          visible = false;
+          grown = false;
+          active = -1;
+          shrinkBrush(0.4);
+          gsap.to(canvas, { autoAlpha: 0, duration: 0.6, ease: "power2.out", overwrite: "auto" });
+        };
+        root.addEventListener("pointermove", onMove);
+        root.addEventListener("pointerleave", onLeave);
+        window.addEventListener("resize", resize);
+        gsap.ticker.add(tick);
+
+        // Hovered panel: track it for the brush growth and reveal its label.
+        const panelCleanup = panels.map((panel, i) => {
+          const label = panel.querySelector<HTMLElement>("[data-label]")!;
+          const isCenter = panel.dataset.panel === "center";
+          const split = isCenter ? SplitText.create(label, { type: "chars", charsClass: "char" }) : null;
+          const targets: HTMLElement[] = split ? (split.chars as HTMLElement[]) : [label];
+          // For the split label the chars carry the reveal; the wrapper (glass pill) fades as a whole.
+          if (split) gsap.set(targets, { autoAlpha: 0 });
+
+          const enter = () => {
+            active = i;
+            grown = false;
+            shrinkBrush(0.4);
+            // Kill in-flight (possibly not-yet-started staggered) tweens so no char is left behind.
+            gsap.killTweensOf([label, ...targets]);
+            if (split) gsap.to(label, { autoAlpha: 1, duration: 0.3, ease: "power2.out" });
+            gsap.fromTo(
+              targets,
+              { y: 14, autoAlpha: 0 },
+              { y: 0, autoAlpha: 1, duration: 0.5, ease: "power3.out", stagger: split ? 0.025 : 0 },
+            );
+          };
+          const leave = () => {
+            if (active === i) {
+              active = -1;
+              grown = false;
+              shrinkBrush(0.4);
+            }
+            gsap.killTweensOf([label, ...targets]);
+            if (split) gsap.to(label, { autoAlpha: 0, duration: 0.3, delay: 0.25, ease: "power2.in" });
+            gsap.to(targets, {
+              y: -8,
+              autoAlpha: 0,
+              duration: 0.35,
+              ease: "power2.in",
+              stagger: split ? 0.012 : 0,
+            });
+          };
+          panel.addEventListener("pointerenter", enter);
+          panel.addEventListener("pointerleave", leave);
+          return () => {
+            panel.removeEventListener("pointerenter", enter);
+            panel.removeEventListener("pointerleave", leave);
+            split?.revert();
+          };
+        });
+
+        // Entrance
+        const entrance = gsap.from(panels, {
+          autoAlpha: 0,
+          y: 24,
+          duration: 1,
+          stagger: 0.12,
+          ease: "power3.out",
+          clearProps: "transform", // a leftover transform would trap labels under the paint layer
+        });
+
+        return () => {
+          root.removeEventListener("pointermove", onMove);
+          root.removeEventListener("pointerleave", onLeave);
+          window.removeEventListener("resize", resize);
+          gsap.ticker.remove(tick);
+          panelCleanup.forEach((fn) => fn());
+          entrance.kill();
+          gsap.set(canvas, { clearProps: "all" });
+        };
+      },
+    );
+  }
+</script>
