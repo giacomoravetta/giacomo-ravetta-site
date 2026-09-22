@@ -4,13 +4,22 @@ import { useTranslations } from "../i18n/utils";
 
 interface Props {
   lang: Lang;
+  /** Float over the page content (Home): fixed to the bottom, transparent. */
+  overlay?: boolean;
 }
 
-const { lang } = Astro.props;
+const { lang, overlay = false } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
 ---
 
-<footer class="mx-auto w-full max-w-5xl px-6 py-10 text-sm text-muted">
+<footer
+  class:list={[
+    "w-full text-muted",
+    overlay
+      ? "pointer-events-none fixed inset-x-0 bottom-0 z-40 px-6 py-4 text-center text-xs text-foreground/70 [text-shadow:0_1px_8px_rgb(0_0_0/0.7)]"
+      : "mx-auto max-w-5xl px-6 py-10 text-sm",
+  ]}
+>
   © {year} {t("site.name")}. {t("footer.rights")}
 </footer>

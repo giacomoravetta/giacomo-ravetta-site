@@ -79,7 +79,25 @@ const panels = images.map((p) => ({
     const images = Array.from(root.querySelectorAll("[data-image]"));
     Promise.all(images.map((img) => img.decode().catch(() => undefined))).then(() => {
       // Two frames so the offscreen state is committed before the transition starts.
-      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("is-loading")));
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          root.classList.remove("is-loading");
+          // Announce "in place" once the last panel's slide finishes (or right away
+          // when there is no transition, e.g. reduced motion). Timeout is a safety net.
+          const last = root.querySelector('[data-panel="right"]');
+          const done = () => {
+            if (root.dataset.ready) return;
+            root.dataset.ready = "1";
+            root.dispatchEvent(new CustomEvent("triptych:ready"));
+          };
+          const t = last ? parseFloat(getComputedStyle(last).transitionDuration) : 0;
+          if (!last || !t) done();
+          else {
+            last.addEventListener("transitionend", done, { once: true });
+            setTimeout(done, (t + parseFloat(getComputedStyle(last).transitionDelay || "0")) * 1000 + 200);
+          }
+        }),
+      );
     });
   })();
 </script>
@@ -185,7 +203,8 @@ const panels = images.map((p) => ({
   .label-center {
     left: 0;
     right: 0;
-    bottom: 1.5rem;
+    top: 50%;
+    margin-top: -0.55em; /* half the line box: vertically centred in the panel */
     width: fit-content;
     margin-inline: auto;
     white-space: nowrap;
@@ -550,8 +569,22 @@ const panels = images.map((p) => ({
           stopBloom();
           gsap.to(canvas, { autoAlpha: 0, duration: 0.6, ease: "power2.out", overwrite: "auto" });
         };
-        root.addEventListener("pointermove", onMove);
-        root.addEventListener("pointerleave", onLeave);
+        const panelHandlers: { enter: () => void; leave: () => void }[] = [];
+        // The brush waits until the panels have slid into place (see the inline loader).
+        let armed = false;
+        const arm = () => {
+          if (armed) return;
+          armed = true;
+          resize();
+          root.addEventListener("pointermove", onMove);
+          root.addEventListener("pointerleave", onLeave);
+          panels.forEach((panel, i) => {
+            panel.addEventListener("pointerenter", panelHandlers[i].enter);
+            panel.addEventListener("pointerleave", panelHandlers[i].leave);
+          });
+        };
+        if (root.dataset.ready) arm();
+        else root.addEventListener("triptych:ready", arm, { once: true });
         window.addEventListener("resize", resize);
         gsap.ticker.add(tick);
 
@@ -600,8 +633,7 @@ const panels = images.map((p) => ({
               stagger: split ? 0.012 : 0,
             });
           };
-          panel.addEventListener("pointerenter", enter);
-          panel.addEventListener("pointerleave", leave);
+          panelHandlers[i] = { enter, leave };
           return () => {
             panel.removeEventListener("pointerenter", enter);
             panel.removeEventListener("pointerleave", leave);
@@ -611,6 +643,7 @@ const panels = images.map((p) => ({
 
 
         return () => {
+          root.removeEventListener("triptych:ready", arm);
           root.removeEventListener("pointermove", onMove);
           root.removeEventListener("pointerleave", onLeave);
           window.removeEventListener("resize", resize);

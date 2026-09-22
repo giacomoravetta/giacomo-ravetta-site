@@ -8,7 +8,8 @@ import { getLangFromUrl, getRouteFromUrl, localizedPath, useTranslations } from 
 interface Props {
   title: string;
   description?: string;
-  /** Drop the content container so a section can span the full viewport width. */
+  /** Drop the content container so a section can span the full viewport width;
+   *  the footer then floats over the content instead of sitting below it. */
   fullBleed?: boolean;
 }
 
@@ -55,6 +56,6 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
     <main id="main" class:list={["w-full flex-1", !fullBleed && "mx-auto max-w-5xl px-6 py-16"]}>
       <slot />
     </main>
-    <Footer lang={lang} />
+    <Footer lang={lang} overlay={fullBleed} />
   </body>
 </html>
