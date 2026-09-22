@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/Hero.astro";
 import Triptych from "../components/Triptych.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import { getTriptychImages } from "../lib/triptych-images";
@@ -27,7 +26,4 @@ const images = await getTriptychImages();
     }
   </Fragment>
   <Triptych lang={lang} images={images} />
-  <div class="mx-auto w-full max-w-5xl px-6 py-16">
-    <Hero lang={lang} />
-  </div>
 </BaseLayout>

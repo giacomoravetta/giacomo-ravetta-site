@@ -33,14 +33,6 @@
   }
 }
 
-/* Hero (see components/Hero.astro) */
-.hero-scramble {
-  font-variation-settings: "wght" 560;
-}
-[data-magnetic] {
-  will-change: transform;
-}
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -34,10 +34,6 @@ export const ui = {
 
     "home.title": "Home",
     "home.heading": "Designer & developer.",
-    "home.intro":
-      "I design and build digital products, from brand and interface to the code that ships them.",
-    "home.cta.services": "See what I do",
-    "home.cta.about": "More about me",
     "hero.left": "designer",
     "hero.center": "Giacomo Ravetta",
     "hero.right": "developer",
@@ -92,10 +88,6 @@ export const ui = {
 
     "home.title": "Home",
     "home.heading": "Designer & sviluppatore.",
-    "home.intro":
-      "Progetto e sviluppo prodotti digitali, dal brand e dall'interfaccia fino al codice che li porta online.",
-    "home.cta.services": "Scopri cosa faccio",
-    "home.cta.about": "Chi sono",
     "hero.left": "designer",
     "hero.center": "Giacomo Ravetta",
     "hero.right": "sviluppatore",
@@ -139,29 +131,3 @@ export const ui = {
 } as const satisfies Record<Lang, Record<string, string>>;
 
 export type UiKey = keyof (typeof ui)[typeof defaultLang];
-
-/**
- * Home intro split into segments so the hero can decode the emphasised words
- * with ScrambleText. Keep `home.intro` above in sync; it is used for plain text.
- */
-export type IntroSegment = { text: string; scramble?: boolean };
-export const homeIntro: Record<Lang, IntroSegment[]> = {
-  en: [
-    { text: "I design and build digital products, from " },
-    { text: "brand", scramble: true },
-    { text: " and " },
-    { text: "interface", scramble: true },
-    { text: " to the " },
-    { text: "code", scramble: true },
-    { text: " that ships them." },
-  ],
-  it: [
-    { text: "Progetto e sviluppo prodotti digitali, dal " },
-    { text: "brand", scramble: true },
-    { text: " e dall'" },
-    { text: "interfaccia", scramble: true },
-    { text: " fino al " },
-    { text: "codice", scramble: true },
-    { text: " che li porta online." },
-  ],
-};
