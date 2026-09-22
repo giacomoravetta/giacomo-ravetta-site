@@ -3,8 +3,9 @@
  * Home hero: "The Battle of Shijo Nawate" triptych.
  * Panels rest desaturated. A canvas on top paints the colour version through a
  * textured brush stroke that follows the cursor and slowly dries (fades). When the
- * pointer is nearly still the brush grows until it fills the hovered panel, and
- * shrinks back as soon as it moves. Hovering a panel also reveals its label.
+ * pointer is nearly still, ink blooms out from that point with a fibrous edge until
+ * it soaks the whole hovered panel; moving again stops the bloom and the ink dries.
+ * Hovering a panel also reveals its label.
  * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
  */
 import type { Lang } from "../i18n/ui";
@@ -278,40 +279,116 @@ const panels = images.map((p) => ({
 
         // ---- Pointer / brush state ----
         const pos = { x: 0, y: 0 }; // eased brush position
-        const size = { r: baseRadius() };
         let raw = { x: 0, y: 0 };
         let prev = { x: 0, y: 0 };
         let angle = 0;
         let active = -1;
-        let grown = false;
         let visible = false;
         let speed = 0;
         let lastMove = 0;
         let alive = 0; // frames left to keep compositing after the stroke has dried
-        // Panel the brush is confined to while it is larger than the base size, so a
-        // shrinking (still huge) brush never floods the neighbouring panels.
-        let clipRect: (typeof rects)[number] | undefined;
 
-        const shrinkBrush = (duration: number) =>
-          gsap.to(size, {
-            r: baseRadius(),
-            duration,
-            ease: "power2.out",
-            overwrite: true,
-            onComplete: () => (clipRect = undefined),
-          });
+        // ---- Ink bloom: spreads from a resting pointer until it soaks the panel. ----
+        const BLOOM_DURATION = 4.5; // seconds to reach the panel's far corner
+        const HARMONICS = 6; // outline irregularity = sum of low-frequency sines
+        const bloom = {
+          on: false,
+          p: 0, // 0 → 1 progress, eased
+          cx: 0,
+          cy: 0,
+          far: 0, // distance from the origin to the panel's farthest corner
+          clip: undefined as (typeof rects)[number] | undefined,
+          harmonics: [] as { f: number; amp: number; phase: number; drift: number }[],
+        };
+        const startBloom = (rc: (typeof rects)[number]) => {
+          const px = pos.x - rc.x;
+          const py = pos.y - rc.y;
+          bloom.on = true;
+          bloom.p = 0;
+          bloom.cx = pos.x;
+          bloom.cy = pos.y;
+          bloom.clip = rc;
+          bloom.far = Math.max(
+            Math.hypot(px, py),
+            Math.hypot(rc.w - px, py),
+            Math.hypot(px, rc.h - py),
+            Math.hypot(rc.w - px, rc.h - py),
+          );
+          // Fresh random outline every time so no two blooms look alike.
+          bloom.harmonics = Array.from({ length: HARMONICS }, (_, i) => ({
+            f: i + 2,
+            amp: gsap.utils.random(0.4, 1) / (i + 2),
+            phase: gsap.utils.random(0, Math.PI * 2),
+            drift: gsap.utils.random(0.15, 0.5) * (Math.random() < 0.5 ? -1 : 1),
+          }));
+          gsap.killTweensOf(bloom);
+          gsap.to(bloom, { p: 1, duration: BLOOM_DURATION, ease: "power3.out" });
+        };
+        const stopBloom = () => {
+          if (!bloom.on) return;
+          bloom.on = false;
+          gsap.killTweensOf(bloom);
+        };
+
+        // Draw one frame of the bloom onto the stroke mask: an irregular blot with a
+        // dense centre and a soft, fibrous rim. Alpha accumulates frame over frame.
+        const drawBloom = () => {
+          const R = bloom.far * 1.12 * bloom.p;
+          if (R < 1) return;
+          const t = performance.now() / 1000;
+          const { cx, cy } = bloom;
+          sctx.save();
+          if (bloom.clip) {
+            sctx.beginPath();
+            sctx.rect(bloom.clip.x, bloom.clip.y, bloom.clip.w, bloom.clip.h);
+            sctx.clip();
+          }
+          // Outline: radius varies with angle; harmonics drift slowly so the edge "creeps".
+          const N = 120;
+          sctx.beginPath();
+          for (let k = 0; k <= N; k++) {
+            const a = (k / N) * Math.PI * 2;
+            let n = 0;
+            for (const h of bloom.harmonics) n += h.amp * Math.sin(h.f * a + h.phase + t * h.drift);
+            const r = R * (1 + 0.14 * n);
+            const x = cx + Math.cos(a) * r;
+            const y = cy + Math.sin(a) * r;
+            if (k === 0) sctx.moveTo(x, y);
+            else sctx.lineTo(x, y);
+          }
+          sctx.closePath();
+          const g = sctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.15);
+          g.addColorStop(0, "rgba(0,0,0,0.32)");
+          g.addColorStop(0.6, "rgba(0,0,0,0.22)");
+          g.addColorStop(0.88, "rgba(0,0,0,0.08)");
+          g.addColorStop(1, "rgba(0,0,0,0)");
+          sctx.fillStyle = g;
+          sctx.fill();
+          // Fibres: short strokes wicking outward from the rim into the paper.
+          sctx.strokeStyle = "rgba(0,0,0,0.16)";
+          sctx.lineCap = "round";
+          for (let j = 0; j < 12; j++) {
+            const a = gsap.utils.random(0, Math.PI * 2);
+            let n = 0;
+            for (const h of bloom.harmonics) n += h.amp * Math.sin(h.f * a + h.phase + t * h.drift);
+            const r0 = R * (1 + 0.14 * n) * gsap.utils.random(0.88, 0.98);
+            const r1 = r0 + R * gsap.utils.random(0.04, 0.16);
+            const wobble = gsap.utils.random(-0.05, 0.05);
+            sctx.lineWidth = gsap.utils.random(0.6, 1.8);
+            sctx.beginPath();
+            sctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+            sctx.lineTo(cx + Math.cos(a + wobble) * r1, cy + Math.sin(a + wobble) * r1);
+            sctx.stroke();
+          }
+          sctx.restore();
+        };
 
         const xTo = gsap.quickTo(pos, "x", { duration: 0.35, ease: "power3.out" });
         const yTo = gsap.quickTo(pos, "y", { duration: 0.35, ease: "power3.out" });
 
-        // Stamp the tip at (x, y) with radius r, rotated along the stroke, optionally clipped to a panel.
-        const stamp = (x: number, y: number, r: number, a: number, alpha: number, clip?: (typeof rects)[number]) => {
+        // Stamp the tip at (x, y) with radius r, rotated along the stroke.
+        const stamp = (x: number, y: number, r: number, a: number, alpha: number) => {
           sctx.save();
-          if (clip) {
-            sctx.beginPath();
-            sctx.rect(clip.x, clip.y, clip.w, clip.h);
-            sctx.clip();
-          }
           sctx.globalAlpha = alpha;
           sctx.translate(x, y);
           sctx.rotate(a);
@@ -333,45 +410,30 @@ const panels = images.map((p) => ({
           sctx.restore();
 
           if (visible) {
-            // Still-detection drives grow / shrink of the brush.
+            // Still-detection starts / stops the ink bloom.
             if (performance.now() - lastMove > STILL_AFTER) speed = 0;
             const still = speed < STILL_SPEED;
-            if (active >= 0 && still && !grown) {
-              grown = true;
-              const rc = rects[active];
-              const px = pos.x - rc.x;
-              const py = pos.y - rc.y;
-              const far = Math.max(
-                Math.hypot(px, py),
-                Math.hypot(rc.w - px, py),
-                Math.hypot(px, rc.h - py),
-                Math.hypot(rc.w - px, rc.h - py),
-              );
-              clipRect = rc;
-              gsap.to(size, { r: far * 1.15, duration: 4, ease: "power1.inOut", overwrite: true });
-            } else if (active >= 0 && !still && grown) {
-              grown = false;
-              shrinkBrush(0.6);
-            }
+            if (active >= 0 && still && !bloom.on) startBloom(rects[active]);
+            else if (!still && bloom.on) stopBloom();
+            if (bloom.on) drawBloom();
 
             // Lay paint along the eased path so fast moves leave a continuous stroke.
+            const r = baseRadius();
             const dx = pos.x - prev.x;
             const dy = pos.y - prev.y;
             const dist = Math.hypot(dx, dy);
             if (dist > 0.5) angle = Math.atan2(dy, dx);
-            const clip = size.r > baseRadius() * 1.05 ? clipRect : undefined;
-            const step = Math.max(4, size.r * 0.18);
+            const step = Math.max(4, r * 0.18);
             const n = Math.max(1, Math.ceil(dist / step));
             for (let i = 1; i <= n; i++) {
               const t = i / n;
-              const jitter = size.r * 0.06;
+              const jitter = r * 0.06;
               stamp(
                 prev.x + dx * t + gsap.utils.random(-jitter, jitter),
                 prev.y + dy * t + gsap.utils.random(-jitter, jitter),
-                size.r * gsap.utils.random(0.92, 1.08),
+                r * gsap.utils.random(0.92, 1.08),
                 angle + gsap.utils.random(-0.25, 0.25),
-                grown ? 0.5 : 0.3,
-                clip,
+                0.3,
               );
             }
             prev = { x: pos.x, y: pos.y };
@@ -413,9 +475,8 @@ const panels = images.map((p) => ({
         };
         const onLeave = () => {
           visible = false;
-          grown = false;
           active = -1;
-          shrinkBrush(0.4);
+          stopBloom();
           gsap.to(canvas, { autoAlpha: 0, duration: 0.6, ease: "power2.out", overwrite: "auto" });
         };
         root.addEventListener("pointermove", onMove);
@@ -423,7 +484,7 @@ const panels = images.map((p) => ({
         window.addEventListener("resize", resize);
         gsap.ticker.add(tick);
 
-        // Hovered panel: track it for the brush growth and reveal its label.
+        // Hovered panel: track it for the ink bloom and reveal its label.
         const panelCleanup = panels.map((panel, i) => {
           const label = panel.querySelector<HTMLElement>("[data-label]")!;
           const isCenter = panel.dataset.panel === "center";
@@ -434,8 +495,7 @@ const panels = images.map((p) => ({
 
           const enter = () => {
             active = i;
-            grown = false;
-            shrinkBrush(0.4);
+            stopBloom();
             // Kill in-flight (possibly not-yet-started staggered) tweens so no char is left behind.
             gsap.killTweensOf([label, ...targets]);
             if (split) gsap.to(label, { autoAlpha: 1, duration: 0.3, ease: "power2.out" });
@@ -448,8 +508,7 @@ const panels = images.map((p) => ({
           const leave = () => {
             if (active === i) {
               active = -1;
-              grown = false;
-              shrinkBrush(0.4);
+              stopBloom();
             }
             gsap.killTweensOf([label, ...targets]);
             if (split) gsap.to(label, { autoAlpha: 0, duration: 0.3, delay: 0.25, ease: "power2.in" });
@@ -495,6 +554,7 @@ const panels = images.map((p) => ({
           root.removeEventListener("pointerleave", onLeave);
           window.removeEventListener("resize", resize);
           gsap.ticker.remove(tick);
+          stopBloom();
           panelCleanup.forEach((fn) => fn());
           cancelled = true;
           entrance?.kill();
