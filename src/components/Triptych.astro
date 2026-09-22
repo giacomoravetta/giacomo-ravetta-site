@@ -7,33 +7,24 @@
  * shrinks back as soon as it moves. Hovering a panel also reveals its label.
  * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
  */
-import { getImage } from "astro:assets";
 import type { Lang } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
-import leftSrc from "../assets/shijo-nawate/left.webp";
-import centerSrc from "../assets/shijo-nawate/center.webp";
-import rightSrc from "../assets/shijo-nawate/right.webp";
+import { getTriptychImages, type TriptychImages } from "../lib/triptych-images";
 
 interface Props {
   lang: Lang;
+  /** Pass the result of getTriptychImages() when the page also preloads them in <head>. */
+  images?: TriptychImages;
 }
 
-const { lang } = Astro.props;
+const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
 
-const widths = [640, 960, 1280, 1600];
-const defs = [
-  { key: "left", src: leftSrc, sizes: "(max-width: 767px) 100vw, 31vw", label: t("hero.left"), alt: t("hero.alt.left") },
-  { key: "center", src: centerSrc, sizes: "(max-width: 767px) 100vw, 39vw", label: t("hero.center"), alt: t("hero.alt.center") },
-  { key: "right", src: rightSrc, sizes: "(max-width: 767px) 100vw, 30vw", label: t("hero.right"), alt: t("hero.alt.right") },
-] as const;
-
-const panels = await Promise.all(
-  defs.map(async (d) => {
-    const img = await getImage({ src: d.src, widths, sizes: d.sizes, format: "webp" });
-    return { ...d, img };
-  }),
-);
+const panels = images.map((p) => ({
+  ...p,
+  label: t(`hero.${p.key}`),
+  alt: t(`hero.alt.${p.key}`),
+}));
 ---
 
 <section class="triptych" data-triptych aria-label={t("site.tagline")}>
@@ -480,14 +471,24 @@ const panels = await Promise.all(
           };
         });
 
-        // Entrance
-        const entrance = gsap.from(panels, {
-          autoAlpha: 0,
-          y: 24,
-          duration: 1,
-          stagger: 0.12,
-          ease: "power3.out",
-          clearProps: "transform", // a leftover transform would trap labels under the paint layer
+        // Entrance: hold the panels until their images are decoded so they never show empty.
+        gsap.set(panels, { autoAlpha: 0 });
+        let entrance: gsap.core.Tween | null = null;
+        let cancelled = false;
+        Promise.all(images.map((img) => img.decode().catch(() => undefined))).then(() => {
+          if (cancelled) return;
+          entrance = gsap.fromTo(
+            panels,
+            { autoAlpha: 0, y: 24 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: 0.12,
+              ease: "power3.out",
+              clearProps: "transform", // a leftover transform would trap labels under the paint layer
+            },
+          );
         });
 
         return () => {
@@ -496,7 +497,9 @@ const panels = await Promise.all(
           window.removeEventListener("resize", resize);
           gsap.ticker.remove(tick);
           panelCleanup.forEach((fn) => fn());
-          entrance.kill();
+          cancelled = true;
+          entrance?.kill();
+          gsap.set(panels, { clearProps: "opacity,visibility" });
           gsap.set(canvas, { clearProps: "all" });
         };
       },

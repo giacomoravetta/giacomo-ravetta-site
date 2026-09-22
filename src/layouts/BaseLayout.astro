@@ -42,6 +42,7 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={lang === "it" ? "it_IT" : "en_US"} />
+    <slot name="head" />
   </head>
   <body class="flex min-h-svh flex-col font-inter antialiased">
     <a

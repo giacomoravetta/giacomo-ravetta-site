@@ -3,13 +3,30 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.astro";
 import Triptych from "../components/Triptych.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { getTriptychImages } from "../lib/triptych-images";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const images = await getTriptychImages();
 ---
 
 <BaseLayout title={t("home.title")} fullBleed>
-  <Triptych lang={lang} />
+  <Fragment slot="head">
+    {
+      /* Start fetching the hero panels before the body is parsed. */
+      images.map((p) => (
+        <link
+          rel="preload"
+          as="image"
+          href={p.img.src}
+          imagesrcset={p.img.srcSet.attribute}
+          imagesizes={p.sizes}
+          fetchpriority="high"
+        />
+      ))
+    }
+  </Fragment>
+  <Triptych lang={lang} images={images} />
   <div class="mx-auto w-full max-w-5xl px-6 py-16">
     <Hero lang={lang} />
   </div>
