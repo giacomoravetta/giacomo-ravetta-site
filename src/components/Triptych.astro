@@ -68,6 +68,22 @@ const panels = images.map((p) => ({
   <canvas class="paint" aria-hidden="true" data-paint></canvas>
 </section>
 
+<!-- Runs before first paint: park the panels offscreen until every image is decoded,
+     then drop the class and let the CSS transition slide them up. Without JS the
+     class is never added, so the panels simply render in place. -->
+<script is:inline>
+  (() => {
+    const root = document.querySelector("[data-triptych]");
+    if (!root) return;
+    root.classList.add("is-loading");
+    const images = Array.from(root.querySelectorAll("[data-image]"));
+    Promise.all(images.map((img) => img.decode().catch(() => undefined))).then(() => {
+      // Two frames so the offscreen state is committed before the transition starts.
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("is-loading")));
+    });
+  })();
+</script>
+
 <style>
   /* Full viewport. The three panels form one strip (3802 × 2145) that is scaled
      uniformly to cover the viewport and centred, so the scene stays continuous
@@ -176,6 +192,35 @@ const panels = images.map((p) => ({
     font-size: clamp(1.5rem, 3.2vw, 2.75rem);
     letter-spacing: -0.02em;
     line-height: 1.1;
+  }
+
+  /* Load-in: panels wait below the viewport and slide up, staggered left → right,
+     once every image is decoded (see the inline script). The transition ends with
+     transform: none so panels create no stacking context that would trap the labels
+     under the paint layer. */
+  .panel {
+    transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .panel[data-panel="center"] {
+    transition-delay: 0.12s;
+  }
+  .panel[data-panel="right"] {
+    transition-delay: 0.24s;
+  }
+  .is-loading .panel {
+    transform: translateY(100vh);
+  }
+  .is-loading .paint {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .panel {
+      transition: none;
+    }
+    .is-loading .panel {
+      transform: none;
+      visibility: hidden;
+    }
   }
 
   /* Interactive mode: labels start hidden, GSAP reveals them. */
@@ -565,25 +610,6 @@ const panels = images.map((p) => ({
           };
         });
 
-        // Entrance: hold the panels until their images are decoded so they never show empty.
-        gsap.set(panels, { autoAlpha: 0 });
-        let entrance: gsap.core.Tween | null = null;
-        let cancelled = false;
-        Promise.all(images.map((img) => img.decode().catch(() => undefined))).then(() => {
-          if (cancelled) return;
-          entrance = gsap.fromTo(
-            panels,
-            { autoAlpha: 0, y: 24 },
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: 0.12,
-              ease: "power3.out",
-              clearProps: "transform", // a leftover transform would trap labels under the paint layer
-            },
-          );
-        });
 
         return () => {
           root.removeEventListener("pointermove", onMove);
@@ -592,9 +618,6 @@ const panels = images.map((p) => ({
           gsap.ticker.remove(tick);
           stopBloom();
           panelCleanup.forEach((fn) => fn());
-          cancelled = true;
-          entrance?.kill();
-          gsap.set(panels, { clearProps: "opacity,visibility" });
           gsap.set(canvas, { clearProps: "all" });
         };
       },
