@@ -64,21 +64,27 @@ const panels = images.map((p) => ({
 </section>
 
 <style>
-  /* Full viewport; the triptych covers it and each panel is cropped (centred) as needed. */
+  /* Full viewport. The three panels form one strip (3802 × 2145) that is scaled
+     uniformly to cover the viewport and centred, so the scene stays continuous
+     across the seams and only the outer edges are clipped. */
   .triptych {
     position: relative;
+    display: grid;
+    place-items: center;
+    height: 100svh;
     overflow: hidden;
     background: var(--color-background);
     /* Slide under the translucent sticky header so it blurs the artwork. */
     margin-top: calc(-1 * var(--header-h, 4.5rem));
   }
 
-  /* Columns follow the three panel widths (1164 / 1478 / 1160); the row is the viewport. */
+  /* Columns follow the three panel widths (1164 / 1478 / 1160). The strip is as wide
+     as needed to cover the viewport at its native ratio (like object-fit: cover). */
   .grid {
     display: grid;
     grid-template-columns: 1164fr 1478fr 1160fr;
-    width: 100%;
-    height: 100svh;
+    width: max(100%, calc(100svh * 3802 / 2145));
+    aspect-ratio: 3802 / 2145;
   }
 
   .panel {
@@ -93,8 +99,7 @@ const panels = images.map((p) => ({
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center;
+    object-fit: fill; /* each panel already has its image's exact aspect ratio */
   }
 
   .layer-base {
@@ -167,10 +172,13 @@ const panels = images.map((p) => ({
   @media (max-width: 767px) {
     .triptych {
       margin-top: 0;
+      display: block;
+      height: auto;
     }
     .grid {
       grid-template-columns: 1fr;
-      height: auto;
+      width: 100%;
+      aspect-ratio: auto;
     }
     .panel[data-panel="left"] {
       aspect-ratio: 1164 / 2145;
@@ -261,20 +269,11 @@ const panels = images.map((p) => ({
         };
         resize();
 
-        // Draw a colour image into its panel with the same crop as CSS object-fit: cover (centred).
+        // Draw a colour image into its panel rect (root-relative; may extend past the
+        // root edges, the canvas clips it). The panel has the image's exact aspect ratio.
         const drawPanel = (img: HTMLImageElement, rc: (typeof rects)[number]) => {
-          const iw = img.naturalWidth;
-          const ih = img.naturalHeight;
-          if (!iw || !ih) return;
-          const scale = Math.max(rc.w / iw, rc.h / ih);
-          const dw = iw * scale;
-          const dh = ih * scale;
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(rc.x, rc.y, rc.w, rc.h);
-          ctx.clip();
-          ctx.drawImage(img, rc.x + (rc.w - dw) / 2, rc.y + (rc.h - dh) / 2, dw, dh);
-          ctx.restore();
+          if (!img.naturalWidth || !img.naturalHeight) return;
+          ctx.drawImage(img, rc.x, rc.y, rc.w, rc.h);
         };
 
         // ---- Pointer / brush state ----
