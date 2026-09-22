@@ -335,10 +335,9 @@ const panels = images.map((p) => ({
           canvas.height = stroke.height = Math.round(H * DPR);
           ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
           sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-          rects = panels.map((p) => {
-            const b = p.getBoundingClientRect();
-            return { x: b.left - r.left, y: b.top - r.top, w: b.width, h: b.height };
-          });
+          // Layout positions (offset*), not bounding boxes: during the load-in the panels
+          // are translated a viewport down, and the paint must land where they end up.
+          rects = panels.map((p) => ({ x: p.offsetLeft, y: p.offsetTop, w: p.offsetWidth, h: p.offsetHeight }));
         };
         resize();
 
