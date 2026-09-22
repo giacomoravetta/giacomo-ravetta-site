@@ -1,0 +1,72 @@
+---
+import { languages, type Lang, type RouteKey } from "../i18n/ui";
+import { getRouteFromUrl, localizedPath, useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const current = getRouteFromUrl(Astro.url);
+
+const nav: { key: RouteKey; label: string }[] = [
+  { key: "home", label: t("nav.home") },
+  { key: "work", label: t("nav.work") },
+  { key: "services", label: t("nav.services") },
+  { key: "about", label: t("nav.about") },
+];
+---
+
+<header class="site-header sticky top-4 z-50 mx-auto mt-4 w-[min(70dvw,64rem)] rounded-full">
+  <div class="flex w-full items-center justify-between gap-6 px-6 py-4">
+  <a href={localizedPath("home", lang)} class="font-semibold tracking-tight">{t("site.name")}</a>
+
+  <nav aria-label="Main" class="flex items-center gap-6 text-sm">
+    <ul class="flex items-center gap-5">
+      {
+        nav.map(({ key, label }) => (
+          <li>
+            <a
+              href={localizedPath(key, lang)}
+              aria-current={current === key ? "page" : undefined}
+              class="text-muted transition-colors hover:text-foreground aria-[current=page]:text-foreground"
+            >
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <ul aria-label={t("nav.language")} class="flex items-center gap-2 border-l border-muted/30 pl-5">
+      {
+        (Object.keys(languages) as Lang[]).map((code) => (
+          <li>
+            <a
+              href={localizedPath(current, code)}
+              hreflang={code}
+              lang={code}
+              aria-current={code === lang ? "true" : undefined}
+              class="uppercase text-muted transition-colors hover:text-foreground aria-[current=true]:text-foreground"
+            >
+              {code}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  </div>
+</header>
+
+<style>
+  /* Frosted glass: transparent over content, gaussian blur of whatever scrolls beneath. */
+  .site-header {
+    background: color-mix(in oklab, var(--color-background) 35%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.25);
+  }
+</style>

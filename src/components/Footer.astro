@@ -1,0 +1,16 @@
+---
+import type { Lang } from "../i18n/ui";
+import { useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="mx-auto w-full max-w-5xl px-6 py-10 text-sm text-muted">
+  © {year} {t("site.name")}. {t("footer.rights")}
+</footer>

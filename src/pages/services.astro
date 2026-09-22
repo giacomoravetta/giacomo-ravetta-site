@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const services = [
+  { title: t("services.design.title"), body: t("services.design.body") },
+  { title: t("services.development.title"), body: t("services.development.body") },
+  { title: t("services.consulting.title"), body: t("services.consulting.body") },
+];
+---
+
+<BaseLayout title={t("services.title")}>
+  <section class="flex flex-col gap-10">
+    <header class="flex max-w-2xl flex-col gap-4">
+      <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">{t("services.heading")}</h1>
+      <p class="text-lg text-muted">{t("services.intro")}</p>
+    </header>
+
+    <ul class="grid gap-6 md:grid-cols-3">
+      {
+        services.map(({ title, body }) => (
+          <li class="flex flex-col gap-2 rounded-2xl border border-muted/20 p-6">
+            <h2 class="text-xl font-medium">{title}</h2>
+            <p class="text-sm text-muted">{body}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a
+      href="mailto:info@giacomoravetta.com"
+      class="self-start rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+    >
+      {t("services.cta")}
+    </a>
+  </section>
+</BaseLayout>

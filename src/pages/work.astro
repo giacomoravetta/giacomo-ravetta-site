@@ -1,0 +1,59 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const projects = [
+  {
+    title: t("work.cinemaSaronno.title"),
+    body: t("work.cinemaSaronno.body"),
+    url: "https://www.cinemasaronno.it/",
+  },
+  {
+    title: t("work.studioAlbanese.title"),
+    body: t("work.studioAlbanese.body"),
+    url: "https://www.studio-albanese.com/",
+  },
+  {
+    title: t("work.librariesOfMilan.title"),
+    body: t("work.librariesOfMilan.body"),
+    url: "https://www.librariesofmilan.com/",
+  },
+  {
+    title: t("work.giustoDiRendere.title"),
+    body: t("work.giustoDiRendere.body"),
+    url: "https://giustodirenordio.giacomoravetta.com/",
+  },
+];
+---
+
+<BaseLayout title={t("work.title")}>
+  <section class="flex flex-col gap-10">
+    <header class="flex max-w-2xl flex-col gap-4">
+      <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">{t("work.heading")}</h1>
+      <p class="text-lg text-muted">{t("work.intro")}</p>
+    </header>
+
+    <ul class="grid gap-6 md:grid-cols-3">
+      {
+        projects.map(({ title, body, url }) => (
+          <li class="flex flex-col gap-2 rounded-2xl border border-muted/20 p-6">
+            <h2 class="text-xl font-medium">
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="transition-opacity hover:opacity-80"
+              >
+                {title}
+              </a>
+            </h2>
+            <p class="text-sm text-muted">{body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

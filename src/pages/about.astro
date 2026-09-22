@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import profile from "../assets/giacomo-profile-2026.webp";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={t("about.title")}>
+  <article class="grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-start">
+    <div class="flex max-w-2xl flex-col gap-6">
+      <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">{t("about.heading")}</h1>
+      <p class="text-lg text-muted">{t("about.intro")}</p>
+      <p class="text-muted">{t("about.body")}</p>
+    </div>
+
+    <!-- Original file, untouched: no re-encoding so the portrait stays as sharp as the source. -->
+    <img
+      src={profile.src}
+      width={profile.width}
+      height={profile.height}
+      alt={t("about.photo.alt")}
+      class="w-full max-w-sm rounded-2xl object-cover md:order-first md:max-w-none"
+      loading="eager"
+      decoding="async"
+    />
+  </article>
+</BaseLayout>
