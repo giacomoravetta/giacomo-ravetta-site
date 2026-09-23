@@ -10,6 +10,8 @@
   import { onMount } from "svelte";
   import gsap from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+  import { SplitText } from "gsap/SplitText";
 
   export type MobilePanel = {
     key: "left" | "center" | "right";
@@ -32,7 +34,7 @@
   let isStatic = $state(false);
 
   onMount(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, SplitText);
     // Mobile browsers resize the viewport when the address bar collapses; skip the
     // refresh those resizes would trigger so the pinned stage does not jump.
     ScrollTrigger.config({ ignoreMobileResize: true });
@@ -123,6 +125,20 @@
 
       // Text phase: image fixed, label sweeps in with the scroll.
       tl.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
+      const text = label.querySelector<HTMLElement>(".mlabel-text");
+      if (key === "left" && text) {
+        // designer: letters settle in from a blur, one after another.
+        const chars = SplitText.create(text, { type: "chars" }).chars as HTMLElement[];
+        tl.fromTo(
+          chars,
+          { autoAlpha: 0, scale: 1.25, filter: "blur(10px)" },
+          { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: TEXT * 0.45, ease: "power2.out", stagger: (TEXT * 0.5) / chars.length },
+          t0 + TEXT * 0.1,
+        );
+      } else if (key === "right" && text) {
+        // developer: the word decodes from scrambled glyphs.
+        tl.to(text, { duration: TEXT * 0.9, scrambleText: { text: text.textContent ?? "", chars: "01<>/[]{}#*=+-", speed: 0.6 } }, t0 + TEXT * 0.05);
+      }
       tl.addLabel(`rest-${i}`, t0 + TEXT);
 
       // Slide phase: label leaves, stage moves on, next image washes into colour.

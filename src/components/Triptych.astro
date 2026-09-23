@@ -8,7 +8,7 @@
  * Hovering a panel also reveals its label.
  * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
  */
-import type { Lang } from "../i18n/ui";
+import { homeParagraphs, type Lang } from "../i18n/ui";
 import { localizedPath, useTranslations } from "../i18n/utils";
 import { getTriptychImages, type TriptychImages } from "../lib/triptych-images";
 
@@ -20,6 +20,7 @@ interface Props {
 
 const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
+const paragraphs = homeParagraphs[lang];
 // Home side panels → Services subpages.
 const pageFor = { left: "designer", right: "developer" } as const;
 
@@ -52,9 +53,14 @@ const panels = images.map((p) => ({
           />
           {p.href && <a class="panel-link" href={p.href} aria-label={p.label} />}
           {p.key === "center" ? (
-            <h1 class="label label-center" data-label>
-              {p.label}
-            </h1>
+            <div class="label label-center" data-label>
+              <h1 class="sr-only">{p.label}</h1>
+              {paragraphs.map((text, i) => (
+                <p class="para" data-para={i}>
+                  {text}
+                </p>
+              ))}
+            </div>
           ) : (
             <p
               class:list={["label", "label-side", `label-${p.key}`, p.key === "left" ? "font-bluu" : "font-terminal"]}
@@ -217,17 +223,28 @@ const panels = images.map((p) => ({
     right: calc(1.5rem + var(--overflow));
   }
 
+  /* Centre copy: paragraphs stacked on one grid cell, one visible at a time
+     (swapped by the scroll timeline); the box is centred in the panel. */
   .label-center {
-    left: 0;
-    right: 0;
-    top: 50%;
-    margin-top: -0.55em; /* half the line box: vertically centred in the panel */
-    width: fit-content;
-    margin-inline: auto;
-    white-space: nowrap;
-    font-size: clamp(1.5rem, 3.2vw, 2.75rem);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding-inline: 12%;
+    text-align: center;
+    font-weight: 400;
+    font-size: clamp(1rem, 1.35vw, 1.3rem);
+    line-height: 1.55;
+  }
+  .para {
+    grid-area: 1 / 1;
+    margin: 0;
+    max-width: 34ch;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .para[data-para="0"] {
+    opacity: 1;
+    visibility: visible;
   }
 
   /* Load-in: panels wait below the viewport and slide up, staggered left → right,
@@ -259,9 +276,9 @@ const panels = images.map((p) => ({
     }
   }
 
-  /* Interactive mode: labels start hidden, GSAP reveals them. */
+  /* Interactive mode: side labels start hidden, GSAP reveals them. */
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-    .label {
+    .label-side {
       opacity: 0;
       visibility: hidden;
     }
@@ -291,8 +308,10 @@ const panels = images.map((p) => ({
 <script>
   import gsap from "gsap";
   import { SplitText } from "gsap/SplitText";
+  import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-  gsap.registerPlugin(SplitText);
+  gsap.registerPlugin(SplitText, ScrambleTextPlugin, ScrollTrigger);
 
   const root = document.querySelector<HTMLElement>("[data-triptych]");
 
@@ -507,7 +526,9 @@ const panels = images.map((p) => ({
             // Still-detection starts / stops the ink bloom.
             if (performance.now() - lastMove > STILL_AFTER) speed = 0;
             const still = speed < STILL_SPEED;
-            if (active >= 0 && still && !bloom.on) startBloom(rects[active]);
+            // Resting on the centre panel soaks the whole painting, not just one panel.
+            if (active >= 0 && still && !bloom.on)
+              startBloom(panels[active].dataset.panel === "center" ? { x: 0, y: 0, w: W, h: H } : rects[active]);
             else if (!still && bloom.on) stopBloom();
             if (bloom.on) drawBloom();
 
@@ -593,49 +614,45 @@ const panels = images.map((p) => ({
         gsap.ticker.add(tick);
 
         // Hovered panel: track it for the ink bloom and reveal its label.
+        // designer: letters settle in from a blur (SplitText); developer: ScrambleText decode.
+        const SCRAMBLE = "01<>/[]{}#*=+-";
         const panelCleanup = panels.map((panel, i) => {
           const label = panel.querySelector<HTMLElement>("[data-label]")!;
-          const isCenter = panel.dataset.panel === "center";
-          const split = isCenter ? SplitText.create(label, { type: "chars", charsClass: "char" }) : null;
-          const targets: HTMLElement[] = split ? (split.chars as HTMLElement[]) : [label];
-          // Entrances: left label sweeps in from the left, right label from the right,
-          // the centre letters rise from the bottom. Leaving reverses a shorter path.
-          const inFrom =
-            panel.dataset.panel === "left"
-              ? { xPercent: -140, yPercent: 0 }
-              : panel.dataset.panel === "right"
-                ? { xPercent: 140, yPercent: 0 }
-                : { xPercent: 0, yPercent: 120 };
-          const outTo = { xPercent: inFrom.xPercent * 0.5, yPercent: inFrom.yPercent * 0.5 };
-          // For the split label the chars carry the reveal; the wrapper (glass pill) fades as a whole.
-          if (split) gsap.set(targets, { autoAlpha: 0 });
+          const key = panel.dataset.panel;
+          const isCenter = key === "center";
+          const text = label.querySelector<HTMLElement>(".label-text");
+          const original = text?.textContent ?? "";
+          const split = key === "left" && text ? SplitText.create(text, { type: "chars", charsClass: "char" }) : null;
+          const chars = (split?.chars ?? []) as HTMLElement[];
+          const inFrom = key === "left" ? { xPercent: -140 } : { xPercent: 140 };
+          const outTo = { xPercent: inFrom.xPercent * 0.5 };
+          if (chars.length) gsap.set(chars, { autoAlpha: 0 });
 
           const enter = () => {
             active = i;
             stopBloom();
-            // Kill in-flight (possibly not-yet-started staggered) tweens so no char is left behind.
-            gsap.killTweensOf([label, ...targets]);
-            if (split) gsap.to(label, { autoAlpha: 1, duration: 0.3, ease: "power2.out" });
-            gsap.fromTo(
-              targets,
-              { ...inFrom, autoAlpha: 0 },
-              { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", stagger: split ? 0.03 : 0 },
-            );
+            if (isCenter) return; // centre copy is always visible; scrolling swaps its paragraphs
+            gsap.killTweensOf([label, text, ...chars]);
+            gsap.fromTo(label, { ...inFrom, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+            if (split) {
+              gsap.fromTo(
+                chars,
+                { autoAlpha: 0, scale: 1.25, filter: "blur(10px)" },
+                { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.7, ease: "power3.out", stagger: 0.05, delay: 0.15 },
+              );
+            } else if (text) {
+              gsap.to(text, { duration: 1.3, scrambleText: { text: original, chars: SCRAMBLE, speed: 0.6 }, delay: 0.1 });
+            }
           };
           const leave = () => {
             if (active === i) {
               active = -1;
               stopBloom();
             }
-            gsap.killTweensOf([label, ...targets]);
-            if (split) gsap.to(label, { autoAlpha: 0, duration: 0.3, delay: 0.25, ease: "power2.in" });
-            gsap.to(targets, {
-              ...outTo,
-              autoAlpha: 0,
-              duration: 0.35,
-              ease: "power2.in",
-              stagger: split ? 0.012 : 0,
-            });
+            if (isCenter) return;
+            gsap.killTweensOf([label, text, ...chars]);
+            if (text && !split) text.textContent = original;
+            gsap.to(label, { ...outTo, autoAlpha: 0, duration: 0.35, ease: "power2.in" });
           };
           panelHandlers[i] = { enter, leave };
           return () => {
@@ -645,6 +662,32 @@ const panels = images.map((p) => ({
           };
         });
 
+        // Centre copy: pin the hero and let scrolling swap one paragraph for the next.
+        const paras = Array.from(root.querySelectorAll<HTMLElement>("[data-para]"));
+        let paraTl: gsap.core.Timeline | null = null;
+        if (paras.length > 1) {
+          const steps = paras.length - 1;
+          gsap.set(paras, { autoAlpha: 0, y: 24 });
+          gsap.set(paras[0], { autoAlpha: 1, y: 0 });
+          paraTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: root,
+              start: "top top",
+              end: () => "+=" + Math.round(window.innerHeight * 0.6 * steps),
+              pin: true,
+              anticipatePin: 1,
+              scrub: 0.5,
+              invalidateOnRefresh: true,
+              snap: { snapTo: 1 / steps, directional: false, duration: { min: 0.2, max: 0.6 }, delay: 0.05, ease: "power2.inOut" },
+            },
+          });
+          paras.forEach((para, n) => {
+            if (n === 0) return;
+            paraTl!
+              .to(paras[n - 1], { autoAlpha: 0, y: -24, duration: 0.4, ease: "power2.in" }, n - 1)
+              .fromTo(para, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, n - 1 + 0.4);
+          });
+        }
 
         return () => {
           root.removeEventListener("triptych:ready", arm);
@@ -654,6 +697,8 @@ const panels = images.map((p) => ({
           gsap.ticker.remove(tick);
           stopBloom();
           panelCleanup.forEach((fn) => fn());
+          paraTl?.scrollTrigger?.kill();
+          paraTl?.kill();
           gsap.set(canvas, { clearProps: "all" });
         };
       },

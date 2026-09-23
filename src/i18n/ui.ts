@@ -25,7 +25,8 @@ export const ui = {
   en: {
     "site.name": "Giacomo Ravetta",
     "site.tagline": "Designer & developer",
-    "site.description": "Giacomo Ravetta — designer and developer building thoughtful digital products.",
+    "site.description":
+      "Giacomo Ravetta — designer and developer building thoughtful digital products.",
 
     "nav.home": "Home",
     "nav.about": "About me",
@@ -49,11 +50,14 @@ export const ui = {
     "work.heading": "Work",
     "work.intro": "A selection of projects I've designed, built or visualized.",
     "work.cinemaSaronno.title": "Cinema Saronno",
-    "work.cinemaSaronno.body": "Website design and development for a local cinema.",
+    "work.cinemaSaronno.body":
+      "Website design and development for a local cinema.",
     "work.studioAlbanese.title": "Studio Albanese",
-    "work.studioAlbanese.body": "Website design and development for an architecture studio.",
+    "work.studioAlbanese.body":
+      "Website design and development for an architecture studio.",
     "work.librariesOfMilan.title": "Libraries of Milan",
-    "work.librariesOfMilan.body": "A data visualization project mapping Milan's public libraries.",
+    "work.librariesOfMilan.body":
+      "A data visualization project mapping Milan's public libraries.",
     "work.giustoDiRendere.title": "Giusto Di Rendere",
     "work.giustoDiRendere.body": "A civic and political project site.",
 
@@ -92,7 +96,8 @@ export const ui = {
   it: {
     "site.name": "Giacomo Ravetta",
     "site.tagline": "Designer & sviluppatore",
-    "site.description": "Giacomo Ravetta — designer e sviluppatore di prodotti digitali curati.",
+    "site.description":
+      "Giacomo Ravetta — designer e sviluppatore di prodotti digitali curati.",
 
     "nav.home": "Home",
     "nav.about": "Chi sono",
@@ -114,13 +119,17 @@ export const ui = {
 
     "work.title": "Lavori",
     "work.heading": "Lavori",
-    "work.intro": "Una selezione di progetti che ho progettato, sviluppato o visualizzato.",
+    "work.intro":
+      "Una selezione di progetti che ho progettato, sviluppato o visualizzato.",
     "work.cinemaSaronno.title": "Cinema Saronno",
-    "work.cinemaSaronno.body": "Design e sviluppo del sito per un cinema locale.",
+    "work.cinemaSaronno.body":
+      "Design e sviluppo del sito per un cinema locale.",
     "work.studioAlbanese.title": "Studio Albanese",
-    "work.studioAlbanese.body": "Design e sviluppo del sito per uno studio di architettura.",
+    "work.studioAlbanese.body":
+      "Design e sviluppo del sito per uno studio di architettura.",
     "work.librariesOfMilan.title": "Libraries of Milan",
-    "work.librariesOfMilan.body": "Un progetto di data visualization sulle biblioteche pubbliche di Milano.",
+    "work.librariesOfMilan.body":
+      "Un progetto di data visualization sulle biblioteche pubbliche di Milano.",
     "work.giustoDiRendere.title": "Giusto Di Rendere",
     "work.giustoDiRendere.body": "Un sito per un progetto civico e politico.",
 
@@ -159,3 +168,20 @@ export const ui = {
 } as const satisfies Record<Lang, Record<string, string>>;
 
 export type UiKey = keyof (typeof ui)[typeof defaultLang];
+
+/**
+ * Centre-panel copy on the desktop Home hero: one paragraph at a time,
+ * swapped by scrolling. Placeholder text for now.
+ */
+export const homeParagraphs: Record<Lang, string[]> = {
+  en: [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  ],
+  it: [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  ],
+};
