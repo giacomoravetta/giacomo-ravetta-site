@@ -32,6 +32,9 @@
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
+    // Mobile browsers resize the viewport when the address bar collapses; skip the
+    // refresh those resizes would trigger so the pinned stage does not jump.
+    ScrollTrigger.config({ ignoreMobileResize: true });
     const mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
@@ -150,18 +153,20 @@
   <div class="track" bind:this={track}>
   {#each panels as p (p.key)}
     <figure class="mpanel" data-mpanel={p.key}>
-      <img
-        class="mimage"
-        src={p.src}
-        srcset={p.srcset}
-        sizes={p.sizes}
-        width={p.width}
-        height={p.height}
-        alt={p.alt}
-        loading={p.key === "left" ? "eager" : "lazy"}
-        decoding="async"
-        data-mimage
-      />
+      <div class="mimage-wrap">
+        <img
+          class="mimage"
+          src={p.src}
+          srcset={p.srcset}
+          sizes={p.sizes}
+          width={p.width}
+          height={p.height}
+          alt={p.alt}
+          loading={p.key === "left" ? "eager" : "lazy"}
+          decoding="async"
+          data-mimage
+        />
+      </div>
       {#if p.key === "center"}
         <h1 class="mlabel mlabel-center" data-mlabel>{p.label}</h1>
       {:else}
@@ -202,13 +207,22 @@
     overflow: hidden;
   }
 
-  .mimage {
+  /* One shared scale for all three prints so the triptych stays vertically aligned:
+     every image is as tall as the taller of (viewport height) and (the height at
+     which the narrowest print, 1160px wide, fills the viewport width). Wider prints
+     then overflow sideways and are centred; all three share the same vertical crop. */
+  .mimage-wrap {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .mimage {
+    display: block;
+    height: max(100svh, calc(100vw * 2145 / 1160));
+    width: auto;
+    max-width: none;
     will-change: transform, filter;
   }
 
