@@ -56,16 +56,11 @@ const panels = images.map((p) => ({
           {p.key === "center" ? (
             <div class="label label-center" data-label>
               <h1 class="sr-only">{p.label}</h1>
-              {
-                /* Each paragraph sits in a cartouche: the paper-toned text box ukiyo-e
-                   prints use for names and titles, with a small red seal. */
-                paragraphs.map((text, i) => (
-                  <div class="para cartouche" data-para={i}>
-                    <p class="cartouche-text">{text}</p>
-                    <span class="seal" aria-hidden="true" data-seal />
-                  </div>
-                ))
-              }
+              {paragraphs.map((text, i) => (
+                <p class="para" data-para={i}>
+                  {text}
+                </p>
+              ))}
             </div>
           ) : (
             <p
@@ -237,83 +232,25 @@ const panels = images.map((p) => ({
     inset: 0;
     display: grid;
     place-items: center;
-    padding-inline: 10%;
-    font-weight: 400;
-    font-size: clamp(1rem, 1.35vw, 1.3rem);
-    line-height: 1.55;
+    padding-inline: 6%;
+    overflow: hidden; /* paragraphs enter and leave through the panel edges */
+    text-align: center;
+    font-weight: 600;
+    font-size: clamp(1.6rem, 2.6vw, 3rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
   }
+  /* Big centred copy: each paragraph travels bottom → top with the scroll,
+     fading in as it rises and out as it nears the top. */
   .para {
     position: relative;
     grid-area: 1 / 1;
     margin: 0;
+    max-width: 22ch;
     opacity: 0;
     visibility: hidden;
+    will-change: transform, opacity;
   }
-  /* Paper slab: warm washi tone, hairline rule, dark ink text, seal bottom-right. */
-  .cartouche {
-    box-sizing: border-box;
-    width: min(100%, 30ch);
-    padding: 1.6em 1.5em 2.4em;
-    background: #efe6d2;
-    color: #1d1916;
-    border: 1px solid rgb(90 72 48 / 0.45);
-    box-shadow:
-      inset 0 0 0 1px rgb(239 230 210 / 0.9),
-      inset 0 0 0 2px rgb(90 72 48 / 0.35),
-      0 18px 40px rgb(0 0 0 / 0.35);
-    text-align: left;
-    text-shadow: none;
-  }
-  .cartouche-text {
-    margin: 0;
-    font-size: 0.95em;
-    line-height: 1.6;
-  }
-  .seal {
-    position: absolute;
-    right: 1.1em;
-    bottom: 0.9em;
-    width: 0.95em;
-    height: 0.95em;
-    border-radius: 2px;
-    background: #b5362a;
-    box-shadow: inset 0 0 0 2px #efe6d2, inset 0 0 0 3px #b5362a;
-    transform-origin: center;
-  }
-  .para[data-para="0"] {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  /* Load-in: panels wait below the viewport and slide up, staggered left → right,
-     once every image is decoded (see the inline script). The transition ends with
-     transform: none so panels create no stacking context that would trap the labels
-     under the paint layer. */
-  .panel {
-    transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .panel[data-panel="center"] {
-    transition-delay: 0.12s;
-  }
-  .panel[data-panel="right"] {
-    transition-delay: 0.24s;
-  }
-  .is-loading .panel {
-    transform: translateY(100vh);
-  }
-  .is-loading .paint {
-    display: none;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .panel {
-      transition: none;
-    }
-    .is-loading .panel {
-      transform: none;
-      visibility: hidden;
-    }
-  }
-
   /* Interactive mode: side labels start hidden, GSAP reveals them. */
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     .label-side {
@@ -710,41 +647,36 @@ const panels = images.map((p) => ({
         if (root.dataset.ready) arm();
         else root.addEventListener("triptych:ready", arm, { once: true });
 
-        // Centre copy: pin the hero and let scrolling swap one paragraph for the next.
+        // Centre copy: pin the hero; each paragraph rises from the bottom of the panel,
+        // is fully readable through the middle and fades out towards the top, all
+        // scrubbed to the scroll. Paragraphs overlap slightly so the next is already
+        // rising as the previous fades.
         const paras = Array.from(root.querySelectorAll<HTMLElement>("[data-para]"));
         let paraTl: gsap.core.Timeline | null = null;
-        if (paras.length > 1) {
-          const steps = paras.length - 1;
-          gsap.set(paras, { autoAlpha: 0, y: 24 });
-          gsap.set(paras[0], { autoAlpha: 1, y: 0 });
+        if (paras.length) {
+          const OVERLAP = 0.3; // fraction of a paragraph's travel shared with the next
+          const total = 1 + (paras.length - 1) * (1 - OVERLAP);
+          const travel = () => root.getBoundingClientRect().height * 0.55; // px from centre to each edge
           paraTl = gsap.timeline({
+            defaults: { ease: "none" },
             scrollTrigger: {
               trigger: root,
               start: "top top",
-              end: () => "+=" + Math.round(window.innerHeight * 0.6 * steps),
+              end: () => "+=" + Math.round(window.innerHeight * 0.9 * total),
               pin: true,
               anticipatePin: 1,
               scrub: 0.25,
               invalidateOnRefresh: true,
-              snap: { snapTo: 1 / steps, directional: false, duration: { min: 0.15, max: 0.45 }, delay: 0.02, ease: "power2.inOut" },
             },
           });
-          // Swap like a printer changing blocks: the current cartouche lifts away, the
-          // next presses in from below, and its seal is stamped last.
           paras.forEach((para, n) => {
-            if (n === 0) return;
-            const seal = para.querySelector<HTMLElement>("[data-seal]");
+            const at = n * (1 - OVERLAP);
+            // Position: bottom edge → top edge over the paragraph's whole travel.
+            paraTl!.fromTo(para, { y: () => travel() }, { y: () => -travel(), duration: 1 }, at);
+            // Visibility: in over the first third, hold, out over the last third.
             paraTl!
-              .to(paras[n - 1], { autoAlpha: 0, y: -14, scale: 0.985, duration: 0.35, ease: "power2.in" }, n - 1)
-              .fromTo(
-                para,
-                { autoAlpha: 0, y: 36, scale: 0.97 },
-                { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: "power3.out" },
-                n - 1 + 0.35,
-              );
-            if (seal) {
-              paraTl!.fromTo(seal, { scale: 1.8, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, n - 1 + 0.75);
-            }
+              .fromTo(para, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, at)
+              .to(para, { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, at + 0.7);
           });
         }
 
