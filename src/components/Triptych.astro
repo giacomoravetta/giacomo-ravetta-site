@@ -34,6 +34,10 @@ const panels = images.map((p) => ({
 ---
 
 <section class="triptych" data-triptych aria-label={t("site.tagline")}>
+  <!-- Frosted circle behind the centre copy, centred on the viewport so it can spill
+       over the side panels; fades in on the first scroll. Sits above the paint
+       canvas and below the labels (same z-index, earlier in the DOM). -->
+  <span class="center-glass" aria-hidden="true" data-center-glass></span>
   <div class="grid">
     {
       panels.map((p) => (
@@ -55,8 +59,6 @@ const panels = images.map((p) => ({
           {p.href && <a class="panel-link" href={p.href} aria-label={p.label} />}
           {p.key === "center" ? (
             <div class="label label-center" data-label>
-              <!-- Frosted circle behind the copy; fades in on the first scroll. -->
-              <span class="center-glass" aria-hidden="true" data-center-glass></span>
               <h1 class="sr-only">{p.label}</h1>
               {paragraphs.map((text, i) => (
                 <p class="para" data-para={i}>
@@ -244,13 +246,18 @@ const panels = images.map((p) => ({
      layer is masked with a radial gradient: fully present in the middle, gone at
      the rim. Reads as heavy blur at the centre and a sharp painting at the edge. */
   .center-glass {
-    grid-area: 1 / 1;
-    width: min(92%, 66vh);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    width: min(115vh, 72vw); /* ~2.5× the earlier circle; spills onto the side panels */
     aspect-ratio: 1;
+    margin: calc(min(115vh, 72vw) / -2) 0 0 calc(min(115vh, 72vw) / -2); /* centred without transforms */
+    pointer-events: none;
     border-radius: 50%;
-    background: rgb(0 0 0 / 0.4);
-    -webkit-backdrop-filter: blur(22px) saturate(120%);
-    backdrop-filter: blur(22px) saturate(120%);
+    background: rgb(0 0 0 / 0.35);
+    -webkit-backdrop-filter: blur(10px) saturate(115%);
+    backdrop-filter: blur(10px) saturate(115%);
     -webkit-mask-image: radial-gradient(circle, #000 0%, #000 38%, rgb(0 0 0 / 0.55) 60%, transparent 78%);
     mask-image: radial-gradient(circle, #000 0%, #000 38%, rgb(0 0 0 / 0.55) 60%, transparent 78%);
     opacity: 0;
