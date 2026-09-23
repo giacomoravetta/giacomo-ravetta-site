@@ -38,3 +38,21 @@
     scroll-behavior: auto;
   }
 }
+
+/* Scroll-driven hero (MobileTriptych.svelte): shown on phones, tablets and any
+   touch device; hidden where the pointer-driven triptych runs. Keep this query
+   in sync with the client:media in pages/index.astro and Triptych.astro. */
+.scroll-hero {
+  display: none;
+}
+@media (max-width: 1023px), (hover: none), (pointer: coarse) {
+  .scroll-hero {
+    display: block;
+  }
+}
+/* With the sticky desktop header (md+), slide the scroll hero under it too. */
+@media (min-width: 768px) {
+  .scroll-hero {
+    margin-top: calc(-1 * var(--header-h));
+  }
+}

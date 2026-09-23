@@ -37,9 +37,13 @@ const mobilePanels = images.map((p) => ({
       ))
     }
   </Fragment>
-  <!-- Desktop: pointer-driven brush triptych. Phones: scroll-driven Svelte version. -->
+  <!--
+    Wide screens with a mouse: pointer-driven brush triptych.
+    Phones, tablets (iPad included) and any touch device: scroll-driven Svelte version.
+    The media query below must match SCROLL_HERO_QUERY in global.css.
+  -->
   <Triptych lang={lang} images={images} />
-  <div class="md:hidden">
-    <MobileTriptych client:media="(max-width: 767px)" panels={mobilePanels} />
+  <div class="scroll-hero">
+    <MobileTriptych client:media="(max-width: 1023px), (hover: none), (pointer: coarse)" panels={mobilePanels} />
   </div>
 </BaseLayout>

@@ -1,6 +1,7 @@
 <script lang="ts">
   /**
-   * Mobile Home hero: the three Shijo Nawate panels stacked full-height.
+   * Scroll-driven Home hero for phones, tablets and touch devices: the three
+ * Shijo Nawate panels stacked full-height.
    * Scroll drives the reveal: each panel starts desaturated and slightly
    * zoomed and washes into colour as it scrolls through the viewport; its
    * label sweeps in (left → right, right → left, bottom → top) when the panel

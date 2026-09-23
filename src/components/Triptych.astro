@@ -261,8 +261,9 @@ const panels = images.map((p) => ({
     }
   }
 
-  /* Phones get the scroll-driven Svelte version instead (see MobileTriptych.svelte). */
-  @media (max-width: 767px) {
+  /* Phones, tablets and touch devices get the scroll-driven Svelte version instead
+     (see MobileTriptych.svelte and .scroll-hero in global.css). */
+  @media (max-width: 1023px), (hover: none), (pointer: coarse) {
     .triptych {
       display: none;
     }
