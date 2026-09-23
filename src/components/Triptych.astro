@@ -3,8 +3,9 @@
  * Home hero: "The Battle of Shijo Nawate" triptych.
  * Panels rest desaturated. A canvas on top paints the colour version through a
  * textured brush stroke that follows the cursor and slowly dries (fades). When the
- * pointer is nearly still, ink blooms out from that point with a fibrous edge until
- * it soaks the whole hovered panel; moving again stops the bloom and the ink dries.
+ * pointer is nearly still, the panel catches fire: colour burns outward from that
+ * point and a few stray sparks, behind a glowing ember edge, until the whole hovered
+ * panel is lit. It stays lit until the pointer leaves the panel, then the colour dries.
  * Hovering a panel also reveals its label.
  * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
  */
@@ -20,15 +21,14 @@ interface Props {
 
 const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
-// Home side panels → Services subpages.
-const pageFor = { left: "designer", right: "developer" } as const;
+// Home side panels → Services subpages; the centre → About me.
+const pageFor = { left: "designer", center: "about", right: "developer" } as const;
 
 const panels = images.map((p) => ({
   ...p,
   label: t(`hero.${p.key}`),
   alt: t(`hero.alt.${p.key}`),
-  // Side panels link to their Services section; the centre panel is not a link.
-  href: p.key === "center" ? undefined : localizedPath(pageFor[p.key], lang),
+  href: localizedPath(pageFor[p.key], lang),
 }));
 ---
 
@@ -51,14 +51,13 @@ const panels = images.map((p) => ({
             draggable="false"
             data-image
           />
-          {p.href && <a class="panel-link" href={p.href} aria-label={p.label} />}
+          <a class="panel-link" href={p.href} aria-label={p.key === "center" ? t("nav.about") : p.label} />
           {p.key === "center" ? (
             <h1 class="sr-only" data-label>
               {p.label}
             </h1>
           ) : (
             <>
-            <div class:list={["scrim", `scrim-${p.key}`]} style={`--chars: ${p.label.length}`} aria-hidden="true" data-scrim />
             <p
               class:list={["label", "label-side", `label-${p.key}`, p.key === "left" ? "font-bluu" : "font-terminal"]}
               style={`--chars: ${p.label.length}`}
@@ -75,6 +74,10 @@ const panels = images.map((p) => ({
 
   <!-- Colour "paint" layer: the script draws the colour images through a brush-stroke mask. -->
   <canvas class="paint" aria-hidden="true" data-paint></canvas>
+
+  <!-- Centre panel caption: rises from below the viewport while the centre is hovered
+       (replacing the footer); the h1 above stays the accessible name. -->
+  <p class="label center-caption uppercase" aria-hidden="true">{t("nav.about")}</p>
 </section>
 
 <!-- Runs before first paint: park the panels offscreen until every image is decoded,
@@ -194,13 +197,31 @@ const panels = images.map((p) => ({
        ahead of the first hover, so the tween never has to create them mid-frame. */
     will-change: transform, opacity;
   }
+  /* Pure CSS animation (keyframes in global.css): the script only sets
+     [data-hero-center="in" | "out"] on <html>. Parked below the viewport until then. */
+  .center-caption {
+    left: 0;
+    right: 0;
+    bottom: 1.5rem;
+    text-align: center;
+    font-size: clamp(1.5rem, 2.4vw, 2.5rem);
+    letter-spacing: 0.02em;
+    translate: 0 calc(100% + 1.5rem);
+  }
+  :global(:root[data-hero-center="in"]) .center-caption {
+    animation: slide-up-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  :global(:root[data-hero-center="out"]) .center-caption {
+    animation: slide-down-out 0.5s cubic-bezier(0.64, 0, 0.78, 0) forwards;
+  }
+
   .label .char {
     will-change: transform, opacity;
   }
 
   /* Side labels read vertically (top → bottom) along the outer edges, centred.
      The font size is derived from the character count so the word spans ~70dvh
-     (average Inter semibold lowercase advance ≈ 0.47em). */
+     (per-face average lowercase advance, `--adv`). */
   .label-side {
     /* Centred without CSS translate (GSAP folds individual transform props into
        its own transform): the box is 70dvh + vertical padding tall. */
@@ -229,33 +250,8 @@ const panels = images.map((p) => ({
     right: calc(1.5rem + var(--overflow));
   }
 
-  /* Readability scrim behind each side word: a full-height band along the outer
-     edge, 70% black at the edge fading to transparent, about twice the word's width.
-     Same z-index as the label but earlier in the DOM, so it sits above the paint
-     layer and under the word. */
-  .scrim {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    will-change: opacity;
-    z-index: 2;
-    width: calc(var(--overflow) + 1.5rem + 2 * 70dvh / (var(--chars, 9) * var(--adv, 0.47)));
-    pointer-events: none;
-  }
-  .scrim-left {
-    --adv: 0.47;
-    left: 0;
-    background: linear-gradient(to right, rgb(0 0 0 / 0.7) calc(var(--overflow)), rgb(0 0 0 / 0));
-  }
-  .scrim-right {
-    --adv: 0.416;
-    right: 0;
-    background: linear-gradient(to left, rgb(0 0 0 / 0.7) calc(var(--overflow)), rgb(0 0 0 / 0));
-  }
-
   /* Interactive mode: side labels start hidden, GSAP reveals them. */
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-    .scrim,
     .label-side {
       opacity: 0;
       visibility: hidden;
@@ -308,7 +304,7 @@ const panels = images.map((p) => ({
         const images = panels.map((p) => p.querySelector<HTMLImageElement>("[data-image]")!);
 
         const STILL_SPEED = 0.25; // px/ms; below this the pointer counts as "barely moving"
-        const STILL_AFTER = 90; // ms without a move → speed decays to 0
+        const STILL_AFTER = 60; // ms without a move → speed decays to 0
         const DRY = 0.028; // per-frame alpha removed from the stroke (how fast paint "dries")
         const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
 
@@ -383,99 +379,150 @@ const panels = images.map((p) => ({
         let lastMove = 0;
         let alive = 0; // frames left to keep compositing after the stroke has dried
 
-        // ---- Ink bloom: spreads from a resting pointer until it soaks the panel. ----
-        const BLOOM_DURATION = 4.5; // seconds to reach the panel's far corner
-        const HARMONICS = 6; // outline irregularity = sum of low-frequency sines
+        // ---- Burn: a resting pointer sets the panel alight; colour spreads like fire. ----
+        // A low-res "ignition time" field (distance to the pointer and a few stray sparks,
+        // roughened with noise) is thresholded against a rising progress each frame; the
+        // band where it crosses glows like an ember edge.
+        const BURN_DURATION = 3.5; // seconds until the whole panel has burnt through
+        const CELL = 6; // CSS px per field cell (the canvas upscale softens the edge)
+        const EDGE = 0.05; // width of the burning band, in field units
+        const burnMask = document.createElement("canvas");
+        const burnEmber = document.createElement("canvas");
+        const mctx = burnMask.getContext("2d")!;
+        const ectx = burnEmber.getContext("2d")!;
         const bloom = {
           on: false,
-          p: 0, // 0 → 1 progress, eased
-          cx: 0,
-          cy: 0,
-          far: 0, // distance from the origin to the panel's farthest corner
+          p: 0, // progress; the field runs 0 → 1, the tween overshoots by EDGE to finish it
           clip: undefined as (typeof rects)[number] | undefined,
-          harmonics: [] as { f: number; amp: number; phase: number; drift: number }[],
+          field: new Float32Array(0),
+          fw: 0,
+          fh: 0,
+          mask: undefined as ImageData | undefined,
+          ember: undefined as ImageData | undefined,
         };
+
+        // Value noise on a random lattice, a few octaves, roughly 0..1.
+        const makeNoise = (gw: number, gh: number) => {
+          const lat = Float32Array.from({ length: (gw + 1) * (gh + 1) }, () => Math.random());
+          return (u: number, v: number) => {
+            const x = u * gw;
+            const y = v * gh;
+            const x0 = Math.min(gw - 1, Math.floor(x));
+            const y0 = Math.min(gh - 1, Math.floor(y));
+            const sx = (x - x0) ** 2 * (3 - 2 * (x - x0));
+            const sy = (y - y0) ** 2 * (3 - 2 * (y - y0));
+            const at = (i: number, j: number) => lat[j * (gw + 1) + i];
+            const a = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * sx;
+            const b = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * sx;
+            return a + (b - a) * sy;
+          };
+        };
+
+        // While a single panel burns into colour, the grey ones fade well back.
+        const DIM_OPACITY = 0.2;
+        const baseOpacity = parseFloat(getComputedStyle(images[0]).opacity); // .layer-base
+        let dimmed = false;
+        const dimOthers = (on: boolean) => {
+          if (dimmed === on) return;
+          dimmed = on;
+          const others = images.filter((_, i) => i !== active);
+          if (on) gsap.to(others, { opacity: DIM_OPACITY, duration: 0.8, ease: "power2.out", overwrite: "auto" });
+          else gsap.to(images, { opacity: baseOpacity, duration: 0.6, ease: "sine.inOut", overwrite: "auto", clearProps: "opacity" });
+        };
+
         const startBloom = (rc: (typeof rects)[number]) => {
-          const px = pos.x - rc.x;
-          const py = pos.y - rc.y;
-          bloom.on = true;
-          bloom.p = 0;
-          bloom.cx = pos.x;
-          bloom.cy = pos.y;
-          bloom.clip = rc;
-          bloom.far = Math.max(
-            Math.hypot(px, py),
-            Math.hypot(rc.w - px, py),
-            Math.hypot(px, rc.h - py),
-            Math.hypot(rc.w - px, rc.h - py),
-          );
-          // Fresh random outline every time so no two blooms look alike.
-          bloom.harmonics = Array.from({ length: HARMONICS }, (_, i) => ({
-            f: i + 2,
-            amp: gsap.utils.random(0.4, 1) / (i + 2),
-            phase: gsap.utils.random(0, Math.PI * 2),
-            drift: gsap.utils.random(0.15, 0.5) * (Math.random() < 0.5 ? -1 : 1),
-          }));
+          const fw = Math.ceil(rc.w / CELL);
+          const fh = Math.ceil(rc.h / CELL);
+          const far = Math.hypot(rc.w, rc.h);
+          // The pointer ignites first; 2–4 stray sparks catch a little later.
+          const sparks = [{ x: pos.x - rc.x, y: pos.y - rc.y, delay: 0 }];
+          for (let k = gsap.utils.random(2, 4, 1); k > 0; k--)
+            sparks.push({ x: gsap.utils.random(0, rc.w), y: gsap.utils.random(0, rc.h), delay: gsap.utils.random(0.12, 0.4) });
+          const octaves = [4, 9, 20].map((g) => makeNoise(g, Math.max(2, Math.round((g * rc.h) / rc.w))));
+          const field = new Float32Array(fw * fh);
+          let min = Infinity;
+          let max = 0;
+          for (let j = 0; j < fh; j++)
+            for (let i = 0; i < fw; i++) {
+              const x = i * CELL;
+              const y = j * CELL;
+              let t = Infinity;
+              for (const s of sparks) t = Math.min(t, s.delay + (1.6 * Math.hypot(x - s.x, y - s.y)) / far);
+              const u = i / fw;
+              const v = j / fh;
+              t += 0.3 * octaves[0](u, v) + 0.15 * octaves[1](u, v) + 0.07 * octaves[2](u, v);
+              field[j * fw + i] = t;
+              if (t < min) min = t;
+              if (t > max) max = t;
+            }
+          // Rescale so the first cell catches at 0: no dead time before the fire shows.
+          for (let i = 0; i < field.length; i++) field[i] = (field[i] - min) / (max - min);
+          burnMask.width = burnEmber.width = fw;
+          burnMask.height = burnEmber.height = fh;
+          Object.assign(bloom, {
+            on: true,
+            p: 0,
+            clip: rc,
+            field,
+            fw,
+            fh,
+            mask: mctx.createImageData(fw, fh),
+            ember: ectx.createImageData(fw, fh),
+          });
           gsap.killTweensOf(bloom);
-          gsap.to(bloom, { p: 1, duration: BLOOM_DURATION, ease: "power3.out" });
+          gsap.to(bloom, {
+            p: 1 + EDGE,
+            duration: BURN_DURATION,
+            ease: "sine.out",
+          });
+          dimOthers(true);
         };
         const stopBloom = () => {
           if (!bloom.on) return;
           bloom.on = false;
           gsap.killTweensOf(bloom);
+          dimOthers(false);
         };
 
-        // Draw one frame of the bloom onto the stroke mask: an irregular blot with a
-        // dense centre and a soft, fibrous rim. Alpha accumulates frame over frame.
+        // Threshold the field onto the stroke mask (burnt cells fully painted) and
+        // refresh the ember layer for the band that is burning right now.
         const drawBloom = () => {
-          const R = bloom.far * 1.12 * bloom.p;
-          if (R < 1) return;
-          const t = performance.now() / 1000;
-          const { cx, cy } = bloom;
+          const { field, mask, ember, fw, fh, clip, p } = bloom;
+          if (!mask || !ember || !clip || p <= 0) return;
+          const m = mask.data;
+          const e = ember.data;
+          const flick = performance.now() / 180;
+          for (let i = 0; i < field.length; i++) {
+            const x = Math.min(1, Math.max(0, (p - field[i]) / EDGE));
+            const a = x * x * (3 - 2 * x);
+            m[i * 4 + 3] = a * 255;
+            // Ember: peaks mid-band, flickers per cell.
+            const glow = 4 * a * (1 - a) * (0.75 + 0.25 * Math.sin(flick + field[i] * 90));
+            e[i * 4] = 255;
+            e[i * 4 + 1] = 90 + 110 * a;
+            e[i * 4 + 2] = 30;
+            e[i * 4 + 3] = glow * 230;
+          }
+          mctx.putImageData(mask, 0, 0);
+          ectx.putImageData(ember, 0, 0);
           sctx.save();
-          if (bloom.clip) {
-            sctx.beginPath();
-            sctx.rect(bloom.clip.x, bloom.clip.y, bloom.clip.w, bloom.clip.h);
-            sctx.clip();
-          }
-          // Outline: radius varies with angle; harmonics drift slowly so the edge "creeps".
-          const N = 120;
           sctx.beginPath();
-          for (let k = 0; k <= N; k++) {
-            const a = (k / N) * Math.PI * 2;
-            let n = 0;
-            for (const h of bloom.harmonics) n += h.amp * Math.sin(h.f * a + h.phase + t * h.drift);
-            const r = R * (1 + 0.14 * n);
-            const x = cx + Math.cos(a) * r;
-            const y = cy + Math.sin(a) * r;
-            if (k === 0) sctx.moveTo(x, y);
-            else sctx.lineTo(x, y);
-          }
-          sctx.closePath();
-          const g = sctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.15);
-          g.addColorStop(0, "rgba(0,0,0,0.32)");
-          g.addColorStop(0.6, "rgba(0,0,0,0.22)");
-          g.addColorStop(0.88, "rgba(0,0,0,0.08)");
-          g.addColorStop(1, "rgba(0,0,0,0)");
-          sctx.fillStyle = g;
-          sctx.fill();
-          // Fibres: short strokes wicking outward from the rim into the paper.
-          sctx.strokeStyle = "rgba(0,0,0,0.16)";
-          sctx.lineCap = "round";
-          for (let j = 0; j < 12; j++) {
-            const a = gsap.utils.random(0, Math.PI * 2);
-            let n = 0;
-            for (const h of bloom.harmonics) n += h.amp * Math.sin(h.f * a + h.phase + t * h.drift);
-            const r0 = R * (1 + 0.14 * n) * gsap.utils.random(0.88, 0.98);
-            const r1 = r0 + R * gsap.utils.random(0.04, 0.16);
-            const wobble = gsap.utils.random(-0.05, 0.05);
-            sctx.lineWidth = gsap.utils.random(0.6, 1.8);
-            sctx.beginPath();
-            sctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
-            sctx.lineTo(cx + Math.cos(a + wobble) * r1, cy + Math.sin(a + wobble) * r1);
-            sctx.stroke();
-          }
+          sctx.rect(clip.x, clip.y, clip.w, clip.h);
+          sctx.clip();
+          sctx.drawImage(burnMask, clip.x, clip.y, fw * CELL, fh * CELL);
           sctx.restore();
+        };
+        // Glow the burning edge over the composited colour.
+        const drawEmber = () => {
+          const { clip, fw, fh, p } = bloom;
+          if (!bloom.on || !clip || p <= 0 || p >= 1 + EDGE) return;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(clip.x, clip.y, clip.w, clip.h);
+          ctx.clip();
+          ctx.globalCompositeOperation = "lighter";
+          ctx.drawImage(burnEmber, clip.x, clip.y, fw * CELL, fh * CELL);
+          ctx.restore();
         };
 
         const xTo = gsap.quickTo(pos, "x", { duration: 0.35, ease: "power3.out" });
@@ -505,13 +552,11 @@ const panels = images.map((p) => ({
           sctx.restore();
 
           if (visible) {
-            // Still-detection starts / stops the ink bloom.
+            // Resting ignites the burn; once lit it keeps burning (and stays in colour)
+            // until the pointer leaves the panel.
             if (performance.now() - lastMove > STILL_AFTER) speed = 0;
             const still = speed < STILL_SPEED;
-            // Resting on the centre panel soaks the whole painting, not just one panel.
-            if (active >= 0 && still && !bloom.on)
-              startBloom(panels[active].dataset.panel === "center" ? { x: 0, y: 0, w: W, h: H } : rects[active]);
-            else if (!still && bloom.on) stopBloom();
+            if (active >= 0 && still && !bloom.on) startBloom(rects[active]);
             if (bloom.on) drawBloom();
 
             // Lay paint along the eased path so fast moves leave a continuous stroke.
@@ -546,6 +591,7 @@ const panels = images.map((p) => ({
           ctx.globalCompositeOperation = "destination-in";
           ctx.drawImage(stroke, 0, 0, W, H);
           ctx.globalCompositeOperation = "source-over";
+          drawEmber();
         };
 
         const onMove = (e: PointerEvent) => {
@@ -598,7 +644,6 @@ const panels = images.map((p) => ({
         const SCRAMBLE = "01<>/[]{}#*=+-";
         const panelCleanup = panels.map((panel, i) => {
           const label = panel.querySelector<HTMLElement>("[data-label]")!;
-          const scrim = panel.querySelector<HTMLElement>("[data-scrim]");
           const key = panel.dataset.panel;
           const isCenter = key === "center";
           const text = label.querySelector<HTMLElement>(".label-text");
@@ -612,9 +657,9 @@ const panels = images.map((p) => ({
           const enter = () => {
             active = i;
             stopBloom();
-            if (isCenter) return; // the centre label is screen-reader only
-            gsap.killTweensOf([label, scrim, text, ...chars]);
-            if (scrim) gsap.to(scrim, { autoAlpha: 1, duration: 0.9, ease: "sine.out" });
+            // Centre: its h1 is screen-reader only; swap the footer for the caption.
+            if (isCenter) return (document.documentElement.dataset.heroCenter = "in");
+            gsap.killTweensOf([label, text, ...chars]);
             // Gentle eases and longer travel: the steep power3 curves read as a snap.
             gsap.fromTo(label, { ...inFrom, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.2, ease: "power2.out" });
             if (split) {
@@ -634,9 +679,8 @@ const panels = images.map((p) => ({
               active = -1;
               stopBloom();
             }
-            if (isCenter) return;
-            gsap.killTweensOf([label, scrim, text, ...chars]);
-            if (scrim) gsap.to(scrim, { autoAlpha: 0, duration: 0.7, ease: "sine.inOut" });
+            if (isCenter) return (document.documentElement.dataset.heroCenter = "out");
+            gsap.killTweensOf([label, text, ...chars]);
             if (text && !split) text.textContent = original;
             // Letters leave first with a light stagger, the word follows them out.
             if (split) gsap.to(chars, { autoAlpha: 0, yPercent: -20, duration: 0.5, ease: "power2.inOut", stagger: 0.025 });
@@ -647,7 +691,6 @@ const panels = images.map((p) => ({
             panel.removeEventListener("pointerenter", enter);
             panel.removeEventListener("pointerleave", leave);
             split?.revert();
-            if (scrim) gsap.set(scrim, { clearProps: "opacity,visibility" });
           };
         });
 
@@ -665,6 +708,9 @@ const panels = images.map((p) => ({
           stopBloom();
           panelCleanup.forEach((fn) => fn());
           gsap.set(canvas, { clearProps: "all" });
+          gsap.killTweensOf(images);
+          gsap.set(images, { clearProps: "opacity" });
+          document.documentElement.removeAttribute("data-hero-center");
         };
       },
     );
