@@ -15,10 +15,9 @@ const year = new Date().getFullYear();
 
 <footer
   class:list={[
-    "w-full text-white",
-    overlay
-      ? "pointer-events-none fixed inset-x-0 bottom-0 z-40 px-6 py-4 text-center text-xs text-foreground/70 [text-shadow:0_1px_8px_rgb(0_0_0/0.7)]"
-      : "mx-auto max-w-5xl px-6 py-10 text-sm",
+    // Same frosted glass as the header, hugging its text, squared off at the bottom edge.
+    "site-footer glass mx-auto w-fit max-w-[calc(100%-1.5rem)] rounded-t-lg border-b-0 px-6 py-3 text-center text-xs text-foreground/70",
+    overlay ? "pointer-events-none fixed inset-x-0 bottom-0 z-40" : "mt-10",
   ]}
 >
   © {year} {t("site.name")}. {t("footer.rights")}
