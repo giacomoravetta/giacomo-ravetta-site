@@ -52,7 +52,7 @@ const panels = images.map((p) => ({
             draggable="false"
             data-image
           />
-          <a class="panel-link" href={p.href} aria-label={p.key === "center" ? t("nav.about") : p.label} />
+          <a class="panel-link" href={p.href} data-astro-prefetch="hover" aria-label={p.key === "center" ? t("nav.about") : p.label} />
           {p.key === "center" ? (
             <h1 class="sr-only" data-label>
               {p.label}
@@ -312,7 +312,7 @@ const panels = images.map((p) => ({
         const STILL_SPEED = 0.25; // px/ms; below this the pointer counts as "barely moving"
         const STILL_AFTER = 60; // ms without a move → speed decays to 0
         const DRY = 0.028; // per-frame alpha removed from the stroke (how fast paint "dries")
-        const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+        const DPR = Math.min(window.devicePixelRatio || 1, 2);
 
         const baseRadius = () => gsap.utils.clamp(64, 110, window.innerWidth * 0.055);
 

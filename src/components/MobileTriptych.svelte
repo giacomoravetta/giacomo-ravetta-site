@@ -206,7 +206,8 @@
         />
       </div>
       {#if p.href}
-        <a class="mpanel-link" href={p.href} aria-label={p.label}></a>
+        <!-- No hover on touch: prefetch once the panel slides into view. -->
+        <a class="mpanel-link" href={p.href} aria-label={p.label} data-astro-prefetch="viewport"></a>
       {/if}
       {#if p.key === "center"}
         <h1 class="sr-only">{p.label}</h1>
