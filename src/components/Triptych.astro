@@ -190,6 +190,12 @@ const panels = images.map((p) => ({
     color: var(--color-foreground);
     text-shadow: 0 2px 24px rgb(0 0 0 / 0.6);
     pointer-events: none;
+    /* Promote the words (and the split letters inside) to compositor layers
+       ahead of the first hover, so the tween never has to create them mid-frame. */
+    will-change: transform, opacity;
+  }
+  .label .char {
+    will-change: transform, opacity;
   }
 
   /* Side labels read vertically (top → bottom) along the outer edges, centred.
@@ -231,6 +237,7 @@ const panels = images.map((p) => ({
     position: absolute;
     top: 0;
     bottom: 0;
+    will-change: opacity;
     z-index: 2;
     width: calc(var(--overflow) + 1.5rem + 2 * 70dvh / (var(--chars, 9) * var(--adv, 0.47)));
     pointer-events: none;
@@ -282,6 +289,9 @@ const panels = images.map((p) => ({
   import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 
   gsap.registerPlugin(SplitText, ScrambleTextPlugin);
+  // Keep animated elements on their own compositor layers after a tween ends
+  // (the default "auto" drops back to 2D transforms, which can repaint).
+  gsap.config({ force3D: true });
 
   const root = document.querySelector<HTMLElement>("[data-triptych]");
 
@@ -604,15 +614,16 @@ const panels = images.map((p) => ({
             stopBloom();
             if (isCenter) return; // the centre label is screen-reader only
             gsap.killTweensOf([label, scrim, text, ...chars]);
-            if (scrim) gsap.to(scrim, { autoAlpha: 1, duration: 0.6, ease: "power2.out" });
-            gsap.fromTo(label, { ...inFrom, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
+            if (scrim) gsap.to(scrim, { autoAlpha: 1, duration: 0.9, ease: "sine.out" });
+            // Gentle eases and longer travel: the steep power3 curves read as a snap.
+            gsap.fromTo(label, { ...inFrom, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.2, ease: "power2.out" });
             if (split) {
               gsap.fromTo(
                 chars,
-                // Transform + opacity only (compositor work, no repaint): letters rise
-                // along the word and straighten as they land.
-                { autoAlpha: 0, yPercent: 70, rotation: -8 },
-                { autoAlpha: 1, yPercent: 0, rotation: 0, duration: 0.55, ease: "power3.out", stagger: 0.04, delay: 0.1 },
+                // Transform + opacity only (compositor work, no repaint): letters drift
+                // up along the word and straighten as they settle, one after another.
+                { autoAlpha: 0, yPercent: 45, rotation: -5 },
+                { autoAlpha: 1, yPercent: 0, rotation: 0, duration: 1.1, ease: "power2.out", stagger: 0.07, delay: 0.15 },
               );
             } else if (text) {
               gsap.to(text, { duration: 1.3, scrambleText: { text: original, chars: SCRAMBLE, speed: 0.6 }, delay: 0.1 });
@@ -625,9 +636,11 @@ const panels = images.map((p) => ({
             }
             if (isCenter) return;
             gsap.killTweensOf([label, scrim, text, ...chars]);
-            if (scrim) gsap.to(scrim, { autoAlpha: 0, duration: 0.45, ease: "power2.in" });
+            if (scrim) gsap.to(scrim, { autoAlpha: 0, duration: 0.7, ease: "sine.inOut" });
             if (text && !split) text.textContent = original;
-            gsap.to(label, { ...outTo, autoAlpha: 0, duration: 0.35, ease: "power2.in" });
+            // Letters leave first with a light stagger, the word follows them out.
+            if (split) gsap.to(chars, { autoAlpha: 0, yPercent: -20, duration: 0.5, ease: "power2.inOut", stagger: 0.025 });
+            gsap.to(label, { ...outTo, autoAlpha: 0, duration: 0.7, ease: "power2.inOut", delay: split ? 0.1 : 0 });
           };
           panelHandlers[i] = { enter, leave };
           return () => {

@@ -37,6 +37,7 @@
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, ScrollToPlugin, SplitText);
+    gsap.config({ force3D: true }); // keep scrubbed elements on compositor layers
     // Mobile browsers resize the viewport when the address bar collapses; skip the
     // refresh those resizes would trigger so the pinned stage does not jump.
     ScrollTrigger.config({ ignoreMobileResize: true });
@@ -381,6 +382,7 @@
     font-weight: 600;
     color: var(--color-foreground);
     text-shadow: 0 2px 24px rgb(0 0 0 / 0.6);
+    will-change: transform, opacity;
     pointer-events: none;
   }
 
