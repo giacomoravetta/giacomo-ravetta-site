@@ -73,7 +73,7 @@
     // points (label fully in, image fixed) and scrolling snaps to them.
     const TEXT = 2;
     const SLIDE = 1;
-    const PX_PER_UNIT = 0.75; // × viewport width of scroll per timeline unit
+    const PX_PER_UNIT = 2.25; // × viewport width of scroll per timeline unit
     const total = (n - 1) * (TEXT + SLIDE) + TEXT;
     // Rest points as timeline progress: the start, then "label fully in" for each panel.
     const restPoints = [0, ...Array.from({ length: n }, (_, i) => (i * (TEXT + SLIDE) + TEXT) / total)];
