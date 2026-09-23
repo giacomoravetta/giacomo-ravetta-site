@@ -40,7 +40,10 @@
     ScrollTrigger.config({ ignoreMobileResize: true });
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    // Same split as the CSS/client:media query, so growing a window past the
+    // breakpoint reverts everything here (pin, normalizeScroll) as the desktop hero
+    // takes over, and shrinking it back re-initialises.
+    mm.add("(prefers-reduced-motion: no-preference) and ((max-width: 1023px) or (hover: none) or (pointer: coarse))", () => {
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
       const n = sections.length;
       try {

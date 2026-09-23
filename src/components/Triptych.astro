@@ -240,15 +240,19 @@ const panels = images.map((p) => ({
     font-size: clamp(1rem, 1.35vw, 1.3rem);
     line-height: 1.55;
   }
+  /* Frosted circle: a backdrop blur cannot vary across its area, so the blurred
+     layer is masked with a radial gradient: fully present in the middle, gone at
+     the rim. Reads as heavy blur at the centre and a sharp painting at the edge. */
   .center-glass {
     grid-area: 1 / 1;
-    width: min(88%, 62vh);
+    width: min(92%, 66vh);
     aspect-ratio: 1;
     border-radius: 50%;
-    background: rgb(0 0 0 / 0.35);
-    border: 1px solid rgb(255 255 255 / 0.12);
-    -webkit-backdrop-filter: blur(18px) saturate(120%);
-    backdrop-filter: blur(18px) saturate(120%);
+    background: rgb(0 0 0 / 0.4);
+    -webkit-backdrop-filter: blur(22px) saturate(120%);
+    backdrop-filter: blur(22px) saturate(120%);
+    -webkit-mask-image: radial-gradient(circle, #000 0%, #000 38%, rgb(0 0 0 / 0.55) 60%, transparent 78%);
+    mask-image: radial-gradient(circle, #000 0%, #000 38%, rgb(0 0 0 / 0.55) 60%, transparent 78%);
     opacity: 0;
     visibility: hidden;
   }
@@ -337,7 +341,9 @@ const panels = images.map((p) => ({
     const mm = gsap.matchMedia();
 
     mm.add(
-      "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)",
+      // Same split as the CSS: wide screens with a mouse. Shrinking the window past
+      // 1024px reverts this block (listeners, pin, ticker) and the phone hero takes over.
+      "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 1024px)",
       () => {
         const canvas = root.querySelector<HTMLCanvasElement>("[data-paint]")!;
         const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-panel]"));
@@ -626,9 +632,10 @@ const panels = images.map((p) => ({
             panel.addEventListener("pointerleave", panelHandlers[i].leave);
           });
         };
-        if (root.dataset.ready) arm();
-        else root.addEventListener("triptych:ready", arm, { once: true });
         window.addEventListener("resize", resize);
+        // The pin gives the hero inline width/height that ScrollTrigger updates on its
+        // (debounced) refresh, after the raw resize event: re-measure then as well.
+        ScrollTrigger.addEventListener("refresh", resize);
         gsap.ticker.add(tick);
 
         // Hovered panel: track it for the ink bloom and reveal its label.
@@ -682,6 +689,11 @@ const panels = images.map((p) => ({
           };
         });
 
+        // Arm now if the load-in already finished (e.g. this block re-running after a
+        // resize), otherwise when the panels have slid into place.
+        if (root.dataset.ready) arm();
+        else root.addEventListener("triptych:ready", arm, { once: true });
+
         // Centre copy: pin the hero and let scrolling swap one paragraph for the next.
         const paras = Array.from(root.querySelectorAll<HTMLElement>("[data-para]"));
         let paraTl: gsap.core.Timeline | null = null;
@@ -723,6 +735,7 @@ const panels = images.map((p) => ({
           root.removeEventListener("pointermove", onMove);
           root.removeEventListener("pointerleave", onLeave);
           window.removeEventListener("resize", resize);
+          ScrollTrigger.removeEventListener("refresh", resize);
           gsap.ticker.remove(tick);
           stopBloom();
           panelCleanup.forEach((fn) => fn());
