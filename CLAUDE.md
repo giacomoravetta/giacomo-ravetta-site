@@ -15,7 +15,8 @@ Personal site of Giacomo Ravetta. Astro 7 + Tailwind 4 + GSAP, fully static, dep
 
 ## Structure
 
-- `src/pages/*.astro` English pages; `src/pages/it/*.astro` thin wrappers with Italian slugs. Add a route key in `src/i18n/ui.ts` (`routes`) for each new page.
+- `src/pages/*.astro` English pages; `src/pages/it/*.astro` thin wrappers with Italian slugs. Add a route key in `src/i18n/ui.ts` (`routes`) for each new page; slugs may be nested (`services/designer` ↔ `servizi/designer`, `services/developer` ↔ `servizi/sviluppatore`).
+- Fonts (self-hosted in `public/fonts`, all OFL): Inter variable for text; Bluu Next Bold (`font-bluu`) for everything "Designer"; Terminal Grotesque (`font-terminal`) for everything "Developer". The hero side words use per-face advance factors (`--adv`) to keep equal length.
 - `src/layouts/BaseLayout.astro` — head, header, footer. `fullBleed` prop drops the content container.
 - `src/components/Header.astro` — desktop: floating frosted-glass sticky pill (70dvw), flow height `--header-h` in `src/styles/global.css` (keep in sync). Phones: compact full-width bar fixed over the content plus a full-screen menu (`[data-menu]`, toggled by `[data-menu-toggle]`); container pages add `max-md:pt-24` to clear it.
 - `src/components/Triptych.astro` — pointer Home hero for wide screens with a mouse (hidden under 1024px and on touch devices): three panels of *The Battle of Shijo Nawate* (`src/assets/shijo-nawate/`) scaled as one strip to cover the viewport, desaturated at rest, colour revealed through a canvas brush stroke that follows the pointer; a resting pointer blooms ink over the hovered panel. Panels slide in from below (CSS) once images decode; the brush arms after that.

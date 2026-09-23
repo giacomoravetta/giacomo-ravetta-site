@@ -15,6 +15,8 @@ export const routes = {
   work: { en: "work", it: "lavori" },
   about: { en: "about", it: "chi-sono" },
   services: { en: "services", it: "servizi" },
+  designer: { en: "services/designer", it: "servizi/designer" },
+  developer: { en: "services/developer", it: "servizi/sviluppatore" },
 } as const;
 
 export type RouteKey = keyof typeof routes;
@@ -73,7 +75,17 @@ export const ui = {
     "services.developer.body":
       "Fast, accessible websites and web apps built with modern tooling, with the craft to match the design.",
     "services.soon": "Individual services will be listed here soon.",
+    "services.more": "Read more",
+    "services.back": "All services",
     "services.cta": "Get in touch",
+    "designer.title": "Designer",
+    "designer.heading": "Designer",
+    "designer.intro":
+      "Brand identity, interfaces and design systems. Considered, legible work that holds up from the first sketch to the last pixel.",
+    "developer.title": "Developer",
+    "developer.heading": "Developer",
+    "developer.intro":
+      "Fast, accessible websites and web apps built with modern tooling, with the craft to match the design.",
 
     "footer.rights": "All rights reserved.",
   },
@@ -130,7 +142,17 @@ export const ui = {
     "services.developer.body":
       "Siti e web app veloci e accessibili, costruiti con strumenti moderni e con la stessa cura del design.",
     "services.soon": "I singoli servizi saranno elencati qui a breve.",
+    "services.more": "Scopri di più",
+    "services.back": "Tutti i servizi",
     "services.cta": "Contattami",
+    "designer.title": "Designer",
+    "designer.heading": "Designer",
+    "designer.intro":
+      "Identità visiva, interfacce e design system. Un lavoro curato e leggibile, dal primo schizzo all'ultimo pixel.",
+    "developer.title": "Sviluppatore",
+    "developer.heading": "Sviluppatore",
+    "developer.intro":
+      "Siti e web app veloci e accessibili, costruiti con strumenti moderni e con la stessa cura del design.",
 
     "footer.rights": "Tutti i diritti riservati.",
   },

@@ -15,8 +15,27 @@
   src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
 }
 
+/* Display faces (both SIL OFL, from Open Foundry / Velvetyne):
+   Bluu Next Bold for the Designer side, Terminal Grotesque for the Developer side. */
+@font-face {
+  font-family: "Bluu Next";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/BluuNext-Bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Terminal Grotesque";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/TerminalGrotesque.woff2") format("woff2");
+}
+
 @theme {
   --font-inter: "InterVariable", "sans-serif";
+  --font-bluu: "Bluu Next", "Georgia", "serif";
+  --font-terminal: "Terminal Grotesque", "monospace";
 
   --color-background: oklch(14% 0 0);
   --color-foreground: oklch(96% 0 0);

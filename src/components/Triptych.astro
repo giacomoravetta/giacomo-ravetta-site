@@ -20,15 +20,15 @@ interface Props {
 
 const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
-// Home side panels → Services sections (ids are language-independent).
-const sectionFor = { left: "designer", right: "developer" } as const;
+// Home side panels → Services subpages.
+const pageFor = { left: "designer", right: "developer" } as const;
 
 const panels = images.map((p) => ({
   ...p,
   label: t(`hero.${p.key}`),
   alt: t(`hero.alt.${p.key}`),
   // Side panels link to their Services section; the centre panel is not a link.
-  href: p.key === "center" ? undefined : `${localizedPath("services", lang)}#${sectionFor[p.key]}`,
+  href: p.key === "center" ? undefined : localizedPath(pageFor[p.key], lang),
 }));
 ---
 
@@ -57,7 +57,7 @@ const panels = images.map((p) => ({
             </h1>
           ) : (
             <p
-              class:list={["label", "label-side", `label-${p.key}`]}
+              class:list={["label", "label-side", `label-${p.key}`, p.key === "left" ? "font-bluu" : "font-terminal"]}
               style={`--chars: ${p.label.length}`}
               data-label
             >
@@ -196,7 +196,7 @@ const panels = images.map((p) => ({
     margin-top: -35dvh;
     writing-mode: vertical-rl;
     white-space: nowrap;
-    font-size: calc(70dvh / (var(--chars, 9) * 0.47));
+    font-size: calc(70dvh / (var(--chars, 9) * var(--adv, 0.47)));
     letter-spacing: -0.02em;
     line-height: 1;
   }
@@ -206,10 +206,14 @@ const panels = images.map((p) => ({
     display: block;
     rotate: 180deg;
   }
+  /* --adv: average lowercase advance of each face (Bluu Next Bold ≈ 0.47em,
+     Terminal Grotesque ≈ 0.42em) so both words span the same length. */
   .label-left {
+    --adv: 0.47;
     left: calc(1.5rem + var(--overflow));
   }
   .label-right {
+    --adv: 0.416;
     right: calc(1.5rem + var(--overflow));
   }
 

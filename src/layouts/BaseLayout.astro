@@ -43,6 +43,8 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={lang === "it" ? "it_IT" : "en_US"} />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/BluuNext-Bold.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/TerminalGrotesque.woff2" crossorigin />
     <slot name="head" />
   </head>
   <body class="flex min-h-svh flex-col font-inter antialiased">

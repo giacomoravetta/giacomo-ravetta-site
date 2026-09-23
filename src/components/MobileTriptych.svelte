@@ -165,7 +165,11 @@
       {#if p.key === "center"}
         <h1 class="mlabel mlabel-center" data-mlabel>{p.label}</h1>
       {:else}
-        <p class="mlabel mlabel-side mlabel-{p.key}" style="--chars: {p.label.length}" data-mlabel>
+        <p
+          class="mlabel mlabel-side mlabel-{p.key} {p.key === 'left' ? 'font-bluu' : 'font-terminal'}"
+          style="--chars: {p.label.length}"
+          data-mlabel
+        >
           <span class="mlabel-text">{p.label}</span>
         </p>
       {/if}
@@ -246,7 +250,7 @@
     margin-top: -30svh;
     writing-mode: vertical-rl;
     white-space: nowrap;
-    font-size: calc(60svh / (var(--chars, 9) * 0.47));
+    font-size: calc(60svh / (var(--chars, 9) * var(--adv, 0.47)));
     letter-spacing: -0.02em;
     line-height: 1;
   }
@@ -255,9 +259,11 @@
     rotate: 180deg;
   }
   .mlabel-left {
+    --adv: 0.47;
     left: 1rem;
   }
   .mlabel-right {
+    --adv: 0.416;
     right: 1rem;
   }
 

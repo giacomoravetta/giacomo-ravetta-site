@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getLangFromUrl, localizedPath, useTranslations } from "../../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={t("designer.title")}>
+  <article class="flex flex-col gap-8">
+    <a href={localizedPath("services", lang)} class="text-sm text-muted hover:text-foreground">← {t("services.back")}</a>
+    <header class="flex max-w-3xl flex-col gap-5">
+      <h1 class="font-bluu text-6xl tracking-tight md:text-8xl">{t("designer.heading")}</h1>
+      <p class="text-lg text-muted">{t("designer.intro")}</p>
+    </header>
+    <p class="text-sm text-muted/70">{t("services.soon")}</p>
+  </article>
+</BaseLayout>

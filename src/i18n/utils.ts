@@ -29,7 +29,8 @@ export function localizedPath(route: RouteKey, lang: Lang): string {
 export function getRouteFromUrl(url: URL): RouteKey {
   const lang = getLangFromUrl(url);
   const segments = url.pathname.split("/").filter(Boolean);
-  const slug = (lang === defaultLang ? segments[0] : segments[1]) ?? "";
+  // Slugs may be nested (e.g. "services/designer"), so compare the whole path after the prefix.
+  const slug = (lang === defaultLang ? segments : segments.slice(1)).join("/");
   const match = (Object.keys(routes) as RouteKey[]).find((key) => routes[key][lang] === slug);
   return match ?? "home";
 }

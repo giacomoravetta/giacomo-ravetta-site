@@ -9,6 +9,9 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const current = getRouteFromUrl(Astro.url);
+// Subpages of Services keep "Services" highlighted in the nav.
+const isCurrent = (key: RouteKey) =>
+  current === key || (key === "services" && (current === "designer" || current === "developer"));
 
 const nav: { key: RouteKey; label: string }[] = [
   { key: "home", label: t("nav.home") },
@@ -39,7 +42,7 @@ const langs = Object.keys(languages) as Lang[];
             <li>
               <a
                 href={localizedPath(key, lang)}
-                aria-current={current === key ? "page" : undefined}
+                aria-current={isCurrent(key) ? "page" : undefined}
                 class="text-muted transition-colors hover:text-foreground aria-[current=page]:text-foreground"
               >
                 {label}
@@ -97,7 +100,7 @@ const langs = Object.keys(languages) as Lang[];
           <li style={`--i: ${i}`} data-menu-item>
             <a
               href={localizedPath(key, lang)}
-              aria-current={current === key ? "page" : undefined}
+              aria-current={isCurrent(key) ? "page" : undefined}
               class="block py-1 text-foreground/70 aria-[current=page]:text-foreground"
             >
               {label}
