@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
+/* Text face: Instrument Sans (SIL OFL), variable width + weight, self-hosted. */
 @font-face {
-  font-family: InterVariable;
+  font-family: "Instrument Sans";
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400 700;
+  font-stretch: 75% 100%;
   font-display: swap;
-  src: url("/fonts/InterVariable.woff2") format("woff2");
+  src: url("/fonts/InstrumentSans.woff2") format("woff2");
 }
 @font-face {
-  font-family: InterVariable;
+  font-family: "Instrument Sans";
   font-style: italic;
-  font-weight: 100 900;
+  font-weight: 400 700;
+  font-stretch: 75% 100%;
   font-display: swap;
-  src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
+  src: url("/fonts/InstrumentSans-Italic.woff2") format("woff2");
 }
 
 /* Display faces (both SIL OFL, from Open Foundry / Velvetyne):
@@ -33,7 +36,7 @@
 }
 
 @theme {
-  --font-inter: "InterVariable", "sans-serif";
+  --font-instrument: "Instrument Sans", "sans-serif";
   --font-bluu: "Bluu Next", "Georgia", "serif";
   --font-terminal: "Terminal Grotesque", "monospace";
 
@@ -73,5 +76,38 @@
 @media (min-width: 768px) {
   .scroll-hero {
     margin-top: calc(-1 * var(--header-h));
+  }
+}
+
+/* Frosted glass (header pill, footer): transparent over content, gaussian blur of whatever sits beneath. */
+@utility glass {
+  background: color-mix(in oklab, var(--color-background) 35%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.25);
+}
+
+/* Home: while the centre hero panel is hovered its caption takes the footer's place. */
+.site-footer {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+:root[data-hero-center="in"] .site-footer {
+  transform: translateY(110%);
+}
+
+/* Rise from below a clipping edge (Home centre caption, About title). */
+@keyframes slide-up-in {
+  from { translate: 0 calc(100% + 1.5rem); }
+  to { translate: 0 0; }
+}
+@keyframes slide-down-out {
+  from { translate: 0 0; }
+  to { translate: 0 calc(100% + 1.5rem); }
+}
+/* Page title that rises into place; the wrapper clips it (overflow-hidden). */
+@media (prefers-reduced-motion: no-preference) {
+  .title-rise {
+    animation: slide-up-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
   }
 }
