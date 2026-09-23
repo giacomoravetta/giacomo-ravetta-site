@@ -1,11 +1,11 @@
 <script lang="ts">
   /**
-   * Scroll-driven Home hero for phones, tablets and touch devices: the three
- * Shijo Nawate panels stacked full-height.
-   * Scroll drives the reveal: each panel starts desaturated and slightly
-   * zoomed and washes into colour as it scrolls through the viewport; its
-   * label sweeps in (left → right, right → left, bottom → top) when the panel
-   * is well in view, and sweeps back out when it leaves.
+   * Scroll-driven Home hero for phones, tablets and touch devices.
+   * The three Shijo Nawate panels sit side by side in a pinned, viewport-sized
+   * stage; vertical scrolling slides them horizontally. Each panel washes from
+   * grey into colour as it crosses the viewport and its label sweeps in
+   * (left → right, right → left, bottom → top) while the panel is in view.
+   * Reduced motion: a plain horizontal swipe strip, full colour, static labels.
    */
   import { onMount } from "svelte";
   import gsap from "gsap";
@@ -25,6 +25,7 @@
   let { panels }: { panels: MobilePanel[] } = $props();
 
   let root: HTMLElement;
+  let track: HTMLElement;
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -32,15 +33,31 @@
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
+      const n = sections.length;
 
-      const triggers = sections.map((section) => {
+      // Pin the stage and scrub the track sideways: one viewport of scroll per panel.
+      const slide = gsap.to(track, {
+        xPercent: -100 * ((n - 1) / n),
+        ease: "none",
+        scrollTrigger: {
+          trigger: root,
+          pin: true,
+          scrub: 0.6,
+          anticipatePin: 1,
+          end: () => "+=" + window.innerWidth * (n - 1),
+          invalidateOnRefresh: true,
+        },
+      });
+
+      const cleanups = sections.map((section) => {
         const img = section.querySelector<HTMLElement>("[data-mimage]")!;
         const label = section.querySelector<HTMLElement>("[data-mlabel]")!;
         const key = section.dataset.mpanel;
         const from =
           key === "left" ? { xPercent: -120, yPercent: 0 } : key === "right" ? { xPercent: 120, yPercent: 0 } : { xPercent: 0, yPercent: 160 };
 
-        // Colour + zoom scrubbed with scroll: grey at the bottom edge, full colour by the middle.
+        // Colour + zoom scrubbed against the horizontal motion: grey at the right
+        // edge of the viewport, full colour once the panel is fully in view.
         const wash = gsap.fromTo(
           img,
           { filter: "grayscale(1) brightness(0.6)", scale: 1.08 },
@@ -48,21 +65,33 @@
             filter: "grayscale(0) brightness(1)",
             scale: 1,
             ease: "none",
-            scrollTrigger: { trigger: section, start: "top 85%", end: "top 25%", scrub: 0.6 },
+            immediateRender: true,
+            scrollTrigger: {
+              trigger: section,
+              containerAnimation: slide,
+              start: "left 90%",
+              end: "left 10%",
+              scrub: 0.6,
+            },
           },
         );
 
-        // Label: sweeps in once the panel is mostly in view, sweeps out on the way back.
+        // Label: sweeps in when most of the panel is on screen, out when it leaves.
         gsap.set(label, { ...from, autoAlpha: 0 });
+        const show = () => gsap.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", overwrite: true });
+        const hide = () => gsap.to(label, { ...from, autoAlpha: 0, duration: 0.5, ease: "power2.in", overwrite: true });
         const reveal = ScrollTrigger.create({
           trigger: section,
-          start: "top 60%",
-          end: "bottom 40%",
-          onEnter: () => gsap.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", overwrite: true }),
-          onLeave: () => gsap.to(label, { ...from, autoAlpha: 0, duration: 0.5, ease: "power2.in", overwrite: true }),
-          onEnterBack: () => gsap.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", overwrite: true }),
-          onLeaveBack: () => gsap.to(label, { ...from, autoAlpha: 0, duration: 0.5, ease: "power2.in", overwrite: true }),
+          containerAnimation: slide,
+          start: "left 60%",
+          end: "right 40%",
+          onEnter: show,
+          onEnterBack: show,
+          onLeave: hide,
+          onLeaveBack: hide,
         });
+        // The first panel is already in view at the top of the page.
+        if (key === "left") show();
 
         return () => {
           wash.scrollTrigger?.kill();
@@ -71,7 +100,11 @@
         };
       });
 
-      return () => triggers.forEach((fn) => fn());
+      return () => {
+        cleanups.forEach((fn) => fn());
+        slide.scrollTrigger?.kill();
+        slide.kill();
+      };
     });
 
     return () => mm.revert();
@@ -79,6 +112,7 @@
 </script>
 
 <section class="mobile-triptych" bind:this={root} aria-label="Giacomo Ravetta">
+  <div class="track" bind:this={track}>
   {#each panels as p (p.key)}
     <figure class="mpanel" data-mpanel={p.key}>
       <img
@@ -102,16 +136,29 @@
       {/if}
     </figure>
   {/each}
+  </div>
 </section>
 
 <style>
+  /* Viewport-sized stage; ScrollTrigger pins it and slides the track sideways. */
   .mobile-triptych {
+    position: relative;
+    height: 100svh;
+    overflow: hidden;
     background: var(--color-background);
+  }
+
+  .track {
+    display: flex;
+    height: 100%;
+    width: max-content;
+    will-change: transform;
   }
 
   .mpanel {
     position: relative;
-    height: 100svh;
+    flex: 0 0 100vw;
+    height: 100%;
     margin: 0;
     overflow: hidden;
   }
@@ -170,8 +217,17 @@
     line-height: 1.1;
   }
 
+  /* Reduced motion: no pin, no scrub; a native horizontal swipe strip instead. */
   @media (prefers-reduced-motion: reduce) {
-    .mimage {
+    .mobile-triptych {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+    .mpanel {
+      scroll-snap-align: start;
+    }
+    .mimage,
+    .track {
       will-change: auto;
     }
   }
