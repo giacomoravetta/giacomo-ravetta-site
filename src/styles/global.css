@@ -106,36 +106,22 @@
 }
 
 /* Letters rise (Home centre caption, About title; markup from SplitWord.astro):
-   each letter climbs out of a clipped line, tilting and un-blurring into place,
-   staggered by its index; a hairline then draws itself under the word. */
+   each letter climbs out of a clipped line, tilting into place, staggered by its index. */
 .split-word {
   position: relative;
   display: inline-flex;
-  /* Clip below the baseline only, so blur and tilt stay visible above it. */
+  /* Clip below the baseline only, so the tilt stays visible above it. */
   clip-path: inset(-50% -10% 0 -10%);
-  padding-bottom: 0.12em;
 }
 .split-word .ch {
   display: inline-block;
   transform-origin: 0 100%;
-}
-.split-word::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 0.04em;
-  background: currentColor;
-  transform-origin: left;
-  scale: 0 1;
 }
 @keyframes letter-in {
   from {
     translate: 0 115%;
     rotate: 12deg;
     opacity: 0;
-    filter: blur(8px);
   }
   60% {
     opacity: 1;
@@ -144,7 +130,6 @@
     translate: 0 0;
     rotate: 0deg;
     opacity: 1;
-    filter: blur(0);
   }
 }
 @keyframes letter-out {
@@ -154,26 +139,11 @@
   to {
     translate: 0 115%;
     rotate: -8deg;
-    filter: blur(4px);
-  }
-}
-@keyframes underline-in {
-  from {
-    scale: 0 1;
-  }
-  to {
-    scale: 1 1;
   }
 }
 /* Page title that plays the letters-rise on load. */
-.title-letters .split-word::after {
-  scale: 1 1;
-}
 @media (prefers-reduced-motion: no-preference) {
   .title-letters .ch {
     animation: letter-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(0.1s + var(--i) * 45ms) both;
-  }
-  .title-letters .split-word::after {
-    animation: underline-in 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.6s both;
   }
 }
