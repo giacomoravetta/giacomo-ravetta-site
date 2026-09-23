@@ -53,7 +53,7 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
       {t("nav.skip")}
     </a>
     <Header lang={lang} />
-    <main id="main" class:list={["w-full flex-1", !fullBleed && "mx-auto max-w-5xl px-6 py-16"]}>
+    <main id="main" class:list={["w-full flex-1", !fullBleed && "mx-auto max-w-5xl px-6 py-16 max-md:pt-24"]}>
       <slot />
     </main>
     <Footer lang={lang} overlay={fullBleed} />

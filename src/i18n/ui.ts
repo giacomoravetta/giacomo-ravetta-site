@@ -31,6 +31,8 @@ export const ui = {
     "nav.work": "Work",
     "nav.language": "Language",
     "nav.skip": "Skip to content",
+    "nav.menu.open": "Open menu",
+    "nav.menu.close": "Close menu",
 
     "home.title": "Home",
     "home.heading": "Designer & developer.",
@@ -85,6 +87,8 @@ export const ui = {
     "nav.work": "Lavori",
     "nav.language": "Lingua",
     "nav.skip": "Vai al contenuto",
+    "nav.menu.open": "Apri il menu",
+    "nav.menu.close": "Chiudi il menu",
 
     "home.title": "Home",
     "home.heading": "Designer & sviluppatore.",
