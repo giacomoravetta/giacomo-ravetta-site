@@ -2,11 +2,13 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Triptych from "../components/Triptych.astro";
 import MobileTriptych from "../components/MobileTriptych.svelte";
-import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
 import { getTriptychImages } from "../lib/triptych-images";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+// Home side panels → Services sections (ids are language-independent).
+const sectionFor = { left: "designer", right: "developer" } as const;
 const images = await getTriptychImages();
 // Same variants as the desktop triptych, so both share the cache and the head preloads.
 const mobilePanels = images.map((p) => ({
@@ -18,6 +20,7 @@ const mobilePanels = images.map((p) => ({
   height: Number(p.img.attributes.height),
   alt: t(`hero.alt.${p.key}`),
   label: t(`hero.${p.key}`),
+  href: p.key === "center" ? undefined : `${localizedPath("services", lang)}#${sectionFor[p.key]}`,
 }));
 ---
 

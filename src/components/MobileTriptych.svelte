@@ -20,6 +20,7 @@
     height: number;
     alt: string;
     label: string;
+    href?: string;
   };
 
   let { panels }: { panels: MobilePanel[] } = $props();
@@ -158,6 +159,9 @@
           data-mimage
         />
       </div>
+      {#if p.href}
+        <a class="mpanel-link" href={p.href} aria-label={p.label}></a>
+      {/if}
       {#if p.key === "center"}
         <h1 class="mlabel mlabel-center" data-mlabel>{p.label}</h1>
       {:else}
@@ -218,6 +222,12 @@
     width: auto;
     max-width: none;
     will-change: transform, filter;
+  }
+
+  .mpanel-link {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
   }
 
   .mlabel {

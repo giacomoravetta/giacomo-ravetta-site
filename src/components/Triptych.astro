@@ -9,7 +9,7 @@
  * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
  */
 import type { Lang } from "../i18n/ui";
-import { useTranslations } from "../i18n/utils";
+import { localizedPath, useTranslations } from "../i18n/utils";
 import { getTriptychImages, type TriptychImages } from "../lib/triptych-images";
 
 interface Props {
@@ -20,11 +20,15 @@ interface Props {
 
 const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
+// Home side panels → Services sections (ids are language-independent).
+const sectionFor = { left: "designer", right: "developer" } as const;
 
 const panels = images.map((p) => ({
   ...p,
   label: t(`hero.${p.key}`),
   alt: t(`hero.alt.${p.key}`),
+  // Side panels link to their Services section; the centre panel is not a link.
+  href: p.key === "center" ? undefined : `${localizedPath("services", lang)}#${sectionFor[p.key]}`,
 }));
 ---
 
@@ -46,6 +50,7 @@ const panels = images.map((p) => ({
             decoding="async"
             data-image
           />
+          {p.href && <a class="panel-link" href={p.href} aria-label={p.label} />}
           {p.key === "center" ? (
             <h1 class="label label-center" data-label>
               {p.label}
@@ -161,6 +166,14 @@ const panels = images.map((p) => ({
      Side labels add it so they stay inside the visible area. */
   .triptych {
     --overflow: max(0px, (100svh * 3802 / 2145 - 100vw) / 2);
+  }
+
+  /* Whole-panel link, above paint and label so the panel is one big hit target. */
+  .panel-link {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    cursor: pointer;
   }
 
   .label {

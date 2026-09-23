@@ -65,13 +65,14 @@ export const ui = {
 
     "services.title": "Services",
     "services.heading": "Services",
-    "services.intro": "How I can help, from first sketch to production.",
-    "services.design.title": "Design",
-    "services.design.body": "Brand identity, interface design and design systems that scale.",
-    "services.development.title": "Development",
-    "services.development.body": "Fast, accessible websites and web apps built with modern tooling.",
-    "services.consulting.title": "Consulting",
-    "services.consulting.body": "Product strategy, audits and hands-on support for your team.",
+    "services.intro": "Two sides of the same practice.",
+    "services.designer.title": "Designer",
+    "services.designer.body":
+      "Brand identity, interfaces and design systems. Considered, legible work that holds up from the first sketch to the last pixel.",
+    "services.developer.title": "Developer",
+    "services.developer.body":
+      "Fast, accessible websites and web apps built with modern tooling, with the craft to match the design.",
+    "services.soon": "Individual services will be listed here soon.",
     "services.cta": "Get in touch",
 
     "footer.rights": "All rights reserved.",
@@ -121,13 +122,14 @@ export const ui = {
 
     "services.title": "Servizi",
     "services.heading": "Servizi",
-    "services.intro": "Come posso aiutarti, dal primo schizzo alla produzione.",
-    "services.design.title": "Design",
-    "services.design.body": "Identità visiva, design di interfacce e design system che crescono con te.",
-    "services.development.title": "Sviluppo",
-    "services.development.body": "Siti e web app veloci e accessibili, costruiti con strumenti moderni.",
-    "services.consulting.title": "Consulenza",
-    "services.consulting.body": "Strategia di prodotto, audit e supporto concreto al tuo team.",
+    "services.intro": "Due facce dello stesso mestiere.",
+    "services.designer.title": "Designer",
+    "services.designer.body":
+      "Identità visiva, interfacce e design system. Un lavoro curato e leggibile, dal primo schizzo all'ultimo pixel.",
+    "services.developer.title": "Sviluppatore",
+    "services.developer.body":
+      "Siti e web app veloci e accessibili, costruiti con strumenti moderni e con la stessa cura del design.",
+    "services.soon": "I singoli servizi saranno elencati qui a breve.",
     "services.cta": "Contattami",
 
     "footer.rights": "Tutti i diritti riservati.",
