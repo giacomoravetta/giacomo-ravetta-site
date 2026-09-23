@@ -67,95 +67,76 @@
   });
 
   function setup(sections: HTMLElement[], n: number) {
+    // One scrubbed timeline. Per panel: the image holds still while scrolling
+    // drives its label in (TEXT units), then the stage slides to the next image
+    // (SLIDE units) while that image washes into colour. Labels mark the rest
+    // points (label fully in, image fixed) and scrolling snaps to them.
+    const TEXT = 2;
+    const SLIDE = 1;
+    const PX_PER_UNIT = 0.75; // × viewport width of scroll per timeline unit
+    const total = (n - 1) * (TEXT + SLIDE) + TEXT;
+    // Rest points as timeline progress: the start, then "label fully in" for each panel.
+    const restPoints = [0, ...Array.from({ length: n }, (_, i) => (i * (TEXT + SLIDE) + TEXT) / total)];
 
-      // Pin the stage and scrub the track sideways: one viewport of scroll per panel.
-      const onStart = () => {
-        if (started) return;
-        started = true;
-        showFirst?.();
-      };
-      let showFirst: (() => void) | undefined;
+    const onStart = () => {
+      if (started) return;
+      started = true;
+    };
 
-      const slide = gsap.to(track, {
-        xPercent: -100 * ((n - 1) / n),
-        ease: "none",
-        scrollTrigger: {
-          trigger: root,
-          pin: true,
-          scrub: 0.6,
-          anticipatePin: 1,
-          end: () => "+=" + window.innerWidth * (n - 1),
-          invalidateOnRefresh: true,
-          // Never rest between two panels: settle on the nearest one when scrolling stops.
-          snap: {
-            snapTo: 1 / (n - 1),
-            directional: false, // nearest panel, so a small nudge settles back rather than skipping ahead
-            duration: { min: 0.25, max: 0.7 },
-            delay: 0.05,
-            ease: "power2.inOut",
-          },
-          onUpdate: (self) => {
-            if (self.progress > 0.005) onStart();
-          },
+    const tl = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        trigger: root,
+        pin: true,
+        scrub: 0.6,
+        anticipatePin: 1,
+        end: () => "+=" + Math.round(window.innerWidth * PX_PER_UNIT * total),
+        invalidateOnRefresh: true,
+        // Never rest mid-way: settle on the nearest rest point (or the very start).
+        snap: {
+          snapTo: restPoints,
+          directional: false,
+          duration: { min: 0.25, max: 0.8 },
+          delay: 0.05,
+          ease: "power2.inOut",
         },
-      });
+        onUpdate: (self) => {
+          if (self.progress > 0.005) onStart();
+        },
+      },
+    });
+    tl.addLabel("start", 0);
 
-      const cleanups = sections.map((section) => {
-        const img = section.querySelector<HTMLElement>("[data-mimage]")!;
-        const label = section.querySelector<HTMLElement>("[data-mlabel]")!;
-        const key = section.dataset.mpanel;
-        const from =
-          key === "left" ? { xPercent: -120, yPercent: 0 } : key === "right" ? { xPercent: 120, yPercent: 0 } : { xPercent: 0, yPercent: 160 };
+    sections.forEach((section, i) => {
+      const img = section.querySelector<HTMLElement>("[data-mimage]")!;
+      const label = section.querySelector<HTMLElement>("[data-mlabel]")!;
+      const key = section.dataset.mpanel;
+      const from =
+        key === "left" ? { xPercent: -120, yPercent: 0 } : key === "right" ? { xPercent: 120, yPercent: 0 } : { xPercent: 0, yPercent: 160 };
+      const out = { xPercent: from.xPercent * 0.5, yPercent: from.yPercent * 0.5 };
+      const t0 = i * (TEXT + SLIDE);
 
-        // Colour + zoom scrubbed against the horizontal motion: grey at the right
-        // edge of the viewport, full colour once the panel is fully in view.
-        const wash = gsap.fromTo(
-          img,
-          { filter: "grayscale(1) brightness(0.6)", scale: 1.08 },
-          {
-            filter: "grayscale(0) brightness(1)",
-            scale: 1,
-            ease: "none",
-            immediateRender: true,
-            scrollTrigger: {
-              trigger: section,
-              containerAnimation: slide,
-              start: "left 90%",
-              end: "left 10%",
-              scrub: 0.6,
-            },
-          },
-        );
+      // Initial state: label parked off, every image but the first grey and zoomed.
+      gsap.set(label, { ...from, autoAlpha: 0 });
+      if (i > 0) gsap.set(img, { filter: "grayscale(1) brightness(0.6)", scale: 1.08 });
 
-        // Label: sweeps in when most of the panel is on screen, out when it leaves.
-        gsap.set(label, { ...from, autoAlpha: 0 });
-        const show = () => gsap.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", overwrite: true });
-        const hide = () => gsap.to(label, { ...from, autoAlpha: 0, duration: 0.5, ease: "power2.in", overwrite: true });
-        const reveal = ScrollTrigger.create({
-          trigger: section,
-          containerAnimation: slide,
-          start: "left 60%",
-          end: "right 40%",
-          onEnter: show,
-          onEnterBack: show,
-          onLeave: hide,
-          onLeaveBack: hide,
-        });
-        // The first panel is in view on arrival; its label waits for the first scroll.
-        if (key === "left") showFirst = show;
+      // Text phase: image fixed, label sweeps in with the scroll.
+      tl.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
+      tl.addLabel(`rest-${i}`, t0 + TEXT);
 
-        return () => {
-          wash.scrollTrigger?.kill();
-          wash.kill();
-          reveal.kill();
-        };
-      });
+      // Slide phase: label leaves, stage moves on, next image washes into colour.
+      if (i < n - 1) {
+        const nextImg = sections[i + 1].querySelector<HTMLElement>("[data-mimage]")!;
+        tl.to(label, { ...out, autoAlpha: 0, duration: SLIDE * 0.5, ease: "power2.in" }, t0 + TEXT);
+        tl.to(track, { xPercent: (-100 * (i + 1)) / n, duration: SLIDE }, t0 + TEXT);
+        tl.to(nextImg, { filter: "grayscale(0) brightness(1)", scale: 1, duration: SLIDE }, t0 + TEXT);
+      }
+    });
 
-      return () => {
-        cleanups.forEach((fn) => fn());
-        slide.scrollTrigger?.kill();
-        slide.kill();
-      };
+    return () => {
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
   }
 </script>
 
