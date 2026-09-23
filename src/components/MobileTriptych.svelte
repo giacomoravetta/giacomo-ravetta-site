@@ -41,8 +41,18 @@
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
       const n = sections.length;
       try {
-        return setup(sections, n);
+        // Drive scrolling from JS instead of the browser: on most phones the address
+        // bar then never collapses (no viewport resize, no jump), overscroll bounce is
+        // gone and pin updates stay in sync with paint. Home page only (this component
+        // is only rendered there); switched off again on teardown.
+        ScrollTrigger.normalizeScroll(true);
+        const teardown = setup(sections, n);
+        return () => {
+          teardown();
+          ScrollTrigger.normalizeScroll(false);
+        };
       } catch (err) {
+        ScrollTrigger.normalizeScroll(false);
         // Anything unexpected (very old engine, pinning failure…): show the plain,
         // full-colour horizontal swipe strip instead of a broken animation.
         console.warn("[MobileTriptych] scroll animation unavailable, using static strip", err);
