@@ -3,14 +3,16 @@
    * Scroll-driven Home hero for phones, tablets and touch devices.
    * The three Shijo Nawate panels sit side by side in a pinned, viewport-sized
    * stage; vertical scrolling slides them horizontally. Each panel washes from
-   * grey into colour as it crosses the viewport and its label sweeps in
-   * (left → right, right → left, bottom → top) while the panel is in view.
+   * grey into colour as it crosses the viewport and its side label sweeps in.
+   * Scrolling is paged: every swipe or wheel gesture moves exactly one step
+   * (rest point) forward or back; bursts in the same direction count as one.
    * Reduced motion: a plain horizontal swipe strip, full colour, static labels.
    */
   import { onMount } from "svelte";
   import gsap from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+  import { ScrollToPlugin } from "gsap/ScrollToPlugin";
   import { SplitText } from "gsap/SplitText";
 
   export type MobilePanel = {
@@ -34,36 +36,21 @@
   let isStatic = $state(false);
 
   onMount(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, SplitText);
+    gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, ScrollToPlugin, SplitText);
     // Mobile browsers resize the viewport when the address bar collapses; skip the
     // refresh those resizes would trigger so the pinned stage does not jump.
     ScrollTrigger.config({ ignoreMobileResize: true });
     const mm = gsap.matchMedia();
 
     // Same split as the CSS/client:media query, so growing a window past the
-    // breakpoint reverts everything here (pin, normalizeScroll) as the desktop hero
+    // breakpoint reverts everything here (pin, gesture observer) as the desktop hero
     // takes over, and shrinking it back re-initialises.
     mm.add("(prefers-reduced-motion: no-preference) and ((max-width: 1023px) or (hover: none) or (pointer: coarse))", () => {
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
       const n = sections.length;
       try {
-        // Drive scrolling from JS instead of the browser: on most phones the address
-        // bar then never collapses (no viewport resize, no jump), overscroll bounce is
-        // gone and pin updates stay in sync with paint. Home page only (this component
-        // is only rendered there); switched off again on teardown.
-        // Shorter simulated momentum than GSAP's default: a flick coasts for well under a
-        // second, so the snap to the next rest point kicks in promptly instead of after
-        // a long glide (that glide is what read as "sluggish").
-        ScrollTrigger.normalizeScroll({
-          momentum: (self: { velocityY: number }) => gsap.utils.clamp(0.15, 0.6, Math.abs(self.velocityY) / 4000),
-        });
-        const teardown = setup(sections, n);
-        return () => {
-          teardown();
-          ScrollTrigger.normalizeScroll(false);
-        };
+        return setup(sections, n);
       } catch (err) {
-        ScrollTrigger.normalizeScroll(false);
         // Anything unexpected (very old engine, pinning failure…): show the plain,
         // full-colour horizontal swipe strip instead of a broken animation.
         console.warn("[MobileTriptych] scroll animation unavailable, using static strip", err);
@@ -81,13 +68,23 @@
     // One scrubbed timeline. Per panel: the image holds still while scrolling
     // drives its label in (TEXT units), then the stage slides to the next image
     // (SLIDE units) while that image washes into colour. Labels mark the rest
-    // points (label fully in, image fixed) and scrolling snaps to them.
+    // points (label fully in, image fixed); gestures step between them.
     const TEXT = 2;
     const SLIDE = 1;
     const PX_PER_UNIT = 2.25; // × viewport width of scroll per timeline unit
     const total = (n - 1) * (TEXT + SLIDE) + TEXT;
-    // Rest points as timeline progress: the start, then "label fully in" for each panel.
-    const restPoints = [0, ...Array.from({ length: n }, (_, i) => (i * (TEXT + SLIDE) + TEXT) / total)];
+    // Paging: one gesture = one step. Same-direction input is ignored while a step
+    // runs, until the gesture that caused it has ended (no events for STOP_DELAY,
+    // which also swallows trackpad/wheel inertia), and for COALESCE_MS afterwards.
+    const STEP_DURATION = 0.9; // s
+    const COALESCE_MS = 350;
+    const TOLERANCE = 12; // px of movement before a gesture counts
+    const STOP_DELAY = 0.15; // s of silence that ends a gesture
+    // Rest points: the start, then "label fully in" for each panel.
+    const steps = ["start", ...Array.from({ length: n }, (_, i) => `rest-${i}`)];
+
+    // Gesture observer, created below once the step positions exist.
+    let observer: Observer | undefined;
 
     const onStart = () => {
       if (started) return;
@@ -103,16 +100,15 @@
         anticipatePin: 1,
         end: () => "+=" + Math.round(window.innerWidth * PX_PER_UNIT * total),
         invalidateOnRefresh: true,
-        // Never rest mid-way: settle on the nearest rest point (or the very start).
-        snap: {
-          snapTo: restPoints,
-          directional: false,
-          duration: { min: 0.15, max: 0.45 },
-          delay: 0.02,
-          ease: "power2.inOut",
-        },
         onUpdate: (self) => {
           if (self.progress > 0.005) onStart();
+        },
+        // Below the hero (footer) the page scrolls natively; coming back into the
+        // pin hands control back to the gestures, landing on the last step.
+        onLeave: () => observer?.disable(),
+        onEnterBack: () => {
+          observer?.enable();
+          goTo(steps.length - 1);
         },
       },
     });
@@ -168,7 +164,80 @@
       }
     });
 
+    const st = tl.scrollTrigger!;
+    const stepY = (i: number) => st.labelToScroll(steps[i]);
+    // Nearest step to the current scroll position (robust to refreshes, reloads
+    // mid-hero, or anything else that moved the page).
+    const nearestStep = () => {
+      const y = window.scrollY;
+      let best = 0;
+      steps.forEach((_, i) => {
+        if (Math.abs(stepY(i) - y) < Math.abs(stepY(best) - y)) best = i;
+      });
+      return best;
+    };
+
+    let animating = false;
+    let gestureOpen = false;
+    let lastDir = 0;
+    let lastStepAt = 0;
+
+    const scrollToY = (y: number, onComplete?: () => void) => {
+      animating = true;
+      gsap.killTweensOf(window);
+      gsap.to(window, {
+        scrollTo: { y, autoKill: false },
+        duration: STEP_DURATION,
+        ease: "power2.inOut",
+        onComplete: () => {
+          animating = false;
+          lastStepAt = performance.now();
+          onComplete?.();
+        },
+      });
+    };
+    function goTo(i: number) {
+      scrollToY(stepY(gsap.utils.clamp(0, steps.length - 1, i)));
+    }
+
+    const request = (dir: 1 | -1) => {
+      if (animating) return;
+      if (dir === lastDir && (gestureOpen || performance.now() - lastStepAt < COALESCE_MS)) return;
+      gestureOpen = true;
+      lastDir = dir;
+      const current = nearestStep();
+      const next = current + dir;
+      if (next < 0) return; // already at the top of the page
+      if (next >= steps.length) {
+        // Past the last step: release the page and reveal what follows the hero.
+        observer?.disable();
+        scrollToY(ScrollTrigger.maxScroll(window));
+        return;
+      }
+      goTo(next);
+    };
+
+    // wheelSpeed -1 makes "finger up" and "wheel down" both call onUp (= forward).
+    // Created disabled: it's only enabled while the page is inside the pinned range.
+    observer = ScrollTrigger.observe({
+      target: window,
+      type: "wheel,touch",
+      wheelSpeed: -1,
+      tolerance: TOLERANCE,
+      preventDefault: true,
+      onUp: () => request(1),
+      onDown: () => request(-1),
+      onStop: () => {
+        gestureOpen = false;
+      },
+      onStopDelay: STOP_DELAY,
+    });
+    if (window.scrollY >= st.end) observer.disable();
+
     return () => {
+      observer?.kill();
+      observer = undefined;
+      gsap.killTweensOf(window);
       tl.scrollTrigger?.kill();
       tl.kill();
     };
