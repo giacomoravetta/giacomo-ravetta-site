@@ -185,6 +185,7 @@
           alt={p.alt}
           loading={p.key === "left" ? "eager" : "lazy"}
           decoding="async"
+          draggable="false"
         />
         <img
           class="mimage mimage-color"
@@ -196,6 +197,7 @@
           alt=""
           loading={p.key === "left" ? "eager" : "lazy"}
           decoding="async"
+          draggable="false"
           data-mimage
         />
       </div>
@@ -266,6 +268,8 @@
   .mimage {
     grid-area: 1 / 1;
     display: block;
+    -webkit-user-drag: none;
+    user-select: none;
     height: max(100svh, calc(100vw * 2145 / 1160));
     width: auto;
     max-width: none;

@@ -49,11 +49,14 @@ const panels = images.map((p) => ({
             loading="eager"
             fetchpriority="high"
             decoding="async"
+            draggable="false"
             data-image
           />
           {p.href && <a class="panel-link" href={p.href} aria-label={p.label} />}
           {p.key === "center" ? (
             <div class="label label-center" data-label>
+              <!-- Frosted circle behind the copy; fades in on the first scroll. -->
+              <span class="center-glass" aria-hidden="true" data-center-glass></span>
               <h1 class="sr-only">{p.label}</h1>
               {paragraphs.map((text, i) => (
                 <p class="para" data-para={i}>
@@ -149,6 +152,8 @@ const panels = images.map((p) => ({
     display: block;
     width: 100%;
     height: 100%;
+    -webkit-user-drag: none;
+    user-select: none;
     object-fit: fill; /* each panel already has its image's exact aspect ratio */
   }
 
@@ -235,7 +240,20 @@ const panels = images.map((p) => ({
     font-size: clamp(1rem, 1.35vw, 1.3rem);
     line-height: 1.55;
   }
+  .center-glass {
+    grid-area: 1 / 1;
+    width: min(88%, 62vh);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.35);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(18px) saturate(120%);
+    opacity: 0;
+    visibility: hidden;
+  }
   .para {
+    position: relative; /* above the glass */
     grid-area: 1 / 1;
     margin: 0;
     max-width: 34ch;
@@ -671,8 +689,17 @@ const panels = images.map((p) => ({
           const steps = paras.length - 1;
           gsap.set(paras, { autoAlpha: 0, y: 24 });
           gsap.set(paras[0], { autoAlpha: 1, y: 0 });
+          // Frosted circle behind the copy appears once the reader starts scrolling.
+          const glass = root.querySelector<HTMLElement>("[data-center-glass]");
+          let glassShown = false;
           paraTl = gsap.timeline({
             scrollTrigger: {
+              onUpdate: (self) => {
+                if (!glassShown && glass && self.progress > 0.005) {
+                  glassShown = true;
+                  gsap.to(glass, { autoAlpha: 1, duration: 0.6, ease: "power2.out" });
+                }
+              },
               trigger: root,
               start: "top top",
               end: () => "+=" + Math.round(window.innerHeight * 0.6 * steps),
