@@ -283,6 +283,15 @@
     width: auto;
     max-width: none;
   }
+  /* The centre print is the widest, so it crops the most: centre it in its panel.
+     The wrapper's implicit grid column grows to the image width and starts at the
+     left edge, so place-items alone would crop only its right side. */
+  [data-mpanel="center"] .mimage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+  }
   .mimage-grey {
     filter: grayscale(1) brightness(0.6); /* static: rasterised once */
   }
