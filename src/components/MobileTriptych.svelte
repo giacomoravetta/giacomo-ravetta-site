@@ -48,7 +48,12 @@
         // bar then never collapses (no viewport resize, no jump), overscroll bounce is
         // gone and pin updates stay in sync with paint. Home page only (this component
         // is only rendered there); switched off again on teardown.
-        ScrollTrigger.normalizeScroll(true);
+        // Shorter simulated momentum than GSAP's default: a flick coasts for well under a
+        // second, so the snap to the next rest point kicks in promptly instead of after
+        // a long glide (that glide is what read as "sluggish").
+        ScrollTrigger.normalizeScroll({
+          momentum: (self: { velocityY: number }) => gsap.utils.clamp(0.15, 0.6, Math.abs(self.velocityY) / 4000),
+        });
         const teardown = setup(sections, n);
         return () => {
           teardown();
@@ -91,7 +96,7 @@
       scrollTrigger: {
         trigger: root,
         pin: true,
-        scrub: 0.6,
+        scrub: 0.25,
         anticipatePin: 1,
         end: () => "+=" + Math.round(window.innerWidth * PX_PER_UNIT * total),
         invalidateOnRefresh: true,
@@ -99,8 +104,8 @@
         snap: {
           snapTo: restPoints,
           directional: false,
-          duration: { min: 0.25, max: 0.8 },
-          delay: 0.05,
+          duration: { min: 0.15, max: 0.45 },
+          delay: 0.02,
           ease: "power2.inOut",
         },
         onUpdate: (self) => {
@@ -111,7 +116,8 @@
     tl.addLabel("start", 0);
 
     sections.forEach((section, i) => {
-      const img = section.querySelector<HTMLElement>("[data-mimage]")!;
+      const img = section.querySelector<HTMLElement>("[data-mimage]")!; // colour copy
+      const wrap = section.querySelector<HTMLElement>("[data-mwrap]")!;
       const label = section.querySelector<HTMLElement>("[data-mlabel]")!;
       const key = section.dataset.mpanel;
       const from =
@@ -121,7 +127,10 @@
 
       // Initial state: label parked off, every image but the first grey and zoomed.
       gsap.set(label, { ...from, autoAlpha: 0 });
-      if (i > 0) gsap.set(img, { filter: "grayscale(1) brightness(0.6)", scale: 1.08 });
+      if (i > 0) {
+        gsap.set(img, { autoAlpha: 0 });
+        gsap.set(wrap, { scale: 1.08 });
+      }
 
       // Text phase: image fixed, label sweeps in with the scroll.
       tl.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
@@ -131,8 +140,8 @@
         const chars = SplitText.create(text, { type: "chars" }).chars as HTMLElement[];
         tl.fromTo(
           chars,
-          { autoAlpha: 0, scale: 1.25, filter: "blur(10px)" },
-          { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: TEXT * 0.45, ease: "power2.out", stagger: (TEXT * 0.5) / chars.length },
+          { autoAlpha: 0, scale: 1.25 },
+          { autoAlpha: 1, scale: 1, duration: TEXT * 0.45, ease: "power2.out", stagger: (TEXT * 0.5) / chars.length },
           t0 + TEXT * 0.1,
         );
       } else if (key === "right" && text) {
@@ -144,9 +153,11 @@
       // Slide phase: label leaves, stage moves on, next image washes into colour.
       if (i < n - 1) {
         const nextImg = sections[i + 1].querySelector<HTMLElement>("[data-mimage]")!;
+        const nextWrap = sections[i + 1].querySelector<HTMLElement>("[data-mwrap]")!;
         tl.to(label, { ...out, autoAlpha: 0, duration: SLIDE * 0.5, ease: "power2.in" }, t0 + TEXT);
         tl.to(track, { xPercent: (-100 * (i + 1)) / n, duration: SLIDE }, t0 + TEXT);
-        tl.to(nextImg, { filter: "grayscale(0) brightness(1)", scale: 1, duration: SLIDE }, t0 + TEXT);
+        tl.to(nextImg, { autoAlpha: 1, duration: SLIDE }, t0 + TEXT);
+        tl.to(nextWrap, { scale: 1, duration: SLIDE }, t0 + TEXT);
       }
     });
 
@@ -161,15 +172,28 @@
   <div class="track" style="--panels: {panels.length}" bind:this={track}>
   {#each panels as p (p.key)}
     <figure class="mpanel" data-mpanel={p.key}>
-      <div class="mimage-wrap">
+      <!-- Grey copy underneath, colour copy on top: the reveal scrubs only the colour
+           copy's opacity (compositor-only) instead of re-rasterising a filter each frame. -->
+      <div class="mimage-wrap" data-mwrap>
         <img
-          class="mimage"
+          class="mimage mimage-grey"
           src={p.src}
           srcset={p.srcset}
           sizes={p.sizes}
           width={p.width}
           height={p.height}
           alt={p.alt}
+          loading={p.key === "left" ? "eager" : "lazy"}
+          decoding="async"
+        />
+        <img
+          class="mimage mimage-color"
+          src={p.src}
+          srcset={p.srcset}
+          sizes={p.sizes}
+          width={p.width}
+          height={p.height}
+          alt=""
           loading={p.key === "left" ? "eager" : "lazy"}
           decoding="async"
           data-mimage
@@ -236,12 +260,21 @@
     place-items: center;
     overflow: hidden;
   }
+  .mimage-wrap {
+    will-change: transform; /* the zoom lives on the wrapper */
+  }
   .mimage {
+    grid-area: 1 / 1;
     display: block;
     height: max(100svh, calc(100vw * 2145 / 1160));
     width: auto;
     max-width: none;
-    will-change: transform, filter;
+  }
+  .mimage-grey {
+    filter: grayscale(1) brightness(0.6); /* static: rasterised once */
+  }
+  .mimage-color {
+    will-change: opacity;
   }
 
   .mpanel-link {
@@ -342,6 +375,10 @@
   /* Reduced motion, or the fallback when the scroll animation cannot run:
      no pin, no scrub; a native horizontal swipe strip, full colour, labels shown. */
   @media (prefers-reduced-motion: reduce) {
+    .mimage-color {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
     .mobile-triptych {
       overflow-x: auto;
       scroll-snap-type: x mandatory;
@@ -349,7 +386,8 @@
     .mpanel {
       scroll-snap-align: start;
     }
-    .mimage,
+    .mimage-wrap,
+    .mimage-color,
     .track {
       will-change: auto;
     }
@@ -363,5 +401,9 @@
   }
   .is-static .mpanel {
     scroll-snap-align: start;
+  }
+  .is-static .mimage-color {
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 </style>
