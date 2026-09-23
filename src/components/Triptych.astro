@@ -247,6 +247,12 @@ const panels = images.map((p) => ({
     grid-area: 1 / 1;
     margin: 0;
     max-width: 22ch;
+    padding: 0.6em 0.8em;
+    border-radius: 0.5em;
+    /* Soft dark backing for legibility: a translucent box whose edges are
+       feathered by a large spread shadow (no backdrop filter needed). */
+    background: rgb(0 0 0 / 0.55);
+    box-shadow: 0 0 48px 32px rgb(0 0 0 / 0.55);
     opacity: 0;
     visibility: hidden;
     will-change: transform, opacity;
@@ -647,16 +653,18 @@ const panels = images.map((p) => ({
         if (root.dataset.ready) arm();
         else root.addEventListener("triptych:ready", arm, { once: true });
 
-        // Centre copy: pin the hero; each paragraph rises from the bottom of the panel,
-        // is fully readable through the middle and fades out towards the top, all
-        // scrubbed to the scroll. Paragraphs overlap slightly so the next is already
-        // rising as the previous fades.
+        // Centre copy: pin the hero; each paragraph rises from the bottom edge of the
+        // panel to the top edge, scrubbed to the scroll. Opacity is keyed to its height
+        // in the panel: 0 until 90%, up to 1 by 70%, held to 30%, back to 0 by 10%.
+        // Scrolling snaps to the points where a paragraph sits exactly in the centre.
         const paras = Array.from(root.querySelectorAll<HTMLElement>("[data-para]"));
         let paraTl: gsap.core.Timeline | null = null;
         if (paras.length) {
           const OVERLAP = 0.3; // fraction of a paragraph's travel shared with the next
           const total = 1 + (paras.length - 1) * (1 - OVERLAP);
-          const travel = () => root.getBoundingClientRect().height * 0.55; // px from centre to each edge
+          const half = () => root.getBoundingClientRect().height / 2; // centre → edge
+          // Rest points: the empty start, then each paragraph centred (travel midpoint).
+          const rests = [0, ...paras.map((_, n) => (n * (1 - OVERLAP) + 0.5) / total)];
           paraTl = gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
@@ -667,16 +675,18 @@ const panels = images.map((p) => ({
               anticipatePin: 1,
               scrub: 0.25,
               invalidateOnRefresh: true,
+              snap: { snapTo: rests, directional: false, duration: { min: 0.15, max: 0.5 }, delay: 0.02, ease: "power2.inOut" },
             },
           });
           paras.forEach((para, n) => {
             const at = n * (1 - OVERLAP);
-            // Position: bottom edge → top edge over the paragraph's whole travel.
-            paraTl!.fromTo(para, { y: () => travel() }, { y: () => -travel(), duration: 1 }, at);
-            // Visibility: in over the first third, hold, out over the last third.
+            // Travel: y = +half (bottom edge, "100% height") → -half (top edge, "0%").
+            paraTl!.fromTo(para, { y: () => half() }, { y: () => -half(), duration: 1 }, at);
+            // Opacity by height: 90% → 70% in, 30% → 10% out (height% = 100 − 100·t).
             paraTl!
-              .fromTo(para, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, at)
-              .to(para, { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, at + 0.7);
+              .set(para, { autoAlpha: 0 }, at)
+              .to(para, { autoAlpha: 1, duration: 0.2 }, at + 0.1)
+              .to(para, { autoAlpha: 0, duration: 0.2 }, at + 0.7);
           });
         }
 
