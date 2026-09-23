@@ -27,6 +27,14 @@
   font-display: swap;
   src: url("/fonts/BluuNext-Bold.woff2") format("woff2");
 }
+/* Young Serif Bold (SIL OFL, Open Foundry) for everything "About me"; Latin subset. */
+@font-face {
+  font-family: "Young Serif";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/YoungSerif-Bold.woff2") format("woff2");
+}
 @font-face {
   font-family: "Terminal Grotesque";
   font-style: normal;
@@ -39,6 +47,7 @@
   --font-instrument: "Instrument Sans", "sans-serif";
   --font-bluu: "Bluu Next", "Georgia", "serif";
   --font-terminal: "Terminal Grotesque", "monospace";
+  --font-young: "Young Serif", "Georgia", "serif";
 
   --color-background: oklch(14% 0 0);
   --color-foreground: oklch(96% 0 0);
@@ -96,18 +105,75 @@
   transform: translateY(110%);
 }
 
-/* Rise from below a clipping edge (Home centre caption, About title). */
-@keyframes slide-up-in {
-  from { translate: 0 calc(100% + 1.5rem); }
-  to { translate: 0 0; }
+/* Letters rise (Home centre caption, About title; markup from SplitWord.astro):
+   each letter climbs out of a clipped line, tilting and un-blurring into place,
+   staggered by its index; a hairline then draws itself under the word. */
+.split-word {
+  position: relative;
+  display: inline-flex;
+  /* Clip below the baseline only, so blur and tilt stay visible above it. */
+  clip-path: inset(-50% -10% 0 -10%);
+  padding-bottom: 0.12em;
 }
-@keyframes slide-down-out {
-  from { translate: 0 0; }
-  to { translate: 0 calc(100% + 1.5rem); }
+.split-word .ch {
+  display: inline-block;
+  transform-origin: 0 100%;
 }
-/* Page title that rises into place; the wrapper clips it (overflow-hidden). */
+.split-word::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.04em;
+  background: currentColor;
+  transform-origin: left;
+  scale: 0 1;
+}
+@keyframes letter-in {
+  from {
+    translate: 0 115%;
+    rotate: 12deg;
+    opacity: 0;
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    translate: 0 0;
+    rotate: 0deg;
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@keyframes letter-out {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 115%;
+    rotate: -8deg;
+    filter: blur(4px);
+  }
+}
+@keyframes underline-in {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+/* Page title that plays the letters-rise on load. */
+.title-letters .split-word::after {
+  scale: 1 1;
+}
 @media (prefers-reduced-motion: no-preference) {
-  .title-rise {
-    animation: slide-up-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  .title-letters .ch {
+    animation: letter-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(0.1s + var(--i) * 45ms) both;
+  }
+  .title-letters .split-word::after {
+    animation: underline-in 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.6s both;
   }
 }

@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import profile from "../assets/giacomo-profile-2026.webp";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import SplitWord from "../components/SplitWord.astro";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -10,9 +11,9 @@ const t = useTranslations(lang);
 <BaseLayout title={t("about.title")}>
   <article class="grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-start">
     <div class="flex max-w-2xl flex-col gap-6">
-      <!-- Rises from below like the Home centre caption; the h1 clips it. -->
-      <h1 class="overflow-hidden text-4xl font-semibold tracking-tight md:text-5xl">
-        <span class="title-rise block">{t("about.heading")}</span>
+      <!-- Same face and letters-rise animation as the Home centre caption. -->
+      <h1 class="title-letters font-young text-5xl uppercase md:text-7xl">
+        <SplitWord text={t("about.heading")} />
       </h1>
       <p class="text-lg text-muted">{t("about.intro")}</p>
       <p class="text-muted">{t("about.body")}</p>
