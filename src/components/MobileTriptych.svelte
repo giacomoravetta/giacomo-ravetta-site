@@ -136,12 +136,12 @@
       tl.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
       const text = label.querySelector<HTMLElement>(".mlabel-text");
       if (key === "left" && text) {
-        // designer: letters settle in from a blur, one after another.
+        // designer: letters rise into place one after another (transform + opacity only).
         const chars = SplitText.create(text, { type: "chars" }).chars as HTMLElement[];
         tl.fromTo(
           chars,
-          { autoAlpha: 0, scale: 1.25 },
-          { autoAlpha: 1, scale: 1, duration: TEXT * 0.45, ease: "power2.out", stagger: (TEXT * 0.5) / chars.length },
+          { autoAlpha: 0, yPercent: 70, rotation: -8 },
+          { autoAlpha: 1, yPercent: 0, rotation: 0, duration: TEXT * 0.45, ease: "power2.out", stagger: (TEXT * 0.5) / chars.length },
           t0 + TEXT * 0.1,
         );
       } else if (key === "right" && text) {
