@@ -26,6 +26,9 @@
 
   let root: HTMLElement;
   let track: HTMLElement;
+  // Drive state classes through Svelte so its scoped CSS keeps the selectors.
+  let started = $state(false);
+  let isStatic = $state(false);
 
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -34,8 +37,32 @@
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
       const n = sections.length;
+      try {
+        return setup(sections, n);
+      } catch (err) {
+        // Anything unexpected (very old engine, pinning failure…): show the plain,
+        // full-colour horizontal swipe strip instead of a broken animation.
+        console.warn("[MobileTriptych] scroll animation unavailable, using static strip", err);
+        isStatic = true;
+        return () => {
+          isStatic = false;
+        };
+      }
+    });
+
+    return () => mm.revert();
+  });
+
+  function setup(sections: HTMLElement[], n: number) {
 
       // Pin the stage and scrub the track sideways: one viewport of scroll per panel.
+      const onStart = () => {
+        if (started) return;
+        started = true;
+        showFirst?.();
+      };
+      let showFirst: (() => void) | undefined;
+
       const slide = gsap.to(track, {
         xPercent: -100 * ((n - 1) / n),
         ease: "none",
@@ -46,6 +73,17 @@
           anticipatePin: 1,
           end: () => "+=" + window.innerWidth * (n - 1),
           invalidateOnRefresh: true,
+          // Never rest between two panels: settle on the nearest one when scrolling stops.
+          snap: {
+            snapTo: 1 / (n - 1),
+            directional: false, // nearest panel, so a small nudge settles back rather than skipping ahead
+            duration: { min: 0.25, max: 0.7 },
+            delay: 0.05,
+            ease: "power2.inOut",
+          },
+          onUpdate: (self) => {
+            if (self.progress > 0.005) onStart();
+          },
         },
       });
 
@@ -90,8 +128,8 @@
           onLeave: hide,
           onLeaveBack: hide,
         });
-        // The first panel is already in view at the top of the page.
-        if (key === "left") show();
+        // The first panel is in view on arrival; its label waits for the first scroll.
+        if (key === "left") showFirst = show;
 
         return () => {
           wash.scrollTrigger?.kill();
@@ -105,13 +143,10 @@
         slide.scrollTrigger?.kill();
         slide.kill();
       };
-    });
-
-    return () => mm.revert();
-  });
+  }
 </script>
 
-<section class="mobile-triptych" bind:this={root} aria-label="Giacomo Ravetta">
+<section class="mobile-triptych" class:is-started={started} class:is-static={isStatic} bind:this={root} aria-label="Giacomo Ravetta">
   <div class="track" bind:this={track}>
   {#each panels as p (p.key)}
     <figure class="mpanel" data-mpanel={p.key}>
@@ -136,6 +171,10 @@
       {/if}
     </figure>
   {/each}
+  </div>
+  <!-- Scroll hint: fades out on the first scroll. -->
+  <div class="hint" aria-hidden="true">
+    <span class="hint-arrow"></span>
   </div>
 </section>
 
@@ -217,7 +256,51 @@
     line-height: 1.1;
   }
 
-  /* Reduced motion: no pin, no scrub; a native horizontal swipe strip instead. */
+  /* Scroll hint: a small chevron bobbing at the bottom until the first scroll. */
+  .hint {
+    position: absolute;
+    left: 50%;
+    bottom: 3.25rem;
+    z-index: 2;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: -1.375rem;
+    border-radius: 999px;
+    border: 1.5px solid rgb(255 255 255 / 0.7);
+    background: rgb(0 0 0 / 0.45);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+    pointer-events: none;
+    animation: hint-bob 1.6s ease-in-out infinite;
+    transition: opacity 0.4s ease;
+  }
+  .hint-arrow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin: -0.55rem 0 0 -0.35rem;
+    border-right: 2px solid var(--color-foreground);
+    border-bottom: 2px solid var(--color-foreground);
+    transform: rotate(45deg);
+  }
+  .is-started .hint,
+  .is-static .hint {
+    opacity: 0;
+    animation: none;
+  }
+  @keyframes hint-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(8px);
+    }
+  }
+
+  /* Reduced motion, or the fallback when the scroll animation cannot run:
+     no pin, no scrub; a native horizontal swipe strip, full colour, labels shown. */
   @media (prefers-reduced-motion: reduce) {
     .mobile-triptych {
       overflow-x: auto;
@@ -230,5 +313,15 @@
     .track {
       will-change: auto;
     }
+    .hint {
+      display: none;
+    }
+  }
+  .is-static {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .is-static .mpanel {
+    scroll-snap-align: start;
   }
 </style>
