@@ -141,7 +141,7 @@
 </script>
 
 <section class="mobile-triptych" class:is-started={started} class:is-static={isStatic} bind:this={root} aria-label="Giacomo Ravetta">
-  <div class="track" bind:this={track}>
+  <div class="track" style="--panels: {panels.length}" bind:this={track}>
   {#each panels as p (p.key)}
     <figure class="mpanel" data-mpanel={p.key}>
       <div class="mimage-wrap">
@@ -183,16 +183,19 @@
     background: var(--color-background);
   }
 
+  /* Explicit width: Firefox resolves max-content to 0 for a flex row whose items
+     only carry a flex-basis, and GSAP's xPercent is relative to this width. */
   .track {
     display: flex;
     height: 100%;
-    width: max-content;
+    width: calc(var(--panels, 3) * 100vw);
     will-change: transform;
   }
 
   .mpanel {
     position: relative;
     flex: 0 0 100vw;
+    width: 100vw;
     height: 100%;
     margin: 0;
     overflow: hidden;
