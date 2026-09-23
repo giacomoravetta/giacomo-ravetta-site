@@ -17,7 +17,7 @@ Personal site of Giacomo Ravetta. Astro 7 + Tailwind 4 + GSAP, fully static, dep
 
 - `src/pages/*.astro` English pages; `src/pages/it/*.astro` thin wrappers with Italian slugs. Add a route key in `src/i18n/ui.ts` (`routes`) for each new page.
 - `src/layouts/BaseLayout.astro` — head, header, footer. `fullBleed` prop drops the content container.
-- `src/components/Header.astro` — floating frosted-glass sticky header (70dvw). Its flow height is `--header-h` in `src/styles/global.css`; keep them in sync.
+- `src/components/Header.astro` — desktop: floating frosted-glass sticky pill (70dvw), flow height `--header-h` in `src/styles/global.css` (keep in sync). Phones: compact full-width bar fixed over the content plus a full-screen menu (`[data-menu]`, toggled by `[data-menu-toggle]`); container pages add `max-md:pt-24` to clear it.
 - `src/components/Triptych.astro` — desktop Home hero (hidden under 768px): three panels of *The Battle of Shijo Nawate* (`src/assets/shijo-nawate/`) scaled as one strip to cover the viewport, desaturated at rest, colour revealed through a canvas brush stroke that follows the pointer; a resting pointer blooms ink over the hovered panel. Panels slide in from below (CSS) once images decode; the brush arms after that.
 - `src/components/MobileTriptych.svelte` — phone Home hero (`client:media="(max-width: 767px)"`): the panels stacked full-height, GSAP ScrollTrigger scrubs grey → colour as each scrolls in and sweeps its label in/out. Shares image variants with the desktop version via `src/lib/triptych-images.ts`.
 - Svelte is used only for that component. `wrangler.jsonc` sets `nodejs_compat` because Svelte's server renderer imports `node:async_hooks`.
