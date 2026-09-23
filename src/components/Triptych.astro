@@ -8,7 +8,7 @@
  * Hovering a panel also reveals its label.
  * Touch / reduced-motion: full colour, labels always visible (CSS only, script never runs).
  */
-import { homeParagraphs, type Lang } from "../i18n/ui";
+import type { Lang } from "../i18n/ui";
 import { localizedPath, useTranslations } from "../i18n/utils";
 import { getTriptychImages, type TriptychImages } from "../lib/triptych-images";
 
@@ -20,7 +20,6 @@ interface Props {
 
 const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
-const paragraphs = homeParagraphs[lang];
 // Home side panels → Services subpages.
 const pageFor = { left: "designer", right: "developer" } as const;
 
@@ -54,14 +53,9 @@ const panels = images.map((p) => ({
           />
           {p.href && <a class="panel-link" href={p.href} aria-label={p.label} />}
           {p.key === "center" ? (
-            <div class="label label-center" data-label>
-              <h1 class="sr-only">{p.label}</h1>
-              {paragraphs.map((text, i) => (
-                <p class="para" data-para={i}>
-                  {text}
-                </p>
-              ))}
-            </div>
+            <h1 class="sr-only" data-label>
+              {p.label}
+            </h1>
           ) : (
             <p
               class:list={["label", "label-side", `label-${p.key}`, p.key === "left" ? "font-bluu" : "font-terminal"]}
@@ -226,37 +220,6 @@ const panels = images.map((p) => ({
     right: calc(1.5rem + var(--overflow));
   }
 
-  /* Centre copy: paragraphs stacked on one grid cell, one visible at a time
-     (swapped by the scroll timeline); the box is centred in the panel. */
-  .label-center {
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding-inline: 6%;
-    overflow: hidden; /* paragraphs enter and leave through the panel edges */
-    text-align: center;
-    font-weight: 600;
-    font-size: clamp(1.6rem, 2.6vw, 3rem);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-  }
-  /* Big centred copy: each paragraph travels bottom → top with the scroll,
-     fading in as it rises and out as it nears the top. */
-  .para {
-    position: relative;
-    grid-area: 1 / 1;
-    margin: 0;
-    max-width: 22ch;
-    padding: 0.6em 0.8em;
-    border-radius: 0.5em;
-    /* Soft dark backing for legibility: a translucent box whose edges are
-       feathered by a large spread shadow (no backdrop filter needed). */
-    background: rgb(0 0 0 / 0.55);
-    box-shadow: 0 0 48px 32px rgb(0 0 0 / 0.55);
-    opacity: 0;
-    visibility: hidden;
-    will-change: transform, opacity;
-  }
   /* Interactive mode: side labels start hidden, GSAP reveals them. */
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     .label-side {
@@ -290,9 +253,8 @@ const panels = images.map((p) => ({
   import gsap from "gsap";
   import { SplitText } from "gsap/SplitText";
   import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-  gsap.registerPlugin(SplitText, ScrambleTextPlugin, ScrollTrigger);
+  gsap.registerPlugin(SplitText, ScrambleTextPlugin);
 
   const root = document.querySelector<HTMLElement>("[data-triptych]");
 
@@ -301,7 +263,7 @@ const panels = images.map((p) => ({
 
     mm.add(
       // Same split as the CSS: wide screens with a mouse. Shrinking the window past
-      // 1024px reverts this block (listeners, pin, ticker) and the phone hero takes over.
+      // 1024px reverts this block (listeners, ticker) and the phone hero takes over.
       "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 1024px)",
       () => {
         const canvas = root.querySelector<HTMLCanvasElement>("[data-paint]")!;
@@ -592,9 +554,6 @@ const panels = images.map((p) => ({
           });
         };
         window.addEventListener("resize", resize);
-        // The pin gives the hero inline width/height that ScrollTrigger updates on its
-        // (debounced) refresh, after the raw resize event: re-measure then as well.
-        ScrollTrigger.addEventListener("refresh", resize);
         gsap.ticker.add(tick);
 
         // Hovered panel: track it for the ink bloom and reveal its label.
@@ -615,7 +574,7 @@ const panels = images.map((p) => ({
           const enter = () => {
             active = i;
             stopBloom();
-            if (isCenter) return; // centre copy is always visible; scrolling swaps its paragraphs
+            if (isCenter) return; // the centre label is screen-reader only
             gsap.killTweensOf([label, text, ...chars]);
             gsap.fromTo(label, { ...inFrom, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out" });
             if (split) {
@@ -653,54 +612,14 @@ const panels = images.map((p) => ({
         if (root.dataset.ready) arm();
         else root.addEventListener("triptych:ready", arm, { once: true });
 
-        // Centre copy: pin the hero; each paragraph rises from the bottom edge of the
-        // panel to the top edge, scrubbed to the scroll. Opacity is keyed to its height
-        // in the panel: 0 until 90%, up to 1 by 70%, held to 30%, back to 0 by 10%.
-        // Scrolling snaps to the points where a paragraph sits exactly in the centre.
-        const paras = Array.from(root.querySelectorAll<HTMLElement>("[data-para]"));
-        let paraTl: gsap.core.Timeline | null = null;
-        if (paras.length) {
-          const OVERLAP = 0.3; // fraction of a paragraph's travel shared with the next
-          const total = 1 + (paras.length - 1) * (1 - OVERLAP);
-          const half = () => root.getBoundingClientRect().height / 2; // centre → edge
-          // Rest points: the empty start, then each paragraph centred (travel midpoint).
-          const rests = [0, ...paras.map((_, n) => (n * (1 - OVERLAP) + 0.5) / total)];
-          paraTl = gsap.timeline({
-            defaults: { ease: "none" },
-            scrollTrigger: {
-              trigger: root,
-              start: "top top",
-              end: () => "+=" + Math.round(window.innerHeight * 0.9 * total),
-              pin: true,
-              anticipatePin: 1,
-              scrub: 0.25,
-              invalidateOnRefresh: true,
-              snap: { snapTo: rests, directional: false, duration: { min: 0.15, max: 0.5 }, delay: 0.02, ease: "power2.inOut" },
-            },
-          });
-          paras.forEach((para, n) => {
-            const at = n * (1 - OVERLAP);
-            // Travel: y = +half (bottom edge, "100% height") → -half (top edge, "0%").
-            paraTl!.fromTo(para, { y: () => half() }, { y: () => -half(), duration: 1 }, at);
-            // Opacity by height: 90% → 70% in, 30% → 10% out (height% = 100 − 100·t).
-            paraTl!
-              .set(para, { autoAlpha: 0 }, at)
-              .to(para, { autoAlpha: 1, duration: 0.2 }, at + 0.1)
-              .to(para, { autoAlpha: 0, duration: 0.2 }, at + 0.7);
-          });
-        }
-
         return () => {
           root.removeEventListener("triptych:ready", arm);
           root.removeEventListener("pointermove", onMove);
           root.removeEventListener("pointerleave", onLeave);
           window.removeEventListener("resize", resize);
-          ScrollTrigger.removeEventListener("refresh", resize);
           gsap.ticker.remove(tick);
           stopBloom();
           panelCleanup.forEach((fn) => fn());
-          paraTl?.scrollTrigger?.kill();
-          paraTl?.kill();
           gsap.set(canvas, { clearProps: "all" });
         };
       },
