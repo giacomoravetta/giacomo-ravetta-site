@@ -121,23 +121,26 @@
     sections.forEach((section, i) => {
       const img = section.querySelector<HTMLElement>("[data-mimage]")!; // colour copy
       const wrap = section.querySelector<HTMLElement>("[data-mwrap]")!;
-      const label = section.querySelector<HTMLElement>("[data-mlabel]")!;
+      // The centre panel has no visible label (screen-reader heading only).
+      const label = section.querySelector<HTMLElement>("[data-mlabel]");
+      const scrim = section.querySelector<HTMLElement>("[data-mscrim]");
       const key = section.dataset.mpanel;
-      const from =
-        key === "left" ? { xPercent: -120, yPercent: 0 } : key === "right" ? { xPercent: 120, yPercent: 0 } : { xPercent: 0, yPercent: 160 };
-      const out = { xPercent: from.xPercent * 0.5, yPercent: from.yPercent * 0.5 };
+      const from = key === "left" ? { xPercent: -120 } : { xPercent: 120 };
+      const out = { xPercent: from.xPercent * 0.5 };
       const t0 = i * (TEXT + SLIDE);
 
-      // Initial state: label parked off, every image but the first grey and zoomed.
-      gsap.set(label, { ...from, autoAlpha: 0 });
+      // Initial state: label and scrim hidden, every image but the first grey and zoomed.
+      if (label) gsap.set(label, { ...from, autoAlpha: 0 });
+      if (scrim) gsap.set(scrim, { autoAlpha: 0 });
       if (i > 0) {
         gsap.set(img, { autoAlpha: 0 });
         gsap.set(wrap, { scale: 1.08 });
       }
 
-      // Text phase: image fixed, label sweeps in with the scroll.
-      tl.to(label, { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
-      const text = label.querySelector<HTMLElement>(".mlabel-text");
+      // Text phase: image fixed, label sweeps in with the scroll over its darkening scrim.
+      if (label) tl.to(label, { xPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
+      if (scrim) tl.to(scrim, { autoAlpha: 1, duration: TEXT * 0.6, ease: "power1.out" }, t0);
+      const text = label?.querySelector<HTMLElement>(".mlabel-text");
       if (key === "left" && text) {
         // designer: letters rise into place one after another (transform + opacity only).
         const chars = SplitText.create(text, { type: "chars" }).chars as HTMLElement[];
@@ -157,7 +160,8 @@
       if (i < n - 1) {
         const nextImg = sections[i + 1].querySelector<HTMLElement>("[data-mimage]")!;
         const nextWrap = sections[i + 1].querySelector<HTMLElement>("[data-mwrap]")!;
-        tl.to(label, { ...out, autoAlpha: 0, duration: SLIDE * 0.5, ease: "power2.in" }, t0 + TEXT);
+        if (label) tl.to(label, { ...out, autoAlpha: 0, duration: SLIDE * 0.5, ease: "power2.in" }, t0 + TEXT);
+        if (scrim) tl.to(scrim, { autoAlpha: 0, duration: SLIDE * 0.5, ease: "power1.in" }, t0 + TEXT);
         tl.to(track, { xPercent: (-100 * (i + 1)) / n, duration: SLIDE }, t0 + TEXT);
         tl.to(nextImg, { autoAlpha: 1, duration: SLIDE }, t0 + TEXT);
         tl.to(nextWrap, { scale: 1, duration: SLIDE }, t0 + TEXT);
@@ -208,8 +212,10 @@
         <a class="mpanel-link" href={p.href} aria-label={p.label}></a>
       {/if}
       {#if p.key === "center"}
-        <h1 class="mlabel mlabel-center" data-mlabel>{p.label}</h1>
+        <!-- The centre image carries no visible text on mobile; the heading stays for screen readers. -->
+        <h1 class="sr-only">{p.label}</h1>
       {:else}
+        <div class="mscrim mscrim-{p.key}" style="--chars: {p.label.length}" aria-hidden="true" data-mscrim></div>
         <p
           class="mlabel mlabel-side mlabel-{p.key} {p.key === 'left' ? 'font-bluu' : 'font-terminal'}"
           style="--chars: {p.label.length}"
@@ -323,17 +329,26 @@
     right: 1rem;
   }
 
-  .mlabel-center {
+  /* Readability scrim behind each side word: a full-height band along the outer
+     edge, 70% black at the edge fading to transparent, about twice the word's width.
+     Earlier in the DOM than the label at the same z-index, so it sits under the word. */
+  .mscrim {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    width: calc(1rem + 2 * 60svh / (var(--chars, 9) * var(--adv, 0.47)));
+    pointer-events: none;
+  }
+  .mscrim-left {
+    --adv: 0.47;
     left: 0;
+    background: linear-gradient(to right, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0));
+  }
+  .mscrim-right {
+    --adv: 0.416;
     right: 0;
-    top: 50%;
-    margin-top: -0.55em;
-    width: fit-content;
-    margin-inline: auto;
-    white-space: nowrap;
-    font-size: clamp(1.75rem, 9vw, 3rem);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
+    background: linear-gradient(to left, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0));
   }
 
   /* Scroll hint: a small chevron bobbing at the bottom until the first scroll. */
