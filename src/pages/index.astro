@@ -7,8 +7,8 @@ import { getTriptychImages } from "../lib/triptych-images";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-// Home side panels → Services subpages.
-const pageFor = { left: "designer", right: "developer" } as const;
+// Home side panels → Services subpages; the centre → About me.
+const pageFor = { left: "designer", center: "about", right: "developer" } as const;
 const images = await getTriptychImages();
 // Same variants as the desktop triptych, so both share the cache and the head preloads.
 const mobilePanels = images.map((p) => ({
@@ -20,7 +20,9 @@ const mobilePanels = images.map((p) => ({
   height: Number(p.img.attributes.height),
   alt: t(`hero.alt.${p.key}`),
   label: t(`hero.${p.key}`),
-  href: p.key === "center" ? undefined : localizedPath(pageFor[p.key], lang),
+  href: localizedPath(pageFor[p.key], lang),
+  // Centre caption, same as the desktop hero.
+  caption: p.key === "center" ? t("nav.about") : undefined,
 }));
 ---
 

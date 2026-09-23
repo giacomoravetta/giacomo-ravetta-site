@@ -4,15 +4,14 @@
    * The three Shijo Nawate panels sit side by side in a pinned, viewport-sized
    * stage; vertical scrolling slides them horizontally. Each panel washes from
    * grey into colour as it crosses the viewport and its side label sweeps in.
-   * Scrolling is paged: every swipe or wheel gesture moves exactly one step
-   * (rest point) forward or back; bursts in the same direction count as one.
+   * Scrolling stays native (no hijacking, momentum kept); once the finger or wheel
+   * lets go, ScrollTrigger snaps to the nearest rest point in the scroll direction.
    * Reduced motion: a plain horizontal swipe strip, full colour, static labels.
    */
   import { onMount } from "svelte";
   import gsap from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
-  import { ScrollToPlugin } from "gsap/ScrollToPlugin";
   import { SplitText } from "gsap/SplitText";
 
   export type MobilePanel = {
@@ -25,6 +24,8 @@
     alt: string;
     label: string;
     href?: string;
+    /** Centre only: visible caption ("About me"), letters rise like the desktop one. */
+    caption?: string;
   };
 
   let { panels }: { panels: MobilePanel[] } = $props();
@@ -36,7 +37,7 @@
   let isStatic = $state(false);
 
   onMount(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, ScrollToPlugin, SplitText);
+    gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, SplitText);
     gsap.config({ force3D: true }); // keep scrubbed elements on compositor layers
     // Mobile browsers resize the viewport when the address bar collapses; skip the
     // refresh those resizes would trigger so the pinned stage does not jump.
@@ -44,7 +45,7 @@
     const mm = gsap.matchMedia();
 
     // Same split as the CSS/client:media query, so growing a window past the
-    // breakpoint reverts everything here (pin, gesture observer) as the desktop hero
+    // breakpoint reverts everything here (pin, snapping) as the desktop hero
     // takes over, and shrinking it back re-initialises.
     mm.add("(prefers-reduced-motion: no-preference) and ((max-width: 1023px) or (hover: none) or (pointer: coarse))", () => {
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
@@ -62,30 +63,24 @@
       }
     });
 
-    return () => mm.revert();
+    return () => {
+      mm.revert();
+      document.documentElement.removeAttribute("data-hero-center");
+    };
   });
 
   function setup(sections: HTMLElement[], n: number) {
     // One scrubbed timeline. Per panel: the image holds still while scrolling
     // drives its label in (TEXT units), then the stage slides to the next image
     // (SLIDE units) while that image washes into colour. Labels mark the rest
-    // points (label fully in, image fixed); gestures step between them.
+    // points (label fully in, image fixed) that the scroll snaps to.
     const TEXT = 2;
     const SLIDE = 1;
-    const PX_PER_UNIT = 2.25; // × viewport width of scroll per timeline unit
+    // Scroll distance per timeline unit, as a share of the viewport height: about
+    // one screen per panel, so a normal flick moves one step and the hero never
+    // feels like a wall to scroll through.
+    const VH_PER_UNIT = 0.35;
     const total = (n - 1) * (TEXT + SLIDE) + TEXT;
-    // Paging: one gesture = one step. Same-direction input is ignored while a step
-    // runs, until the gesture that caused it has ended (no events for STOP_DELAY,
-    // which also swallows trackpad/wheel inertia), and for COALESCE_MS afterwards.
-    const STEP_DURATION = 0.9; // s
-    const COALESCE_MS = 350;
-    const TOLERANCE = 12; // px of movement before a gesture counts
-    const STOP_DELAY = 0.15; // s of silence that ends a gesture
-    // Rest points: the start, then "label fully in" for each panel.
-    const steps = ["start", ...Array.from({ length: n }, (_, i) => `rest-${i}`)];
-
-    // Gesture observer, created below once the step positions exist.
-    let observer: Observer | undefined;
 
     const onStart = () => {
       if (started) return;
@@ -97,19 +92,21 @@
       scrollTrigger: {
         trigger: root,
         pin: true,
-        scrub: 0.25,
+        scrub: 0.3,
         anticipatePin: 1,
-        end: () => "+=" + Math.round(window.innerWidth * PX_PER_UNIT * total),
+        end: () => "+=" + Math.round(window.innerHeight * VH_PER_UNIT * total),
         invalidateOnRefresh: true,
+        // Settle on the next rest point in the scroll direction after the gesture
+        // ends; the duration scales with the distance left to travel.
+        snap: {
+          snapTo: "labelsDirectional",
+          duration: { min: 0.25, max: 0.7 },
+          delay: 0.08,
+          ease: "power2.inOut",
+          inertia: false, // velocity would fling past the centre; always the next rest point
+        },
         onUpdate: (self) => {
           if (self.progress > 0.005) onStart();
-        },
-        // Below the hero (footer) the page scrolls natively; coming back into the
-        // pin hands control back to the gestures, landing on the last step.
-        onLeave: () => observer?.disable(),
-        onEnterBack: () => {
-          observer?.enable();
-          goTo(steps.length - 1);
         },
       },
     });
@@ -118,25 +115,29 @@
     sections.forEach((section, i) => {
       const img = section.querySelector<HTMLElement>("[data-mimage]")!; // colour copy
       const wrap = section.querySelector<HTMLElement>("[data-mwrap]")!;
-      // The centre panel has no visible label (screen-reader heading only).
+      // The centre panel has no side label; its caption is animated in CSS instead.
       const label = section.querySelector<HTMLElement>("[data-mlabel]");
-      const scrim = section.querySelector<HTMLElement>("[data-mscrim]");
       const key = section.dataset.mpanel;
       const from = key === "left" ? { xPercent: -120 } : { xPercent: 120 };
       const out = { xPercent: from.xPercent * 0.5 };
       const t0 = i * (TEXT + SLIDE);
 
-      // Initial state: label and scrim hidden, every image but the first grey and zoomed.
+      // Initial state: label hidden, every image but the first grey and zoomed.
       if (label) gsap.set(label, { ...from, autoAlpha: 0 });
-      if (scrim) gsap.set(scrim, { autoAlpha: 0 });
       if (i > 0) {
         gsap.set(img, { autoAlpha: 0 });
         gsap.set(wrap, { scale: 1.08 });
       }
 
-      // Text phase: image fixed, label sweeps in with the scroll over its darkening scrim.
+      // Text phase: image fixed, label sweeps in with the scroll.
       if (label) tl.to(label, { xPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
-      if (scrim) tl.to(scrim, { autoAlpha: 1, duration: TEXT * 0.6, ease: "power1.out" }, t0);
+      // Centre: flip [data-hero-center] on <html> (same as desktop) so the caption's
+      // CSS letters-rise plays and the footer steps aside, in both scroll directions.
+      if (key === "center") {
+        const set = (v: string) => () => (document.documentElement.dataset.heroCenter = v);
+        tl.to({}, { duration: TEXT * 0.4, onStart: set("in"), onReverseComplete: set("out") }, t0 + TEXT * 0.3);
+        if (i < n - 1) tl.to({}, { duration: SLIDE * 0.3, onStart: set("out"), onReverseComplete: set("in") }, t0 + TEXT);
+      }
       const text = label?.querySelector<HTMLElement>(".mlabel-text");
       if (key === "left" && text) {
         // designer: letters rise into place one after another (transform + opacity only).
@@ -158,87 +159,13 @@
         const nextImg = sections[i + 1].querySelector<HTMLElement>("[data-mimage]")!;
         const nextWrap = sections[i + 1].querySelector<HTMLElement>("[data-mwrap]")!;
         if (label) tl.to(label, { ...out, autoAlpha: 0, duration: SLIDE * 0.5, ease: "power2.in" }, t0 + TEXT);
-        if (scrim) tl.to(scrim, { autoAlpha: 0, duration: SLIDE * 0.5, ease: "power1.in" }, t0 + TEXT);
         tl.to(track, { xPercent: (-100 * (i + 1)) / n, duration: SLIDE }, t0 + TEXT);
         tl.to(nextImg, { autoAlpha: 1, duration: SLIDE }, t0 + TEXT);
         tl.to(nextWrap, { scale: 1, duration: SLIDE }, t0 + TEXT);
       }
     });
 
-    const st = tl.scrollTrigger!;
-    const stepY = (i: number) => st.labelToScroll(steps[i]);
-    // Nearest step to the current scroll position (robust to refreshes, reloads
-    // mid-hero, or anything else that moved the page).
-    const nearestStep = () => {
-      const y = window.scrollY;
-      let best = 0;
-      steps.forEach((_, i) => {
-        if (Math.abs(stepY(i) - y) < Math.abs(stepY(best) - y)) best = i;
-      });
-      return best;
-    };
-
-    let animating = false;
-    let gestureOpen = false;
-    let lastDir = 0;
-    let lastStepAt = 0;
-
-    const scrollToY = (y: number, onComplete?: () => void) => {
-      animating = true;
-      gsap.killTweensOf(window);
-      gsap.to(window, {
-        scrollTo: { y, autoKill: false },
-        duration: STEP_DURATION,
-        ease: "power2.inOut",
-        onComplete: () => {
-          animating = false;
-          lastStepAt = performance.now();
-          onComplete?.();
-        },
-      });
-    };
-    function goTo(i: number) {
-      scrollToY(stepY(gsap.utils.clamp(0, steps.length - 1, i)));
-    }
-
-    const request = (dir: 1 | -1) => {
-      if (animating) return;
-      if (dir === lastDir && (gestureOpen || performance.now() - lastStepAt < COALESCE_MS)) return;
-      gestureOpen = true;
-      lastDir = dir;
-      const current = nearestStep();
-      const next = current + dir;
-      if (next < 0) return; // already at the top of the page
-      if (next >= steps.length) {
-        // Past the last step: release the page and reveal what follows the hero.
-        observer?.disable();
-        scrollToY(ScrollTrigger.maxScroll(window));
-        return;
-      }
-      goTo(next);
-    };
-
-    // wheelSpeed -1 makes "finger up" and "wheel down" both call onUp (= forward).
-    // Created disabled: it's only enabled while the page is inside the pinned range.
-    observer = ScrollTrigger.observe({
-      target: window,
-      type: "wheel,touch",
-      wheelSpeed: -1,
-      tolerance: TOLERANCE,
-      preventDefault: true,
-      onUp: () => request(1),
-      onDown: () => request(-1),
-      onStop: () => {
-        gestureOpen = false;
-      },
-      onStopDelay: STOP_DELAY,
-    });
-    if (window.scrollY >= st.end) observer.disable();
-
     return () => {
-      observer?.kill();
-      observer = undefined;
-      gsap.killTweensOf(window);
       tl.scrollTrigger?.kill();
       tl.kill();
     };
@@ -282,10 +209,18 @@
         <a class="mpanel-link" href={p.href} aria-label={p.label}></a>
       {/if}
       {#if p.key === "center"}
-        <!-- The centre image carries no visible text on mobile; the heading stays for screen readers. -->
         <h1 class="sr-only">{p.label}</h1>
+        {#if p.caption}
+          <!-- Same markup as SplitWord.astro, so the global letters-rise CSS applies. -->
+          <p class="mcaption font-young uppercase" aria-hidden="true">
+            <span class="split-word">
+              {#each [...p.caption] as c, i}
+                <span class="ch" style="--i: {i}">{c === " " ? "\u00a0" : c}</span>
+              {/each}
+            </span>
+          </p>
+        {/if}
       {:else}
-        <div class="mscrim mscrim-{p.key}" style="--chars: {p.label.length}" aria-hidden="true" data-mscrim></div>
         <p
           class="mlabel mlabel-side mlabel-{p.key} {p.key === 'left' ? 'font-bluu' : 'font-terminal'}"
           style="--chars: {p.label.length}"
@@ -409,26 +344,31 @@
     right: 1rem;
   }
 
-  /* Readability scrim behind each side word: a full-height band along the outer
-     edge, 70% black at the edge fading to transparent, about twice the word's width.
-     Earlier in the DOM than the label at the same z-index, so it sits under the word. */
-  .mscrim {
+  /* Centre caption: letters wait below their line until [data-hero-center="in"]. */
+  .mcaption {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    left: 0;
+    right: 0;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
     z-index: 1;
-    width: calc(1rem + 2 * 60svh / (var(--chars, 9) * var(--adv, 0.47)));
+    margin: 0;
+    text-align: center;
+    font-size: clamp(2.5rem, 12vw, 5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--color-foreground);
+    text-shadow: 0 2px 24px rgb(0 0 0 / 0.6);
     pointer-events: none;
   }
-  .mscrim-left {
-    --adv: 0.47;
-    left: 0;
-    background: linear-gradient(to right, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0));
+  .mcaption :global(.ch) {
+    translate: 0 115%;
   }
-  .mscrim-right {
-    --adv: 0.416;
-    right: 0;
-    background: linear-gradient(to left, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0));
+  :global(:root[data-hero-center="in"]) .mcaption :global(.ch) {
+    animation: letter-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 45ms) both;
+  }
+  :global(:root[data-hero-center="out"]) .mcaption :global(.ch) {
+    animation: letter-out 0.45s cubic-bezier(0.55, 0, 0.75, 0) calc(var(--i) * 25ms) both;
   }
 
   /* Scroll hint: a small chevron bobbing at the bottom until the first scroll. */
@@ -496,6 +436,9 @@
     .hint {
       display: none;
     }
+    .mcaption :global(.ch) {
+      translate: none;
+    }
   }
   .is-static {
     overflow-x: auto;
@@ -503,6 +446,9 @@
   }
   .is-static .mpanel {
     scroll-snap-align: start;
+  }
+  .is-static .mcaption :global(.ch) {
+    translate: none;
   }
   .is-static .mimage-color {
     opacity: 1 !important;
