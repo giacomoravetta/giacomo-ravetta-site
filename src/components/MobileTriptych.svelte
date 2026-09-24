@@ -4,13 +4,14 @@
    * The three Shijo Nawate panels sit side by side in a pinned, viewport-sized
    * stage; vertical scrolling slides them horizontally. Each panel washes from
    * grey into colour as it crosses the viewport and its side label sweeps in.
-   * Scrolling stays native (no hijacking, momentum kept); once the finger or wheel
-   * lets go, ScrollTrigger snaps to the nearest rest point in the scroll direction.
+   * The document never scrolls (so the mobile address bar never hides/shows): the
+   * stage is fixed and GSAP Observer turns each swipe, wheel or arrow key into one
+   * step, tweening the timeline to the next or previous rest point.
    * Reduced motion: a plain horizontal swipe strip, full colour, static labels.
    */
   import { onMount } from "svelte";
   import gsap from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { Observer } from "gsap/Observer";
   import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
   import { SplitText } from "gsap/SplitText";
 
@@ -37,15 +38,12 @@
   let isStatic = $state(false);
 
   onMount(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, SplitText);
+    gsap.registerPlugin(Observer, ScrambleTextPlugin, SplitText);
     gsap.config({ force3D: true }); // keep scrubbed elements on compositor layers
-    // Mobile browsers resize the viewport when the address bar collapses; skip the
-    // refresh those resizes would trigger so the pinned stage does not jump.
-    ScrollTrigger.config({ ignoreMobileResize: true });
     const mm = gsap.matchMedia();
 
     // Same split as the CSS/client:media query, so growing a window past the
-    // breakpoint reverts everything here (pin, snapping) as the desktop hero
+    // breakpoint reverts everything here (page lock, input) as the desktop hero
     // takes over, and shrinking it back re-initialises.
     mm.add("(prefers-reduced-motion: no-preference) and ((max-width: 1023px) or (hover: none) or (pointer: coarse))", () => {
       const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-mpanel]"));
@@ -70,46 +68,12 @@
   });
 
   function setup(sections: HTMLElement[], n: number) {
-    // One scrubbed timeline. Per panel: the image holds still while scrolling
-    // drives its label in (TEXT units), then the stage slides to the next image
-    // (SLIDE units) while that image washes into colour. Labels mark the rest
-    // points (label fully in, image fixed) that the scroll snaps to.
+    // One timeline, played in steps. Per panel: the image holds still while its
+    // label sweeps in (TEXT units), then the stage slides to the next image (SLIDE
+    // units) while that image washes into colour. Labels mark the rest points.
     const TEXT = 2;
     const SLIDE = 1;
-    // Scroll distance per timeline unit, as a share of the viewport height: about
-    // one screen per panel, so a normal flick moves one step and the hero never
-    // feels like a wall to scroll through.
-    const VH_PER_UNIT = 0.35;
-    const total = (n - 1) * (TEXT + SLIDE) + TEXT;
-
-    const onStart = () => {
-      if (started) return;
-      started = true;
-    };
-
-    const tl = gsap.timeline({
-      defaults: { ease: "none" },
-      scrollTrigger: {
-        trigger: root,
-        pin: true,
-        scrub: 0.3,
-        anticipatePin: 1,
-        end: () => "+=" + Math.round(window.innerHeight * VH_PER_UNIT * total),
-        invalidateOnRefresh: true,
-        // Settle on the next rest point in the scroll direction after the gesture
-        // ends; the duration scales with the distance left to travel.
-        snap: {
-          snapTo: "labelsDirectional",
-          duration: { min: 0.25, max: 0.7 },
-          delay: 0.08,
-          ease: "power2.inOut",
-          inertia: false, // velocity would fling past the centre; always the next rest point
-        },
-        onUpdate: (self) => {
-          if (self.progress > 0.005) onStart();
-        },
-      },
-    });
+    const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
     tl.addLabel("start", 0);
 
     sections.forEach((section, i) => {
@@ -165,8 +129,59 @@
       }
     });
 
+    // Step through the rest points: one gesture = one step, input ignored while a
+    // step plays so a long flick never skips a panel.
+    let index = -1; // -1: before the first label (hint showing)
+    let busy = false;
+    const go = (to: number) => {
+      to = Math.max(0, Math.min(n - 1, to));
+      if (busy || to === index) return;
+      busy = true;
+      if (!started) started = true;
+      const steps = Math.abs(to - index);
+      index = to;
+      tl.tweenTo(`rest-${to}`, {
+        duration: steps * 1.1,
+        ease: "power2.inOut",
+        onComplete: () => {
+          // Short cooldown swallows the tail of a trackpad/wheel momentum burst.
+          gsap.delayedCall(0.15, () => (busy = false));
+        },
+      });
+    };
+    const next = () => go(index + 1);
+    const prev = () => go(index - 1);
+
+    // Lock the page: nothing scrolls, so the browser chrome stays put.
+    const html = document.documentElement;
+    html.classList.add("hero-locked");
+
+    const obs = Observer.create({
+      target: window,
+      type: "wheel,touch,pointer",
+      wheelSpeed: -1, // wheel down = forward, like a swipe up
+      tolerance: 12,
+      dragMinimum: 6,
+      lockAxis: true,
+      preventDefault: true,
+      onUp: next,
+      onDown: prev,
+      onLeft: next,
+      onRight: prev,
+    });
+
+    const onKey = (e: KeyboardEvent) => {
+      if (["ArrowDown", "ArrowRight", "PageDown", " "].includes(e.key)) next();
+      else if (["ArrowUp", "ArrowLeft", "PageUp"].includes(e.key)) prev();
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+
     return () => {
-      tl.scrollTrigger?.kill();
+      obs.kill();
+      window.removeEventListener("keydown", onKey);
+      html.classList.remove("hero-locked");
       tl.kill();
     };
   }
@@ -240,10 +255,11 @@
 </section>
 
 <style>
-  /* Viewport-sized stage; ScrollTrigger pins it and slides the track sideways. */
+  /* Viewport-sized stage; the page is locked and the timeline slides the track sideways. */
   .mobile-triptych {
     position: relative;
     height: 100svh;
+    touch-action: none; /* swipes go to Observer, not to page panning */
     overflow: hidden;
     background: var(--color-background);
   }
@@ -372,6 +388,15 @@
     animation: letter-out 0.45s cubic-bezier(0.55, 0, 0.75, 0) calc(var(--i) * 25ms) both;
   }
 
+  /* While the stepped hero runs the document never scrolls, so mobile browsers
+     keep their address bar still (no collapse/expand, no pull-to-refresh). */
+  :global(html.hero-locked),
+  :global(html.hero-locked body) {
+    overflow: hidden;
+    overscroll-behavior: none;
+    height: 100%;
+  }
+
   /* Scroll hint: a small chevron bobbing at the bottom until the first scroll. */
   .hint {
     position: absolute;
@@ -423,6 +448,7 @@
       visibility: visible !important;
     }
     .mobile-triptych {
+      touch-action: pan-x;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
     }
@@ -442,6 +468,7 @@
     }
   }
   .is-static {
+    touch-action: pan-x;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
   }
