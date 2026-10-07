@@ -1,7 +1,7 @@
 <script lang="ts">
   /**
    * Stepped Home hero for phones, tablets and touch devices: a seven-step story.
-   *   0 designer panel · 1–2 Designer services · 3 the whole work (About me)
+   *   0 designer panel · 1–2 Designer services · 3 the centre panel
    *   4 developer panel · 5–6 Developer services
    * The document never scrolls (so the mobile address bar never hides/shows): the page
    * is locked and GSAP Observer turns each swipe, wheel or arrow key into one step,
@@ -83,18 +83,16 @@
     const c = parts(C);
     const r = parts(R);
     const tint = root.querySelector<HTMLElement>("[data-mtint]")!;
-    const whole = root.querySelector<HTMLElement>("[data-mwhole]")!;
     const html = document.documentElement;
     const setCenter = (v: string) => () => (html.dataset.heroCenter = v);
 
     // Initial state: labels off to their side, the centre and right images grey and
-    // zoomed, no black, the whole-work view small and hidden.
+    // zoomed, no black.
     if (l.label) gsap.set(l.label, { xPercent: -120, autoAlpha: 0 });
     if (r.label) gsap.set(r.label, { xPercent: 120, autoAlpha: 0 });
     gsap.set([c.img, r.img], { autoAlpha: 0 });
     gsap.set([c.wrap, r.wrap], { scale: 1.08 });
     gsap.set(tint, { autoAlpha: 0 });
-    gsap.set(whole, { autoAlpha: 0, scale: 1.3 });
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
     tl.addLabel("start", 0);
@@ -122,22 +120,17 @@
     tl.to({}, { duration: 0.6 }, 3); // the scenes change, the stage holds
     tl.addLabel("rest-2", 3.6);
 
-    // 3 · the whole work: slide to the centre in colour, then step back to see all
-    // three panels together over the black.
+    // 3 · the centre panel: slide to it as it washes into colour.
     tl.to(tint, { autoAlpha: 0, duration: 0.8 }, 3.6);
     tl.to(track, { xPercent: -100 / n, duration: 1 }, 3.6);
     tl.to(c.img, { autoAlpha: 1, duration: 1 }, 3.6);
     tl.to(c.wrap, { scale: 1, duration: 1 }, 3.6);
-    tl.to(tint, { autoAlpha: 1, duration: 0.8 }, 4.6);
-    tl.to(whole, { autoAlpha: 1, scale: 1, duration: 1, ease: "power2.out" }, 4.6);
     tl.to({}, { duration: 0.4, onStart: setCenter("in"), onReverseComplete: setCenter("out") }, 5);
     tl.addLabel("rest-3", 5.6);
 
-    // 4 · developer: the whole view folds away, slide on to the right panel, the word
+    // 4 · developer: slide on to the right panel, the word
     // decodes from scrambled glyphs.
     tl.to({}, { duration: 0.2, onStart: setCenter("out"), onReverseComplete: setCenter("in") }, 5.6);
-    tl.to(whole, { autoAlpha: 0, scale: 0.92, duration: 0.6, ease: "power2.in" }, 5.6);
-    tl.to(tint, { autoAlpha: 0, duration: 0.8 }, 5.8);
     tl.to(track, { xPercent: (-100 * 2) / n, duration: 1 }, 5.8);
     tl.to(r.img, { autoAlpha: 1, duration: 1 }, 5.8);
     tl.to(r.wrap, { scale: 1, duration: 1 }, 5.8);
@@ -298,14 +291,6 @@
   <!-- Ink black over the current panel on the services steps (taps go through to the
        panel link underneath). -->
   <div class="mtint" aria-hidden="true" data-mtint></div>
-  <!-- Step 3: the whole work, the three panels side by side; links to About me. -->
-  {#if center?.href}
-    <a class="mwhole" href={center.href} aria-label={center.label} data-mwhole>
-      {#each panels as p (p.key)}
-        <img src={p.src} srcset={p.srcset} sizes="34vw" width={p.width} height={p.height} alt="" loading="lazy" decoding="async" draggable="false" />
-      {/each}
-    </a>
-  {/if}
   <!-- Service scenes (HeroScenes.astro, from the page), placed by the script. -->
   <div class="mfx">
     {@render children?.()}
@@ -429,7 +414,7 @@
     right: 1rem;
   }
 
-  /* Services steps and the whole-work step sit on ink black; the scenes take their
+  /* Services steps sit on ink black; the scenes take their
      colours from --fx-key / --fx-alt (set per step by the script). */
   .mobile-triptych {
     --fx-key: #ff6a3d;
@@ -443,24 +428,6 @@
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-  }
-  .mwhole {
-    position: absolute;
-    left: 4vw;
-    right: 4vw;
-    top: 50%;
-    z-index: 4;
-    display: grid;
-    grid-template-columns: 1164fr 1478fr 1160fr; /* the three prints' widths */
-    translate: 0 -60%;
-    box-shadow: 0 20px 60px rgb(0 0 0 / 0.6);
-    opacity: 0;
-    visibility: hidden;
-  }
-  .mwhole img {
-    display: block;
-    width: 100%;
-    height: auto;
   }
   .mfx {
     position: absolute;
@@ -575,7 +542,6 @@
     }
     .hint,
     .mtint,
-    .mwhole,
     .mfx,
     .mdots {
       display: none;
@@ -590,7 +556,6 @@
     scroll-snap-align: start;
   }
   .is-static .mtint,
-  .is-static .mwhole,
   .is-static .mfx,
   .is-static .mdots {
     display: none;

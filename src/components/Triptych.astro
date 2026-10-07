@@ -22,13 +22,14 @@ interface Props {
 const { lang, images = await getTriptychImages() } = Astro.props;
 const t = useTranslations(lang);
 // Home side panels → Services subpages; the centre → About me.
-const pageFor = { left: "designer", center: "about", right: "developer" } as const;
+// Side panels → Services subpages; the centre links nowhere.
+const pageFor = { left: "designer", right: "developer" } as const;
 
 const panels = images.map((p) => ({
   ...p,
   label: t(`hero.${p.key}`),
   alt: t(`hero.alt.${p.key}`),
-  href: localizedPath(pageFor[p.key], lang),
+  href: p.key === "center" ? undefined : localizedPath(pageFor[p.key], lang),
 }));
 ---
 
@@ -52,7 +53,7 @@ const panels = images.map((p) => ({
             data-image
           />
           <span class="tint" aria-hidden="true" data-tint />
-          <a class="panel-link" href={p.href} data-astro-prefetch="hover" aria-label={p.key === "center" ? t("nav.about") : p.label} />
+          {p.href && <a class="panel-link" href={p.href} data-astro-prefetch="hover" aria-label={p.label} />}
           {p.key === "center" ? (
             <h1 class="sr-only" data-label>
               {p.label}
