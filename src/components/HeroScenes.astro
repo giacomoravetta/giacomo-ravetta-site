@@ -1,0 +1,635 @@
+---
+/**
+ * Service scenes of the Home hero, shared by the desktop triptych (shown over the dimmed
+ * panels while a side panel is hovered) and the mobile hero (one step per pair).
+ * Static, decorative markup: every `.fx` starts hidden and is animated by
+ * src/lib/hero-scenes.ts; the host positions each scene (absolute, top-left origin)
+ * and sets the colours (--fx-key, --fx-alt).
+ */
+import type { Lang } from "../i18n/ui";
+import { useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div class="fx fx-vector fx-designer" aria-hidden="true" data-fx-vector>
+  <p class="fx-kw"><span class="n">01</span><span class="t">{t("hero.fx.brand")}</span></p>
+  <svg class="design" viewBox="0 0 320 230" data-design>
+    <g class="d-guides">
+      <line x1="0" y1="40" x2="320" y2="40" />
+      <line x1="0" y1="190" x2="320" y2="190" />
+      <line x1="30" y1="0" x2="30" y2="230" />
+      <line x1="290" y1="0" x2="290" y2="230" />
+    </g>
+    <g class="d-handles">
+      <line x1="30" y1="170" x2="85" y2="55" /><circle cx="85" cy="55" r="3.5" />
+      <line x1="160" y1="115" x2="125" y2="60" /><circle cx="125" cy="60" r="3.5" />
+      <line x1="160" y1="115" x2="195" y2="170" /><circle cx="195" cy="170" r="3.5" />
+      <line x1="290" y1="60" x2="250" y2="185" /><circle cx="250" cy="185" r="3.5" />
+    </g>
+    <path class="d-path" d="M30 170 C85 55 125 60 160 115 S250 185 290 60" />
+    <g class="d-anchors">
+      <rect x="26" y="166" width="8" height="8" />
+      <rect x="156" y="111" width="8" height="8" />
+      <rect x="286" y="56" width="8" height="8" />
+    </g>
+    <rect class="d-select" x="30" y="40" width="260" height="150" />
+    <g class="d-corners">
+      <rect x="26" y="36" width="8" height="8" />
+      <rect x="286" y="36" width="8" height="8" />
+      <rect x="26" y="186" width="8" height="8" />
+      <rect x="286" y="186" width="8" height="8" />
+    </g>
+    <g class="d-chip">
+      <rect x="115" y="200" width="90" height="22" rx="4" />
+      <text x="160" y="215">260 × 150</text>
+    </g>
+    <path class="d-cursor" d="M0 0 L0 17 L4.5 12.5 L8 20 L11 18.5 L7.5 11.5 L13 11.5 Z" />
+  </svg>
+</div>
+<!-- Designer: palette sampled from the print with an eyedropper. -->
+<div class="fx fx-designer fx-palette" aria-hidden="true" data-fx-palette>
+  <p class="fx-kw"><span class="n">02</span><span class="t">{t("hero.fx.color")}</span></p>
+  <div class="swatches">
+    <svg class="dropper" viewBox="0 0 24 24"><path d="M20.7 3.3a2.4 2.4 0 0 0-3.4 0l-2.6 2.6-1.4-1.4-1.4 1.4 1.4 1.4-8 8V19h3.7l8-8 1.4 1.4 1.4-1.4-1.4-1.4 2.6-2.6a2.4 2.4 0 0 0 0-3.4z" /></svg>
+    {["#1f2b38", "#c8372d", "#e3b448", "#2f7f73", "#efe6d2"].map((c) => (
+      <div class="sw"><span class="chip" style={`background:${c}`} /><span class="hex" data-hex={c.toUpperCase()}>{c.toUpperCase()}</span></div>
+    ))}
+  </div>
+  <p class="cap">Palette · Shijo Nawate</p>
+</div>
+<!-- Designer: a 12-column layout grid; blocks snap into it. -->
+<div class="fx fx-designer fx-grid" aria-hidden="true" data-fx-grid>
+  <p class="fx-kw"><span class="n">03</span><span class="t">{t("hero.fx.layout")}</span></p>
+  <div class="stage">
+  <div class="cols">{Array.from({ length: 12 }, () => <span class="col" />)}</div>
+  <span class="blk blk-1" />
+  <span class="blk blk-2" />
+  <span class="blk blk-3" />
+  <span class="gap-tag">24px</span>
+  </div>
+</div>
+<!-- Designer: type specimen cycling through the site's faces. -->
+<div class="fx fx-designer fx-type" aria-hidden="true" data-fx-type>
+  <p class="fx-kw"><span class="n">04</span><span class="t">{t("hero.fx.type")}</span></p>
+  <div class="stage">
+  <span class="line line-asc" /><span class="line line-x" /><span class="line line-base" />
+  <span class="aa font-bluu">Aa</span>
+  <p class="meta"><span class="name">Bluu Next</span> · Bold · 120</p>
+  </div>
+</div>
+<!-- Developer: automation & AI, a workflow runs: trigger → AI agent → actions. -->
+<div class="fx fx-developer fx-flow" aria-hidden="true" data-fx-flow>
+  <p class="fx-kw"><span class="n">01</span><span class="t">{t("hero.fx.automation")}</span></p>
+  <svg viewBox="0 0 440 210">
+    <path class="edge" d="M96 105 C130 105 140 105 170 105" />
+    <path class="edge" d="M270 105 C300 105 300 50 330 50" />
+    <path class="edge" d="M270 105 C300 105 300 160 330 160" />
+    <g class="node" data-node="0"><rect x="6" y="80" width="90" height="50" rx="10" /><text x="51" y="110">Webhook</text></g>
+    <g class="node node-ai" data-node="1"><rect x="170" y="72" width="100" height="66" rx="12" /><text x="220" y="102">AI agent</text><text class="sub" x="220" y="120">classify</text></g>
+    <g class="node" data-node="2"><rect x="330" y="25" width="100" height="50" rx="10" /><text x="380" y="55">CRM</text></g>
+    <g class="node" data-node="3"><rect x="330" y="135" width="100" height="50" rx="10" /><text x="380" y="165">Email</text></g>
+    <circle class="pulse" r="5" /><circle class="pulse" r="5" /><circle class="pulse" r="5" />
+  </svg>
+  <p class="log">✓ 128 runs today · 0 errors</p>
+</div>
+<!-- Developer: website, a page builds itself in a browser window. -->
+<div class="fx fx-developer fx-web" aria-hidden="true" data-fx-web>
+  <p class="fx-kw"><span class="n">02</span><span class="t">{t("hero.fx.web")}</span></p>
+  <div class="browser">
+    <div class="bar"><i /><i /><i /><span class="url" data-url="giacomoravetta.com"></span></div>
+    <div class="page">
+      <div class="nav"><span class="logo" /><span class="links"><b /><b /><b /></span></div>
+      <div class="hero"><span class="h1" /><span class="h2" /><span class="btn" /></div>
+      <div class="cards"><span /><span /><span /></div>
+    </div>
+  </div>
+  <p class="score">Lighthouse <b>100</b> · LCP 0.6s</p>
+</div>
+<!-- Developer: e-commerce, add to cart, the cart fills, checkout completes. -->
+<div class="fx fx-developer fx-shop" aria-hidden="true" data-fx-shop>
+  <p class="fx-kw"><span class="n">03</span><span class="t">{t("hero.fx.shop")}</span></p>
+  <div class="shop">
+    <div class="product">
+      <span class="img" />
+      <p class="pname">Woodblock print</p>
+      <p class="price">€129</p>
+      <span class="add">Add to cart</span>
+    </div>
+    <div class="cart">
+      <svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.5L21 8H6.2" /><circle cx="10" cy="20" r="1.5" /><circle cx="17" cy="20" r="1.5" /></svg>
+      <span class="badge">0</span>
+    </div>
+    <span class="fly" />
+  </div>
+  <div class="checkout">
+    <p class="steps"><span>Cart</span><span>Shipping</span><span>Payment</span></p>
+    <span class="track"><span class="fill" /></span>
+    <p class="ok">✓ Order #1042 confirmed</p>
+  </div>
+</div>
+
+<style>
+  /* Service keyword on top of each scene: Bluu Next for Designer, Terminal Grotesque
+     for Developer (same faces as the side words), numbered in the key colour. */
+  .fx-kw {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0 0 1.1rem;
+    color: #fff;
+    font-size: clamp(1.5rem, 2.3vw, 2.5rem);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .fx > .fx-kw {
+    margin-bottom: 1.1rem; /* beats the scenes' own `p { margin: 0 }` */
+  }
+  .fx-kw .n {
+    font: 600 0.75rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--fx-key);
+    letter-spacing: 0.08em;
+  }
+  .fx-designer .fx-kw .t {
+    font-family: "Bluu Next", serif;
+    font-weight: 700;
+  }
+  .fx-developer .fx-kw .t {
+    font-family: "Terminal Grotesque", monospace;
+  }
+  .fx-vector,
+  .fx-flow,
+  .fx-grid,
+  .fx-type {
+    display: block;
+  }
+
+  /* Hover effects (scenes), placed over the dimmed panels by the script. */
+  .fx {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    margin: 0;
+    color: var(--color-foreground);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.7));
+  }
+  .fx-flow .log,
+  .fx-web .score,
+  .fx-web .url,
+  .fx-shop .checkout,
+  .fx-palette .hex,
+  .fx-grid .gap-tag,
+  .fx-type .meta {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .fx-palette {
+    display: grid;
+    gap: 1rem;
+    justify-items: start;
+  }
+  .fx-palette .fx-kw {
+    margin-bottom: 0.1rem;
+  }
+  .fx-palette .dropper {
+    position: absolute;
+    top: -2.5rem;
+    left: 0;
+    width: 2rem;
+    height: 2rem;
+    fill: var(--fx-key);
+    stroke: #000;
+    stroke-width: 0.6;
+  }
+  .fx-palette .swatches {
+    position: relative;
+    margin-top: 2.6rem; /* room for the eyedropper */
+    display: flex;
+    gap: 1rem;
+  }
+  .fx-palette .sw {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: center;
+  }
+  .fx-palette .chip {
+    display: block;
+    width: clamp(3.5rem, 5vw, 5.5rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid rgb(255 255 255 / 0.9);
+  }
+  .fx-palette .hex {
+    font-size: 0.8rem;
+  }
+  .fx-palette .cap,
+  .fx-type .meta {
+    font-size: 0.85rem;
+    color: var(--fx-key);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .fx-grid .stage {
+    position: relative;
+    width: clamp(20rem, 32vw, 36rem);
+    height: clamp(12rem, 20vw, 22rem);
+  }
+  .fx-grid .cols {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0.6rem;
+  }
+  .fx-grid .col {
+    background: color-mix(in oklab, var(--fx-key) 22%, transparent);
+    border-inline: 1px solid color-mix(in oklab, var(--fx-key) 70%, transparent);
+  }
+  .fx-grid .blk {
+    position: absolute;
+    background: var(--fx-key);
+    border-radius: 3px;
+  }
+  .fx-grid .blk-1 {
+    left: 0;
+    top: 8%;
+    width: calc((100% - 6.6rem) / 12 * 7 + 3.6rem);
+    height: 34%;
+  }
+  .fx-grid .blk-2 {
+    right: 0;
+    top: 8%;
+    width: calc((100% - 6.6rem) / 12 * 4 + 1.8rem);
+    height: 70%;
+    background: var(--fx-alt);
+  }
+  .fx-grid .blk-3 {
+    left: 0;
+    top: 52%;
+    width: calc((100% - 6.6rem) / 12 * 7 + 3.6rem);
+    height: 26%;
+    background: color-mix(in oklab, var(--fx-key) 55%, #fff);
+  }
+  .fx-grid .gap-tag {
+    position: absolute;
+    left: calc((100% - 6.6rem) / 12 * 7 + 3.6rem);
+    bottom: -1.8rem;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    background: var(--fx-key);
+    color: #111;
+  }
+
+  .fx-type .stage {
+    position: relative;
+    width: clamp(18rem, 28vw, 30rem);
+    height: clamp(11rem, 16vw, 17rem);
+  }
+  .fx-type .aa {
+    position: absolute;
+    left: 0;
+    bottom: 22%;
+    font-size: clamp(6rem, 11vw, 11rem);
+    line-height: 0.8;
+    font-weight: 700;
+  }
+  .fx-type .line {
+    position: absolute;
+    left: -1rem;
+    right: -1rem;
+    height: 1px;
+    background: var(--fx-key);
+  }
+  .fx-type .line-asc {
+    top: 12%;
+  }
+  .fx-type .line-x {
+    top: 42%;
+    background: var(--fx-alt);
+  }
+  .fx-type .line-base {
+    bottom: 22%;
+  }
+  .fx-type .meta {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+  }
+
+  .fx-flow {
+    width: clamp(22rem, 34vw, 36rem);
+  }
+  .fx-flow svg {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+  .fx-flow .edge {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.35);
+    stroke-width: 1.5;
+  }
+  .fx-flow .node rect {
+    fill: #1a1918;
+    stroke: rgb(255 255 255 / 0.55);
+    stroke-width: 1.5;
+  }
+  .fx-flow .node-ai rect {
+    stroke: var(--fx-key);
+  }
+  .fx-flow .node text {
+    fill: #fff;
+    font: 600 13px/1 "Terminal Grotesque", monospace;
+    text-anchor: middle;
+  }
+  .fx-flow .node text.sub {
+    fill: var(--fx-alt);
+    font: 500 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .fx-flow .pulse {
+    fill: var(--fx-key);
+  }
+  .fx-flow .log,
+  .fx-web .score {
+    margin: 0.8rem 0 0;
+    font-size: 0.8rem;
+    color: var(--fx-key);
+  }
+  .fx-web .score b {
+    color: var(--fx-alt);
+  }
+
+  .fx-web {
+    width: clamp(18rem, 26vw, 28rem);
+  }
+  .fx-web .browser {
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #161514;
+  }
+  .fx-web .bar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.15);
+  }
+  .fx-web .bar i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.3);
+  }
+  .fx-web .url {
+    flex: 1;
+    margin-left: 0.5rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.08);
+    font-size: 0.72rem;
+    color: rgb(255 255 255 / 0.85);
+    min-height: 1.3em;
+  }
+  .fx-web .page {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.9rem;
+  }
+  .fx-web .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .fx-web .logo {
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: var(--fx-key);
+  }
+  .fx-web .links {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .fx-web .links b,
+  .fx-web .h2 {
+    display: block;
+    height: 0.4rem;
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.35);
+  }
+  .fx-web .links b {
+    width: 1.8rem;
+  }
+  .fx-web .hero {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+  }
+  .fx-web .h1 {
+    display: block;
+    width: 80%;
+    height: 1.1rem;
+    border-radius: 4px;
+    background: #fff;
+  }
+  .fx-web .h2 {
+    width: 60%;
+  }
+  .fx-web .btn {
+    display: block;
+    width: 5rem;
+    height: 1.3rem;
+    margin-top: 0.3rem;
+    border-radius: 99px;
+    background: var(--fx-key);
+  }
+  .fx-web .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  .fx-web .cards span {
+    display: block;
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--fx-alt) 55%, #161514);
+  }
+
+  .fx-shop {
+    width: clamp(17rem, 24vw, 26rem);
+  }
+  .fx-shop .shop {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .fx-shop .product {
+    width: 62%;
+    padding: 0.7rem;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    border-radius: 10px;
+    background: #161514;
+  }
+  .fx-shop .img {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background:
+      radial-gradient(circle at 30% 35%, var(--fx-key) 0 18%, transparent 19%),
+      linear-gradient(160deg, color-mix(in oklab, var(--fx-alt) 70%, #000), #1f1d1b);
+  }
+  .fx-shop p {
+    margin: 0;
+  }
+  .fx-shop .pname {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+  }
+  .fx-shop .price {
+    font: 700 1.05rem/1.4 "Terminal Grotesque", monospace;
+    color: var(--fx-key);
+  }
+  .fx-shop .add {
+    display: block;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0;
+    border-radius: 99px;
+    background: var(--fx-key);
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .fx-shop .cart {
+    position: relative;
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+  .fx-shop .cart svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .fx-shop .badge {
+    position: absolute;
+    top: -0.35rem;
+    right: -0.45rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    padding: 0 0.25rem;
+    border-radius: 99px;
+    background: var(--fx-alt);
+    color: #111;
+    font: 700 0.7rem/1.2rem ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-align: center;
+  }
+  .fx-shop .fly {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--fx-key);
+    opacity: 0;
+  }
+  .fx-shop .checkout {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+  }
+  .fx-shop .steps {
+    display: flex;
+    justify-content: space-between;
+    color: rgb(255 255 255 / 0.45);
+  }
+  .fx-shop .steps span.on {
+    color: #fff;
+  }
+  .fx-shop .track {
+    display: block;
+    height: 4px;
+    margin: 0.45rem 0 0.6rem;
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.15);
+    overflow: hidden;
+  }
+  .fx-shop .track .fill {
+    display: block;
+    height: 100%;
+    background: var(--fx-key);
+    transform-origin: 0 50%;
+  }
+  .fx-shop .ok {
+    color: var(--fx-key);
+  }
+
+  /* Designer panel: a vector drawn over the art while hovered, like a design tool. */
+  .design {
+    width: clamp(18rem, 30vw, 34rem);
+    height: auto;
+    overflow: visible;
+  }
+  .design .d-guides line {
+    stroke: var(--fx-alt);
+    stroke-width: 0.75;
+    stroke-dasharray: 4 4;
+    opacity: 0.7;
+  }
+  .design .d-handles line {
+    stroke: rgb(255 255 255 / 0.75);
+    stroke-width: 1;
+  }
+  .design .d-handles circle {
+    fill: var(--color-background);
+    stroke: #fff;
+    stroke-width: 1.25;
+  }
+  .design .d-path {
+    fill: none;
+    stroke: var(--fx-key);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .design .d-anchors rect,
+  .design .d-corners rect {
+    fill: #fff;
+    stroke: var(--fx-key);
+    stroke-width: 1.5;
+  }
+  .design .d-select {
+    fill: none;
+    stroke: var(--fx-key);
+    stroke-width: 1.5;
+  }
+  .design .d-chip rect {
+    fill: var(--fx-key);
+  }
+  .design .d-chip text {
+    fill: #111;
+    font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-anchor: middle;
+  }
+  .design .d-cursor {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 1;
+  }
+</style>

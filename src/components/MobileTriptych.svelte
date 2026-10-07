@@ -1,19 +1,22 @@
 <script lang="ts">
   /**
-   * Scroll-driven Home hero for phones, tablets and touch devices.
-   * The three Shijo Nawate panels sit side by side in a pinned, viewport-sized
-   * stage; vertical scrolling slides them horizontally. Each panel washes from
-   * grey into colour as it crosses the viewport and its side label sweeps in.
-   * The document never scrolls (so the mobile address bar never hides/shows): the
-   * stage is fixed and GSAP Observer turns each swipe, wheel or arrow key into one
-   * step, tweening the timeline to the next or previous rest point.
+   * Stepped Home hero for phones, tablets and touch devices: a seven-step story.
+   *   0 designer panel · 1–2 Designer services · 3 the whole work (About me)
+   *   4 developer panel · 5–6 Developer services
+   * The document never scrolls (so the mobile address bar never hides/shows): the page
+   * is locked and GSAP Observer turns each swipe, wheel or arrow key into one step,
+   * tweening one paused timeline to the next or previous rest label. On a services
+   * step the panel goes ink black and its scenes (shared with the desktop hero, see
+   * HeroScenes.astro / src/lib/hero-scenes.ts) play as a small collage; only the
+   * visible step's scenes run.
    * Reduced motion: a plain horizontal swipe strip, full colour, static labels.
    */
-  import { onMount } from "svelte";
+  import { onMount, type Snippet } from "svelte";
   import gsap from "gsap";
   import { Observer } from "gsap/Observer";
   import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
   import { SplitText } from "gsap/SplitText";
+  import { createHeroScenes, makeBoard, FX_COLORS, type Area } from "../lib/hero-scenes";
 
   export type MobilePanel = {
     key: "left" | "center" | "right";
@@ -25,17 +28,19 @@
     alt: string;
     label: string;
     href?: string;
-    /** Centre only: visible caption ("About me"), letters rise like the desktop one. */
-    caption?: string;
   };
 
-  let { panels }: { panels: MobilePanel[] } = $props();
+  // children: the service scenes (HeroScenes.astro), passed from the page as a slot.
+  let { panels, children }: { panels: MobilePanel[]; children?: Snippet } = $props();
+  const center = panels.find((p) => p.key === "center");
+  const STEPS = 7;
 
   let root: HTMLElement;
   let track: HTMLElement;
   // Drive state classes through Svelte so its scoped CSS keeps the selectors.
   let started = $state(false);
   let isStatic = $state(false);
+  let step = $state(-1); // current rest step, for the progress dots
 
   onMount(() => {
     gsap.registerPlugin(Observer, ScrambleTextPlugin, SplitText);
@@ -68,82 +73,131 @@
   });
 
   function setup(sections: HTMLElement[], n: number) {
-    // One timeline, played in steps. Per panel: the image holds still while its
-    // label sweeps in (TEXT units), then the stage slides to the next image (SLIDE
-    // units) while that image washes into colour. Labels mark the rest points.
-    const TEXT = 2;
-    const SLIDE = 1;
+    const [L, C, R] = sections;
+    const parts = (sec: HTMLElement) => ({
+      img: sec.querySelector<HTMLElement>("[data-mimage]")!, // colour copy
+      wrap: sec.querySelector<HTMLElement>("[data-mwrap]")!,
+      label: sec.querySelector<HTMLElement>("[data-mlabel]"),
+    });
+    const l = parts(L);
+    const c = parts(C);
+    const r = parts(R);
+    const tint = root.querySelector<HTMLElement>("[data-mtint]")!;
+    const whole = root.querySelector<HTMLElement>("[data-mwhole]")!;
+    const html = document.documentElement;
+    const setCenter = (v: string) => () => (html.dataset.heroCenter = v);
+
+    // Initial state: labels off to their side, the centre and right images grey and
+    // zoomed, no black, the whole-work view small and hidden.
+    if (l.label) gsap.set(l.label, { xPercent: -120, autoAlpha: 0 });
+    if (r.label) gsap.set(r.label, { xPercent: 120, autoAlpha: 0 });
+    gsap.set([c.img, r.img], { autoAlpha: 0 });
+    gsap.set([c.wrap, r.wrap], { scale: 1.08 });
+    gsap.set(tint, { autoAlpha: 0 });
+    gsap.set(whole, { autoAlpha: 0, scale: 1.3 });
+
     const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
     tl.addLabel("start", 0);
 
-    sections.forEach((section, i) => {
-      const img = section.querySelector<HTMLElement>("[data-mimage]")!; // colour copy
-      const wrap = section.querySelector<HTMLElement>("[data-mwrap]")!;
-      // The centre panel has no side label; its caption is animated in CSS instead.
-      const label = section.querySelector<HTMLElement>("[data-mlabel]");
-      const key = section.dataset.mpanel;
-      const from = key === "left" ? { xPercent: -120 } : { xPercent: 120 };
-      const out = { xPercent: from.xPercent * 0.5 };
-      const t0 = i * (TEXT + SLIDE);
-
-      // Initial state: label hidden, every image but the first grey and zoomed.
-      if (label) gsap.set(label, { ...from, autoAlpha: 0 });
-      if (i > 0) {
-        gsap.set(img, { autoAlpha: 0 });
-        gsap.set(wrap, { scale: 1.08 });
-      }
-
-      // Text phase: image fixed, label sweeps in with the scroll.
-      if (label) tl.to(label, { xPercent: 0, autoAlpha: 1, duration: TEXT, ease: "power2.out" }, t0);
-      // Centre: flip [data-hero-center] on <html> (same as desktop) so the caption's
-      // CSS letters-rise plays and the footer steps aside, in both scroll directions.
-      if (key === "center") {
-        const set = (v: string) => () => (document.documentElement.dataset.heroCenter = v);
-        tl.to({}, { duration: TEXT * 0.4, onStart: set("in"), onReverseComplete: set("out") }, t0 + TEXT * 0.3);
-        if (i < n - 1) tl.to({}, { duration: SLIDE * 0.3, onStart: set("out"), onReverseComplete: set("in") }, t0 + TEXT);
-      }
-      const text = label?.querySelector<HTMLElement>(".mlabel-text");
-      if (key === "left" && text) {
-        // designer: letters rise into place one after another (transform + opacity only).
+    // 0 · designer: the word sweeps in, letters rising one after another.
+    if (l.label) {
+      tl.to(l.label, { xPercent: 0, autoAlpha: 1, duration: 2, ease: "power2.out" }, 0);
+      const text = l.label.querySelector<HTMLElement>(".mlabel-text");
+      if (text) {
         const chars = SplitText.create(text, { type: "chars" }).chars as HTMLElement[];
         tl.fromTo(
           chars,
           { autoAlpha: 0, yPercent: 70, rotation: -8 },
-          { autoAlpha: 1, yPercent: 0, rotation: 0, duration: TEXT * 0.45, ease: "power2.out", stagger: (TEXT * 0.5) / chars.length },
-          t0 + TEXT * 0.1,
+          { autoAlpha: 1, yPercent: 0, rotation: 0, duration: 0.9, ease: "power2.out", stagger: 1 / chars.length },
+          0.2,
         );
-      } else if (key === "right" && text) {
-        // developer: the word decodes from scrambled glyphs.
-        tl.to(text, { duration: TEXT * 0.9, scrambleText: { text: text.textContent ?? "", chars: "01<>/[]{}#*=+-", speed: 0.6 } }, t0 + TEXT * 0.05);
       }
-      tl.addLabel(`rest-${i}`, t0 + TEXT);
+    }
+    tl.addLabel("rest-0", 2);
 
-      // Slide phase: label leaves, stage moves on, next image washes into colour.
-      if (i < n - 1) {
-        const nextImg = sections[i + 1].querySelector<HTMLElement>("[data-mimage]")!;
-        const nextWrap = sections[i + 1].querySelector<HTMLElement>("[data-mwrap]")!;
-        if (label) tl.to(label, { ...out, autoAlpha: 0, duration: SLIDE * 0.5, ease: "power2.in" }, t0 + TEXT);
-        tl.to(track, { xPercent: (-100 * (i + 1)) / n, duration: SLIDE }, t0 + TEXT);
-        tl.to(nextImg, { autoAlpha: 1, duration: SLIDE }, t0 + TEXT);
-        tl.to(nextWrap, { scale: 1, duration: SLIDE }, t0 + TEXT);
-      }
-    });
+    // 1–2 · Designer services: the word leaves, the panel goes ink black.
+    if (l.label) tl.to(l.label, { xPercent: -60, autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 2);
+    tl.to(tint, { autoAlpha: 1, duration: 1 }, 2);
+    tl.addLabel("rest-1", 3);
+    tl.to({}, { duration: 0.6 }, 3); // the scenes change, the stage holds
+    tl.addLabel("rest-2", 3.6);
+
+    // 3 · the whole work: slide to the centre in colour, then step back to see all
+    // three panels together over the black.
+    tl.to(tint, { autoAlpha: 0, duration: 0.8 }, 3.6);
+    tl.to(track, { xPercent: -100 / n, duration: 1 }, 3.6);
+    tl.to(c.img, { autoAlpha: 1, duration: 1 }, 3.6);
+    tl.to(c.wrap, { scale: 1, duration: 1 }, 3.6);
+    tl.to(tint, { autoAlpha: 1, duration: 0.8 }, 4.6);
+    tl.to(whole, { autoAlpha: 1, scale: 1, duration: 1, ease: "power2.out" }, 4.6);
+    tl.to({}, { duration: 0.4, onStart: setCenter("in"), onReverseComplete: setCenter("out") }, 5);
+    tl.addLabel("rest-3", 5.6);
+
+    // 4 · developer: the whole view folds away, slide on to the right panel, the word
+    // decodes from scrambled glyphs.
+    tl.to({}, { duration: 0.2, onStart: setCenter("out"), onReverseComplete: setCenter("in") }, 5.6);
+    tl.to(whole, { autoAlpha: 0, scale: 0.92, duration: 0.6, ease: "power2.in" }, 5.6);
+    tl.to(tint, { autoAlpha: 0, duration: 0.8 }, 5.8);
+    tl.to(track, { xPercent: (-100 * 2) / n, duration: 1 }, 5.8);
+    tl.to(r.img, { autoAlpha: 1, duration: 1 }, 5.8);
+    tl.to(r.wrap, { scale: 1, duration: 1 }, 5.8);
+    if (r.label) {
+      tl.to(r.label, { xPercent: 0, autoAlpha: 1, duration: 2, ease: "power2.out" }, 6.8);
+      const text = r.label.querySelector<HTMLElement>(".mlabel-text");
+      if (text) tl.to(text, { duration: 1.8, scrambleText: { text: text.textContent ?? "", chars: "01<>/[]{}#*=+-", speed: 0.6 } }, 6.9);
+    }
+    tl.addLabel("rest-4", 8.8);
+
+    // 5–6 · Developer services.
+    if (r.label) tl.to(r.label, { xPercent: 60, autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 8.8);
+    tl.to(tint, { autoAlpha: 1, duration: 1 }, 8.8);
+    tl.addLabel("rest-5", 9.8);
+    tl.to({}, { duration: 0.6 }, 9.8);
+    tl.addLabel("rest-6", 10.4);
+
+    // Service scenes per step: two at most on a phone, stacked and offset.
+    const fxs = createHeroScenes(root);
+    const boards: Record<number, ReturnType<typeof makeBoard>> = {
+      1: makeBoard([
+        [fxs.vector, { cx: 0.5, cy: 0.27, w: 0.86, h: 0.46 }],
+        [fxs.palette, { cx: 0.5, cy: 0.8, w: 0.8, h: 0.34 }],
+      ]),
+      2: makeBoard([
+        [fxs.type, { cx: 0.42, cy: 0.2, w: 0.72, h: 0.34 }],
+        [fxs.grid, { cx: 0.55, cy: 0.7, w: 0.88, h: 0.5 }],
+      ]),
+      5: makeBoard([[fxs.flow, { cx: 0.5, cy: 0.42, w: 0.84, h: 0.7 }]]),
+      6: makeBoard([
+        [fxs.web, { cx: 0.45, cy: 0.28, w: 0.82, h: 0.48 }],
+        [fxs.shop, { cx: 0.56, cy: 0.78, w: 0.66, h: 0.42 }],
+      ]),
+    };
+    const sideOf = (k: number) => (k <= 2 ? "left" : k === 3 ? "center" : "right");
+    // Between the compact header and the progress dots.
+    const area = (): Area => ({ x: 0, y: root.clientHeight * 0.12, w: root.clientWidth, h: root.clientHeight * 0.72 });
 
     // Step through the rest points: one gesture = one step, input ignored while a
     // step plays so a long flick never skips a panel.
     let index = -1; // -1: before the first label (hint showing)
     let busy = false;
     const go = (to: number) => {
-      to = Math.max(0, Math.min(n - 1, to));
+      to = Math.max(0, Math.min(STEPS - 1, to));
       if (busy || to === index) return;
       busy = true;
       if (!started) started = true;
-      const steps = Math.abs(to - index);
+      boards[index]?.stop();
+      const fx = FX_COLORS[sideOf(to)];
+      root.style.setProperty("--fx-key", fx.key);
+      root.style.setProperty("--fx-alt", fx.alt);
       index = to;
+      step = to;
+      // Steps between two scene sets only swap the scenes: keep that move short.
+      const span = Math.abs(tl.labels[`rest-${to}`] - tl.time());
       tl.tweenTo(`rest-${to}`, {
-        duration: steps * 1.1,
+        duration: gsap.utils.clamp(0.5, 1.6, span * 0.45),
         ease: "power2.inOut",
         onComplete: () => {
+          boards[to]?.start(area());
           // Short cooldown swallows the tail of a trackpad/wheel momentum burst.
           gsap.delayedCall(0.15, () => (busy = false));
         },
@@ -153,7 +207,6 @@
     const prev = () => go(index - 1);
 
     // Lock the page: nothing scrolls, so the browser chrome stays put.
-    const html = document.documentElement;
     html.classList.add("hero-locked");
 
     const obs = Observer.create({
@@ -182,6 +235,10 @@
       obs.kill();
       window.removeEventListener("keydown", onKey);
       html.classList.remove("hero-locked");
+      Object.values(boards).forEach((b) => b.revert());
+      root.style.removeProperty("--fx-key");
+      root.style.removeProperty("--fx-alt");
+      step = -1;
       tl.kill();
     };
   }
@@ -226,16 +283,6 @@
       {/if}
       {#if p.key === "center"}
         <h1 class="sr-only">{p.label}</h1>
-        {#if p.caption}
-          <!-- Same markup as SplitWord.astro, so the global letters-rise CSS applies. -->
-          <p class="mcaption font-young uppercase" aria-hidden="true">
-            <span class="split-word">
-              {#each [...p.caption] as c, i}
-                <span class="ch" style="--i: {i}">{c === " " ? "\u00a0" : c}</span>
-              {/each}
-            </span>
-          </p>
-        {/if}
       {:else}
         <p
           class="mlabel mlabel-side mlabel-{p.key} {p.key === 'left' ? 'font-bluu' : 'font-terminal'}"
@@ -247,6 +294,27 @@
       {/if}
     </figure>
   {/each}
+  </div>
+  <!-- Ink black over the current panel on the services steps (taps go through to the
+       panel link underneath). -->
+  <div class="mtint" aria-hidden="true" data-mtint></div>
+  <!-- Step 3: the whole work, the three panels side by side; links to About me. -->
+  {#if center?.href}
+    <a class="mwhole" href={center.href} aria-label={center.label} data-mwhole>
+      {#each panels as p (p.key)}
+        <img src={p.src} srcset={p.srcset} sizes="34vw" width={p.width} height={p.height} alt="" loading="lazy" decoding="async" draggable="false" />
+      {/each}
+    </a>
+  {/if}
+  <!-- Service scenes (HeroScenes.astro, from the page), placed by the script. -->
+  <div class="mfx">
+    {@render children?.()}
+  </div>
+  <!-- Progress: one dot per step. -->
+  <div class="mdots" aria-hidden="true">
+    {#each Array.from({ length: STEPS }) as _, i}
+      <span class:on={i === step}></span>
+    {/each}
   </div>
   <!-- Scroll hint: fades out on the first scroll. -->
   <div class="hint" aria-hidden="true">
@@ -361,31 +429,68 @@
     right: 1rem;
   }
 
-  /* Centre caption: letters wait below their line until [data-hero-center="in"]. */
-  .mcaption {
+  /* Services steps and the whole-work step sit on ink black; the scenes take their
+     colours from --fx-key / --fx-alt (set per step by the script). */
+  .mobile-triptych {
+    --fx-key: #ff6a3d;
+    --fx-alt: #19c3c9;
+  }
+  .mtint {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: #0e0d0c;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .mwhole {
+    position: absolute;
+    left: 4vw;
+    right: 4vw;
+    top: 50%;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: 1164fr 1478fr 1160fr; /* the three prints' widths */
+    translate: 0 -60%;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.6);
+    opacity: 0;
+    visibility: hidden;
+  }
+  .mwhole img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .mfx {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .mdots {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    z-index: 1;
-    margin: 0;
-    text-align: center;
-    font-size: clamp(2.5rem, 12vw, 5rem);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.01em;
-    color: var(--color-foreground);
-    text-shadow: 0 2px 24px rgb(0 0 0 / 0.6);
+    bottom: calc(5.25rem + env(safe-area-inset-bottom)); /* above the fixed footer */
+    z-index: 6;
+    display: flex;
+    justify-content: center;
+    gap: 0.45rem;
     pointer-events: none;
   }
-  .mcaption :global(.ch) {
-    translate: 0 115%;
+  .mdots span {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.4);
+    transition:
+      width 0.3s ease,
+      background-color 0.3s ease;
   }
-  :global(:root[data-hero-center="in"]) .mcaption :global(.ch) {
-    animation: letter-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 45ms) both;
-  }
-  :global(:root[data-hero-center="out"]) .mcaption :global(.ch) {
-    animation: letter-out 0.45s cubic-bezier(0.55, 0, 0.75, 0) calc(var(--i) * 25ms) both;
+  .mdots span.on {
+    width: 1.2rem;
+    background: var(--fx-key);
   }
 
   /* While the stepped hero runs the document never scrolls, so mobile browsers
@@ -395,6 +500,14 @@
     overflow: hidden;
     overscroll-behavior: none;
     height: 100%;
+  }
+  /* iOS Safari can still drag an overflow-hidden body (and collapse its toolbars on the
+     way); pinning the body and refusing touch panning on the page closes that gap. */
+  :global(html.hero-locked body) {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    touch-action: none;
   }
 
   /* Scroll hint: a small chevron bobbing at the bottom until the first scroll. */
@@ -460,11 +573,12 @@
     .track {
       will-change: auto;
     }
-    .hint {
+    .hint,
+    .mtint,
+    .mwhole,
+    .mfx,
+    .mdots {
       display: none;
-    }
-    .mcaption :global(.ch) {
-      translate: none;
     }
   }
   .is-static {
@@ -475,8 +589,11 @@
   .is-static .mpanel {
     scroll-snap-align: start;
   }
-  .is-static .mcaption :global(.ch) {
-    translate: none;
+  .is-static .mtint,
+  .is-static .mwhole,
+  .is-static .mfx,
+  .is-static .mdots {
+    display: none;
   }
   .is-static .mimage-color {
     opacity: 1 !important;

@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Triptych from "../components/Triptych.astro";
 import MobileTriptych from "../components/MobileTriptych.svelte";
+import HeroScenes from "../components/HeroScenes.astro";
 import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
 import { getTriptychImages } from "../lib/triptych-images";
 
@@ -21,8 +22,6 @@ const mobilePanels = images.map((p) => ({
   alt: t(`hero.alt.${p.key}`),
   label: t(`hero.${p.key}`),
   href: localizedPath(pageFor[p.key], lang),
-  // Centre caption, same as the desktop hero.
-  caption: p.key === "center" ? t("nav.about") : undefined,
 }));
 ---
 
@@ -49,6 +48,8 @@ const mobilePanels = images.map((p) => ({
   -->
   <Triptych lang={lang} images={images} />
   <div class="scroll-hero">
-    <MobileTriptych client:media="(max-width: 1023px), (hover: none), (pointer: coarse)" panels={mobilePanels} />
+    <MobileTriptych client:media="(max-width: 1023px), (hover: none), (pointer: coarse)" panels={mobilePanels}>
+      <HeroScenes lang={lang} />
+    </MobileTriptych>
   </div>
 </BaseLayout>
