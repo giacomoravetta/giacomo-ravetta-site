@@ -56,6 +56,10 @@ export const ui = {
     "work.title": "Work",
     "work.heading": "Work",
     "work.intro": "A selection of projects I've designed, built or visualized.",
+    "work.filter": "Filter by theme",
+    "work.filter.all": "All",
+    "work.filter.empty": "No projects with this theme yet.",
+    "work.tags": "Themes",
     "work.cinemaSaronno.title": "Cinema Saronno",
     "work.cinemaSaronno.body":
       "Website design and development for a local cinema.",
@@ -85,8 +89,8 @@ export const ui = {
     "services.developer.title": "Developer",
     "services.developer.body":
       "Fast, accessible websites and web apps built with modern tooling, with the craft to match the design.",
-    "services.soon": "Individual services will be listed here soon.",
-    "services.more": "Read more",
+    "services.benefits": "What it brings",
+    "services.more": "See the services",
     "services.back": "All services",
     "services.cta": "Get in touch",
     "designer.title": "Designer",
@@ -135,6 +139,10 @@ export const ui = {
     "work.heading": "Lavori",
     "work.intro":
       "Una selezione di progetti che ho progettato, sviluppato o visualizzato.",
+    "work.filter": "Filtra per tema",
+    "work.filter.all": "Tutti",
+    "work.filter.empty": "Nessun progetto con questo tema, per ora.",
+    "work.tags": "Temi",
     "work.cinemaSaronno.title": "Cinema Saronno",
     "work.cinemaSaronno.body":
       "Design e sviluppo del sito per un cinema locale.",
@@ -164,8 +172,8 @@ export const ui = {
     "services.developer.title": "Sviluppatore",
     "services.developer.body":
       "Siti e web app veloci e accessibili, costruiti con strumenti moderni e con la stessa cura del design.",
-    "services.soon": "I singoli servizi saranno elencati qui a breve.",
-    "services.more": "Scopri di più",
+    "services.benefits": "Cosa porta",
+    "services.more": "Vedi i servizi",
     "services.back": "Tutti i servizi",
     "services.cta": "Contattami",
     "designer.title": "Designer",

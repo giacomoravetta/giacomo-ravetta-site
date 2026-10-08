@@ -10,7 +10,10 @@
  */
 import type { Lang } from "../i18n/ui";
 import { localizedPath, useTranslations } from "../i18n/utils";
-import { getTriptychImages, type TriptychImages } from "../lib/triptych-images";
+import { getTriptychImages, DESKTOP_QUERY, type TriptychImages } from "../lib/triptych-images";
+
+// 1×1 transparent GIF: the <img> fallback when no <source> matches (i.e. not desktop).
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 import HeroScenes from "./HeroScenes.astro";
 
 interface Props {
@@ -38,20 +41,25 @@ const panels = images.map((p) => ({
     {
       panels.map((p) => (
         <figure class="panel" data-panel={p.key}>
-          <img
-            class="layer layer-base"
-            src={p.img.src}
-            srcset={p.img.srcSet.attribute}
-            sizes={p.sizes}
-            width={p.img.attributes.width}
-            height={p.img.attributes.height}
-            alt={p.alt}
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            draggable="false"
-            data-image
-          />
+          {/* Sources only match the desktop query, and the <img> itself carries a blank
+              placeholder: on phones (where this triptych is display:none) nothing is
+              downloaded, while desktop gets AVIF, or WebP as a fallback. */}
+          <picture class="contents">
+            <source type="image/avif" media={DESKTOP_QUERY} srcset={p.avif.srcSet.attribute} sizes={p.sizes} />
+            <source type="image/webp" media={DESKTOP_QUERY} srcset={p.img.srcSet.attribute} sizes={p.sizes} />
+            <img
+              class="layer layer-base"
+              src={BLANK}
+              width={p.img.attributes.width}
+              height={p.img.attributes.height}
+              alt={p.alt}
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              draggable="false"
+              data-image
+            />
+          </picture>
           <span class="tint" aria-hidden="true" data-tint />
           {p.href && <a class="panel-link" href={p.href} data-astro-prefetch="hover" aria-label={p.label} />}
           {p.key === "center" ? (
@@ -388,9 +396,40 @@ const panels = images.map((p) => ({
 
         // Draw a colour image into its panel rect (root-relative; may extend past the
         // root edges, the canvas clips it). The panel has the image's exact aspect ratio.
-        const drawPanel = (img: HTMLImageElement, rc: (typeof rects)[number]) => {
+        // Uses the pre-decoded bitmap when ready (see warmUp), else the <img>.
+        const bitmaps: (ImageBitmap | undefined)[] = [];
+        const drawPanel = (img: HTMLImageElement, rc: (typeof rects)[number], i: number) => {
           if (!img.naturalWidth || !img.naturalHeight) return;
-          ctx.drawImage(img, rc.x, rc.y, rc.w, rc.h);
+          ctx.drawImage(bitmaps[i] ?? img, rc.x, rc.y, rc.w, rc.h);
+        };
+
+        // Warm-up, before the first stroke: decode the three colour images into bitmaps
+        // off the main thread, then composite one frame through the (still empty) stroke
+        // mask with the canvas shown. The result is fully transparent, so nothing changes
+        // on screen, but the browser has already uploaded the images and the canvas to
+        // the GPU — otherwise that work lands on the first pointer move as a long freeze.
+        let warmed = false;
+        const warmUp = async () => {
+          if (warmed) return;
+          warmed = true;
+          if ("createImageBitmap" in window) {
+            const decoded = await Promise.all(
+              images.map((img) => (img.naturalWidth ? createImageBitmap(img).catch(() => undefined) : undefined)),
+            );
+            decoded.forEach((b, i) => (bitmaps[i] = b));
+          }
+          if (visible) return; // the pointer arrived meanwhile: the live tick takes over
+          ctx.clearRect(0, 0, W, H);
+          images.forEach((img, i) => drawPanel(img, rects[i], i));
+          ctx.globalCompositeOperation = "destination-in";
+          ctx.drawImage(stroke, 0, 0, W, H); // empty mask → transparent result
+          ctx.globalCompositeOperation = "source-over";
+          gsap.set(canvas, { autoAlpha: 1 });
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              if (!visible) gsap.set(canvas, { autoAlpha: 0 });
+            }),
+          );
         };
 
         // ---- Pointer / brush state ----
@@ -627,7 +666,7 @@ const panels = images.map((p) => ({
           // Composite: colour images, kept only where the stroke mask has paint.
           ctx.clearRect(0, 0, W, H);
           ctx.globalCompositeOperation = "source-over";
-          images.forEach((img, i) => drawPanel(img, rects[i]));
+          images.forEach((img, i) => drawPanel(img, rects[i], i));
           ctx.globalCompositeOperation = "destination-in";
           ctx.drawImage(stroke, 0, 0, W, H);
           ctx.globalCompositeOperation = "source-over";
@@ -677,6 +716,8 @@ const panels = images.map((p) => ({
             panel.addEventListener("pointerenter", panelHandlers[i].enter);
             panel.addEventListener("pointerleave", panelHandlers[i].leave);
           });
+          // In idle time after the panels have settled.
+          (window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 200)))(() => warmUp());
         };
         window.addEventListener("resize", resize);
         gsap.ticker.add(tick);
@@ -782,6 +823,8 @@ const panels = images.map((p) => ({
         else root.addEventListener("triptych:ready", arm, { once: true });
 
         return () => {
+          bitmaps.forEach((b) => b?.close());
+          bitmaps.length = 0;
           root.removeEventListener("triptych:ready", arm);
           root.removeEventListener("pointermove", onMove);
           root.removeEventListener("pointerleave", onLeave);

@@ -22,6 +22,8 @@
     key: "left" | "center" | "right";
     src: string;
     srcset: string;
+    /** Same widths as `srcset`, in AVIF (served through <picture>, WebP fallback). */
+    avifSrcset: string;
     sizes: string;
     width: number;
     height: number;
@@ -31,6 +33,11 @@
   };
 
   // children: the service scenes (HeroScenes.astro), passed from the page as a slot.
+  // Sources only match the mobile query and the <img> carries a blank placeholder, so a
+  // desktop (where this hero is display:none) downloads none of these images.
+  const MOBILE_QUERY = "(max-width: 1023px), (hover: none), (pointer: coarse)";
+  const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
   let { panels, children }: { panels: MobilePanel[]; children?: Snippet } = $props();
   const center = panels.find((p) => p.key === "center");
   const STEPS = 7;
@@ -43,6 +50,14 @@
   let step = $state(-1); // current rest step, for the progress dots
 
   onMount(() => {
+    // The first panel is preloaded; once it is in, fetch the other two at low priority
+    // so they are ready before the first swipe (lazy alone would wait for the slide,
+    // since the track moves them with a transform).
+    const first = root.querySelector<HTMLImageElement>('[data-mpanel="left"] img');
+    const loadRest = () =>
+      root.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => (img.loading = "eager"));
+    if (!first || first.complete) loadRest();
+    else first.addEventListener("load", loadRest, { once: true });
     gsap.registerPlugin(Observer, ScrambleTextPlugin, SplitText);
     gsap.config({ force3D: true }); // keep scrubbed elements on compositor layers
     const mm = gsap.matchMedia();
@@ -172,11 +187,10 @@
     // Step through the rest points: one gesture = one step, input ignored while a
     // step plays so a long flick never skips a panel.
     let index = -1; // -1: before the first label (hint showing)
-    let busy = false;
+    let move: gsap.core.Tween | undefined;
     const go = (to: number) => {
       to = Math.max(0, Math.min(STEPS - 1, to));
-      if (busy || to === index) return;
-      busy = true;
+      if (to === index) return;
       if (!started) started = true;
       boards[index]?.stop();
       const fx = FX_COLORS[sideOf(to)];
@@ -184,17 +198,32 @@
       root.style.setProperty("--fx-alt", fx.alt);
       index = to;
       step = to;
-      // Steps between two scene sets only swap the scenes: keep that move short.
+      // Responsive: a new gesture never waits for the current move, it retargets it
+      // from wherever the playhead is. Short, decelerating moves feel immediate.
+      move?.kill();
       const span = Math.abs(tl.labels[`rest-${to}`] - tl.time());
-      tl.tweenTo(`rest-${to}`, {
-        duration: gsap.utils.clamp(0.5, 1.6, span * 0.45),
-        ease: "power2.inOut",
-        onComplete: () => {
-          boards[to]?.start(area());
-          // Short cooldown swallows the tail of a trackpad/wheel momentum burst.
-          gsap.delayedCall(0.15, () => (busy = false));
-        },
+      move = tl.tweenTo(`rest-${to}`, {
+        duration: gsap.utils.clamp(0.35, 0.85, span * 0.3),
+        ease: "power3.out",
+        onComplete: () => boards[to]?.start(area()),
       });
+    };
+    // One step per gesture: a touch/pointer drag steps once until the finger lifts; a
+    // wheel/trackpad burst steps once, then waits for the burst's momentum to settle.
+    let gestureDone = false;
+    let lastWheel = 0;
+    const step1 = (dir: 1 | -1) => (self: Observer) => {
+      if (self.event.type === "wheel") {
+        const now = performance.now();
+        const quiet = now - lastWheel > 450;
+        lastWheel = now;
+        if (!quiet && gestureDone) return;
+        gestureDone = true;
+      } else {
+        if (gestureDone) return;
+        gestureDone = true;
+      }
+      go(index + dir);
     };
     const next = () => go(index + 1);
     const prev = () => go(index - 1);
@@ -206,14 +235,19 @@
       target: window,
       type: "wheel,touch,pointer",
       wheelSpeed: -1, // wheel down = forward, like a swipe up
-      tolerance: 12,
+      tolerance: 8,
       dragMinimum: 6,
       lockAxis: true,
       preventDefault: true,
-      onUp: next,
-      onDown: prev,
-      onLeft: next,
-      onRight: prev,
+      onUp: step1(1),
+      onDown: step1(-1),
+      onLeft: step1(1),
+      onRight: step1(-1),
+      onPress: () => (gestureDone = false),
+      onWheel: () => {
+        // A pause in the wheel stream ends the burst: the next wheel event steps again.
+        if (performance.now() - lastWheel > 450) gestureDone = false;
+      },
     });
 
     const onKey = (e: KeyboardEvent) => {
@@ -244,31 +278,37 @@
       <!-- Grey copy underneath, colour copy on top: the reveal scrubs only the colour
            copy's opacity (compositor-only) instead of re-rasterising a filter each frame. -->
       <div class="mimage-wrap" data-mwrap>
-        <img
-          class="mimage mimage-grey"
-          src={p.src}
-          srcset={p.srcset}
-          sizes={p.sizes}
-          width={p.width}
-          height={p.height}
-          alt={p.alt}
-          loading={p.key === "left" ? "eager" : "lazy"}
-          decoding="async"
-          draggable="false"
-        />
-        <img
-          class="mimage mimage-color"
-          src={p.src}
-          srcset={p.srcset}
-          sizes={p.sizes}
-          width={p.width}
-          height={p.height}
-          alt=""
-          loading={p.key === "left" ? "eager" : "lazy"}
-          decoding="async"
-          draggable="false"
-          data-mimage
-        />
+        <picture class="contents">
+          <source type="image/avif" media={MOBILE_QUERY} srcset={p.avifSrcset} sizes={p.sizes} />
+          <source type="image/webp" media={MOBILE_QUERY} srcset={p.srcset} sizes={p.sizes} />
+          <img
+            class="mimage mimage-grey"
+            src={BLANK}
+            width={p.width}
+            height={p.height}
+            alt={p.alt}
+            loading={p.key === "left" ? "eager" : "lazy"}
+            fetchpriority={p.key === "left" ? "high" : "low"}
+            decoding="async"
+            draggable="false"
+          />
+        </picture>
+        <picture class="contents">
+          <source type="image/avif" media={MOBILE_QUERY} srcset={p.avifSrcset} sizes={p.sizes} />
+          <source type="image/webp" media={MOBILE_QUERY} srcset={p.srcset} sizes={p.sizes} />
+          <img
+            class="mimage mimage-color"
+            src={BLANK}
+            width={p.width}
+            height={p.height}
+            alt=""
+            loading={p.key === "left" ? "eager" : "lazy"}
+            fetchpriority={p.key === "left" ? "high" : "low"}
+            decoding="async"
+            draggable="false"
+            data-mimage
+          />
+        </picture>
       </div>
       {#if p.href}
         <!-- No hover on touch: prefetch once the panel slides into view. -->

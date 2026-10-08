@@ -4,21 +4,22 @@ import Triptych from "../components/Triptych.astro";
 import MobileTriptych from "../components/MobileTriptych.svelte";
 import HeroScenes from "../components/HeroScenes.astro";
 import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
-import { getTriptychImages } from "../lib/triptych-images";
+import { getTriptychImages, DESKTOP_QUERY, MOBILE_QUERY } from "../lib/triptych-images";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 // Home side panels → Services subpages; the centre → About me.
 const pageFor = { left: "designer", right: "developer" } as const;
 const images = await getTriptychImages();
-// Same variants as the desktop triptych, so both share the cache and the head preloads.
+// Mobile variants (capped at 960px), see getTriptychImages.
 const mobilePanels = images.map((p) => ({
   key: p.key,
-  src: p.img.src,
-  srcset: p.img.srcSet.attribute,
+  src: p.mobileImg.src,
+  srcset: p.mobileImg.srcSet.attribute,
+  avifSrcset: p.mobileAvif.srcSet.attribute,
   sizes: p.sizes,
-  width: Number(p.img.attributes.width),
-  height: Number(p.img.attributes.height),
+  width: Number(p.mobileImg.attributes.width),
+  height: Number(p.mobileImg.attributes.height),
   alt: t(`hero.alt.${p.key}`),
   label: t(`hero.${p.key}`),
   href: p.key === "center" ? undefined : localizedPath(pageFor[p.key], lang),
@@ -28,17 +29,36 @@ const mobilePanels = images.map((p) => ({
 <BaseLayout title={t("home.title")} fullBleed>
   <Fragment slot="head">
     {
-      /* Start fetching the hero panels before the body is parsed. */
+      /* Start fetching the hero panels before the body is parsed: all three on desktop
+         (the whole strip is on screen), only the first on phones (the others are a swipe
+         away and load right after). type="image/avif": browsers without AVIF skip the
+         preload and fall back to the WebP in <picture>. */
       images.map((p) => (
         <link
           rel="preload"
           as="image"
-          href={p.img.src}
-          imagesrcset={p.img.srcSet.attribute}
+          type="image/avif"
+          imagesrcset={p.avif.srcSet.attribute}
           imagesizes={p.sizes}
+          media={DESKTOP_QUERY}
           fetchpriority="high"
         />
       ))
+    }
+    {
+      images
+        .filter((p) => p.key === "left")
+        .map((p) => (
+          <link
+            rel="preload"
+            as="image"
+            type="image/avif"
+            imagesrcset={p.mobileAvif.srcSet.attribute}
+            imagesizes={p.sizes}
+            media={MOBILE_QUERY}
+            fetchpriority="high"
+          />
+        ))
     }
   </Fragment>
   <!--

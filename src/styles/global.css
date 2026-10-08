@@ -57,7 +57,7 @@
 
 @layer base {
   html {
-    --header-h: 4.625rem; /* Floating header flow height: mt-4 + py-4 + one line of text + border; the Home triptych slides under it. */
+    --header-h: 5.875rem; /* Floating header flow height: mt-4 + py-6 + one line of text-lg + border; the Home triptych slides under it. */
     background-color: var(--color-background);
     color: var(--color-foreground);
     scroll-behavior: smooth;

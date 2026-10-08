@@ -1,32 +1,19 @@
 ---
+/**
+ * Work: projects with thematic tags and a tag filter. Static markup lists every project;
+ * the filter bar (hidden without JS) shows only the projects carrying the chosen tag,
+ * keeps it in the URL (?tag=…) so a filtered view can be shared, and announces the count.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { projects, tags, type TagId } from "../i18n/work";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const projects = [
-  {
-    title: t("work.cinemaSaronno.title"),
-    body: t("work.cinemaSaronno.body"),
-    url: "https://www.cinemasaronno.it/",
-  },
-  {
-    title: t("work.studioAlbanese.title"),
-    body: t("work.studioAlbanese.body"),
-    url: "https://www.studio-albanese.com/",
-  },
-  {
-    title: t("work.librariesOfMilan.title"),
-    body: t("work.librariesOfMilan.body"),
-    url: "https://www.librariesofmilan.com/",
-  },
-  {
-    title: t("work.giustoDiRendere.title"),
-    body: t("work.giustoDiRendere.body"),
-    url: "https://giustodirenordio.giacomoravetta.com/",
-  },
-];
+// Only tags actually used, in the order they are defined.
+const used = (Object.keys(tags) as TagId[]).filter((id) => projects.some((p) => p.tags.includes(id)));
+const count = (id: TagId) => projects.filter((p) => p.tags.includes(id)).length;
 ---
 
 <BaseLayout title={t("work.title")}>
@@ -36,24 +23,130 @@ const projects = [
       <p class="text-lg text-muted">{t("work.intro")}</p>
     </header>
 
-    <ul class="grid gap-6 md:grid-cols-3">
+    <div class="flex flex-col gap-3" data-work-filter hidden>
+      <p class="text-xs font-semibold uppercase tracking-[0.15em] text-muted" id="work-filter-label">{t("work.filter")}</p>
+      <div class="flex flex-wrap gap-2" role="group" aria-labelledby="work-filter-label">
+        <button type="button" class="chip" data-tag="" aria-pressed="true">
+          {t("work.filter.all")} <span class="n">{projects.length}</span>
+        </button>
+        {
+          used.map((id) => (
+            <button type="button" class="chip" data-tag={id} aria-pressed="false">
+              {tags[id][lang]} <span class="n">{count(id)}</span>
+            </button>
+          ))
+        }
+      </div>
+      <p class="sr-only" aria-live="polite" data-work-status></p>
+    </div>
+
+    <ul class="grid gap-6 md:grid-cols-3" data-work-list>
       {
-        projects.map(({ title, body, url }) => (
-          <li class="flex flex-col gap-2 rounded-2xl border border-muted/20 p-6">
+        projects.map(({ key, url, tags: ptags }) => (
+          <li class="project flex flex-col gap-3 rounded-2xl border border-muted/20 p-6" data-tags={ptags.join(" ")}>
             <h2 class="text-xl font-medium">
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="transition-opacity hover:opacity-80"
-              >
-                {title}
+              <a href={url} target="_blank" rel="noopener noreferrer" class="transition-opacity hover:opacity-80">
+                {t(`work.${key}.title`)}
               </a>
             </h2>
-            <p class="text-sm text-muted">{body}</p>
+            <p class="text-sm text-muted">{t(`work.${key}.body`)}</p>
+            <ul class="mt-auto flex flex-wrap gap-1.5 pt-2" aria-label={t("work.tags")}>
+              {ptags.map((id) => (
+                <li>
+                  <button type="button" class="tag" data-tag={id}>
+                    {tags[id][lang]}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </li>
         ))
       }
     </ul>
+    <p class="text-muted" data-work-empty hidden>{t("work.filter.empty")}</p>
   </section>
 </BaseLayout>
+
+<style>
+  .chip,
+  .tag {
+    border: 1px solid color-mix(in oklab, var(--color-muted) 35%, transparent);
+    border-radius: 999px;
+    color: var(--color-muted);
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .chip {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.875rem;
+  }
+  .chip .n {
+    margin-left: 0.25rem;
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+  .tag {
+    padding: 0.15rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  .chip:hover,
+  .tag:hover {
+    color: var(--color-foreground);
+    border-color: var(--color-foreground);
+  }
+  .chip[aria-pressed="true"],
+  .tag.is-active {
+    background: var(--color-foreground);
+    border-color: var(--color-foreground);
+    color: var(--color-background);
+  }
+  .project[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>("[data-work-filter]");
+  const items = Array.from(document.querySelectorAll<HTMLElement>("[data-work-list] > .project"));
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-work-filter] .chip"));
+  const status = document.querySelector<HTMLElement>("[data-work-status]");
+  const empty = document.querySelector<HTMLElement>("[data-work-empty]");
+
+  if (bar) {
+    bar.hidden = false;
+    const label = (tag: string) => chips.find((c) => c.dataset.tag === tag)?.firstChild?.textContent?.trim() ?? "";
+
+    const apply = (tag: string, push: boolean) => {
+      if (tag && !chips.some((c) => c.dataset.tag === tag)) tag = "";
+      let shown = 0;
+      items.forEach((li) => {
+        const on = !tag || (li.dataset.tags ?? "").split(" ").includes(tag);
+        li.hidden = !on;
+        if (on) shown++;
+      });
+      chips.forEach((c) => c.setAttribute("aria-pressed", String((c.dataset.tag ?? "") === tag)));
+      document.querySelectorAll<HTMLElement>(".project .tag").forEach((b) => b.classList.toggle("is-active", !!tag && b.dataset.tag === tag));
+      if (empty) empty.hidden = shown > 0;
+      if (status) status.textContent = tag ? `${label(tag)}: ${shown}` : String(shown);
+      if (push) {
+        const url = new URL(location.href);
+        if (tag) url.searchParams.set("tag", tag);
+        else url.searchParams.delete("tag");
+        history.replaceState(null, "", url);
+      }
+    };
+
+    // Filter chips toggle; tags on a card select that theme (or clear it if already on).
+    document.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-work-filter] .chip, .project .tag");
+      if (!btn) return;
+      const tag = btn.dataset.tag ?? "";
+      const current = new URL(location.href).searchParams.get("tag") ?? "";
+      apply(btn.classList.contains("tag") && tag === current ? "" : tag, true);
+    });
+
+    apply(new URL(location.href).searchParams.get("tag") ?? "", false);
+  }
+</script>

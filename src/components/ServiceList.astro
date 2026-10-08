@@ -1,0 +1,73 @@
+---
+/**
+ * Designer / Developer subpage: big title, intro, then every service in that area with
+ * what it is and what it brings (content in src/i18n/services.ts), and a contact CTA.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
+import { services, type ServiceArea } from "../i18n/services";
+import { FX_COLORS } from "../lib/hero-scenes";
+
+interface Props {
+  area: ServiceArea;
+}
+
+const { area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const list = services[area][lang];
+const isDesigner = area === "designer";
+// Same key colour as the Home hero for this side.
+const key = FX_COLORS[isDesigner ? "left" : "right"].key;
+---
+
+<BaseLayout title={t(`${area}.title`)}>
+  <article class="flex flex-col gap-14" style={`--svc-key: ${key}`}>
+    <a href={localizedPath("services", lang)} class="text-sm text-muted hover:text-foreground">← {t("services.back")}</a>
+    <header class="flex max-w-3xl flex-col gap-5">
+      <h1
+        class:list={["text-6xl tracking-tight md:text-8xl", isDesigner ? "font-bluu" : "font-terminal"]}
+        data-title-reveal={isDesigner ? "rise" : "scramble"}
+      >
+        {t(`${area}.heading`)}
+      </h1>
+      <p class="text-lg text-muted">{t(`${area}.intro`)}</p>
+    </header>
+
+    <ol class="flex flex-col">
+      {
+        list.map((s, i) => (
+          <li id={s.id} class="grid gap-6 border-t border-muted/20 py-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-12">
+            <div class="flex flex-col gap-3">
+              <span class="font-mono text-sm" style="color: var(--svc-key)">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h2 class:list={["text-3xl tracking-tight md:text-4xl", isDesigner ? "font-bluu" : "font-terminal"]}>{s.name}</h2>
+            </div>
+            <div class="flex flex-col gap-5">
+              <p class="text-lg text-foreground/85">{s.summary}</p>
+              <div class="flex flex-col gap-3">
+                <h3 class="text-xs font-semibold uppercase tracking-[0.15em] text-muted">{t("services.benefits")}</h3>
+                <ul class="flex flex-col gap-2.5">
+                  {s.benefits.map((b) => (
+                    <li class="flex gap-3 text-muted">
+                      <span aria-hidden="true" class="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full" style="background: var(--svc-key)" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <a
+      href="mailto:info@giacomoravetta.com"
+      class="self-start rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+    >
+      {t("services.cta")}
+    </a>
+  </article>
+</BaseLayout>

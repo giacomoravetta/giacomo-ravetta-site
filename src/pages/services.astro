@@ -1,45 +1,256 @@
 ---
+/**
+ * Services: the page split in two halves, Designer and Developer, each with its own
+ * face and key colour (as on the Home hero), the list of its services and a link to
+ * its subpage. Side by side on wide screens, stacked on phones. On wide screens the
+ * halves share the parent's rows (subgrid), so title, intro, list and link line up
+ * across both halves even though the texts and lists differ in length.
+ * Hovering a half (mouse only) brings in the marks of its tools — design-tool icons
+ * (pen, brush, eyedropper…) for Designer, frameworks and languages for Developer — scattered in the empty space above the title,
+ * popping in one after another and then floating gently.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
+import { services } from "../i18n/services";
+import { FX_COLORS } from "../lib/hero-scenes";
+import { toolIcons } from "../lib/tool-icons";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const sections = [
-  { key: "designer", title: t("services.designer.title"), body: t("services.designer.body") },
-  { key: "developer", title: t("services.developer.title"), body: t("services.developer.body") },
+const halves = [
+  { key: "designer", title: t("services.designer.title"), body: t("services.designer.body"), font: "font-bluu", color: FX_COLORS.left.key },
+  { key: "developer", title: t("services.developer.title"), body: t("services.developer.body"), font: "font-terminal", color: FX_COLORS.right.key },
 ] as const;
 ---
 
-<BaseLayout title={t("services.title")}>
-  <section class="flex flex-col gap-10">
-    <header class="flex max-w-2xl flex-col gap-4">
-      <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">{t("services.heading")}</h1>
-      <p class="text-lg text-muted">{t("services.intro")}</p>
-    </header>
-
-    <div class="grid gap-6 md:grid-cols-2">
-      {
-        sections.map(({ key, title, body }) => (
-          <a
-            href={localizedPath(key, lang)}
-            class:list={[
-              "group flex flex-col gap-4 rounded-2xl border border-muted/20 p-8 transition-colors hover:border-foreground/60",
-            ]}
-          >
-            <h2 class:list={["text-4xl tracking-tight md:text-5xl", key === "designer" ? "font-bluu" : "font-terminal"]}>{title}</h2>
-            <p class="text-muted">{body}</p>
-            <span class="mt-auto text-sm text-foreground/80 group-hover:text-foreground">{t("services.more")} →</span>
-          </a>
-        ))
-      }
-    </div>
-
-    <a
-      href="mailto:info@giacomoravetta.com"
-      class="self-start rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
-    >
-      {t("services.cta")}
-    </a>
-  </section>
+<BaseLayout title={t("services.title")} fullBleed>
+  <h1 class="sr-only">{t("services.heading")}</h1>
+  <div class="split grid md:h-[calc(100dvh-var(--header-h))] md:grid-cols-2 md:grid-rows-[1fr_auto_auto_auto_auto] md:gap-y-[clamp(1rem,3.5dvh,2rem)] md:overflow-hidden">
+    {
+      halves.map(({ key, title, body, font, color }, i) => (
+        <a
+          href={localizedPath(key, lang)}
+          class:list={["half group relative flex flex-col justify-end gap-8 overflow-hidden px-6 md:row-span-5 md:grid md:grid-cols-1 md:grid-rows-subgrid md:justify-stretch md:gap-y-[clamp(1rem,3.5dvh,2rem)] md:px-12 md:pb-[clamp(4rem,9dvh,6rem)] md:pt-8", i === 0 ? "pt-36 pb-14 md:border-r border-muted/20 max-md:border-b" : "pt-14 pb-32"]}
+          style={`--key: ${color}`}
+        >
+          <span class="max-md:hidden" aria-hidden="true" />
+          <span class="tools" aria-hidden="true" data-tools>
+            {toolIcons[key].map((icon, k) => (
+              <span class:list={["tool", icon.stroke && "is-stroke"]} style={`--k: ${k}`} data-tool>
+                <svg viewBox="0 0 24 24" set:html={icon.svg} />
+                <span class="tool-name">{icon.name[lang]}</span>
+              </span>
+            ))}
+          </span>
+          <h2 class:list={["text-7xl leading-none tracking-tight transition-colors md:text-[clamp(3.5rem,min(9vw,14dvh),9rem)] group-hover:text-[var(--key)]", font]}>{title}</h2>
+          <p class="max-w-md text-lg text-muted">{body}</p>
+          <ol class="flex flex-col border-t border-muted/20">
+            {services[key][lang].map((s, k) => (
+              <li class="flex items-baseline gap-4 border-b border-muted/20 py-3 md:py-[clamp(0.4rem,1.3dvh,0.75rem)]">
+                <span class="font-mono text-xs" style="color: var(--key)">{String(k + 1).padStart(2, "0")}</span>
+                <span class="text-lg">{s.name}</span>
+              </li>
+            ))}
+          </ol>
+          <span class="text-sm text-foreground/80 group-hover:text-foreground">
+            {t("services.more")} <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+          </span>
+        </a>
+      ))
+    }
+  </div>
 </BaseLayout>
+
+<style>
+  /* A soft glow of each half's key colour rises from the bottom on hover. */
+  .half::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(120% 60% at 50% 110%, color-mix(in oklab, var(--key) 22%, transparent), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .half:hover::before,
+  .half:focus-visible::before {
+    opacity: 1;
+  }
+  .half {
+    isolation: isolate;
+  }
+
+  /* Tool marks: an absolute layer behind the text, placed and animated by the script. */
+  .tools {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .tool {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity;
+  }
+  .tool svg {
+    width: clamp(1.9rem, 2.7vw, 2.9rem);
+    height: auto;
+    fill: color-mix(in oklab, var(--color-foreground) 80%, transparent);
+  }
+  .tool:nth-child(3n + 1) svg {
+    fill: var(--key);
+  }
+  /* Design tools are line icons: stroke instead of fill. */
+  .tool.is-stroke svg {
+    fill: none;
+    stroke: color-mix(in oklab, var(--color-foreground) 80%, transparent);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .tool.is-stroke:nth-child(3n + 1) svg {
+    fill: none;
+    stroke: var(--key);
+  }
+  .tool-name {
+    font: 500 0.7rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  @media (max-width: 767px), (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .tools {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+
+  const mm = gsap.matchMedia();
+  mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)", () => {
+    const halves = Array.from(document.querySelectorAll<HTMLElement>(".half"));
+    const cleanups = halves.map((half) => {
+      const layer = half.querySelector<HTMLElement>("[data-tools]")!;
+      const tools = Array.from(layer.querySelectorAll<HTMLElement>("[data-tool]"));
+      const floats: gsap.core.Tween[] = [];
+
+      // Scatter the marks over the half's free space: random spots that keep clear of
+      // the text (title, intro, list, link), of the half's edges and of each other. Marks
+      // are tried in list order (most relevant first); one that finds no free spot is
+      // left out, so a short screen shows fewer marks instead of a pile. Returns the
+      // marks that were placed.
+      const place = () => {
+        const hb = half.getBoundingClientRect();
+        // 16px around the text, plus room for the gentle float (marks bob upwards).
+        const avoid = Array.from(half.querySelectorAll<HTMLElement>("h2, p, ol, :scope > span:last-child")).map((el) => {
+          const r = el.getBoundingClientRect();
+          // The title's box spans the column; use the width of its text instead.
+          const w = el.tagName === "H2" ? measure(el) : r.width;
+          return { x: r.left - hb.left - 16, y: r.top - hb.top - 16, w: w + 32, h: r.height + 40 };
+        });
+        const placed: { x: number; y: number; w: number; h: number }[] = [];
+        const shown: HTMLElement[] = [];
+        tools.forEach((el) => {
+          const tw = el.offsetWidth;
+          const th = el.offsetHeight;
+          let spot: { x: number; y: number } | undefined;
+          let bestNear = -1;
+          for (let tries = 0; tries < 120; tries++) {
+            const x = gsap.utils.random(40, hb.width - 40 - tw);
+            const y = gsap.utils.random(24, hb.height - 70 - th);
+            const overlaps = (a: { x: number; y: number; w: number; h: number }, pad = 0) =>
+              x < a.x + a.w + pad && x + tw + pad > a.x && y < a.y + a.h + pad && y + th + pad > a.y;
+            if (avoid.some((a) => overlaps(a)) || placed.some((b) => overlaps(b, 18))) continue;
+            // Among free spots prefer the one farthest from the other marks (even spread).
+            const near = placed.reduce((m, p) => Math.min(m, Math.hypot(p.x - x, p.y - y)), Infinity);
+            if (near > bestNear) {
+              bestNear = near;
+              spot = { x, y };
+            }
+            if (bestNear > 200) break;
+          }
+          if (!spot) {
+            gsap.set(el, { autoAlpha: 0 });
+            return;
+          }
+          placed.push({ ...spot, w: tw, h: th });
+          shown.push(el);
+          gsap.set(el, { x: spot.x, y: spot.y });
+        });
+        return shown;
+      };
+      // Width of a heading's text (its box fills the column).
+      const measure = (el: HTMLElement) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        return range.getBoundingClientRect().width;
+      };
+
+      const enter = () => {
+        floats.forEach((f) => f.kill());
+        floats.length = 0;
+        gsap.killTweensOf(tools);
+        const shown = place();
+        // Pop in one after another in random order, then drift and bob forever.
+        gsap.fromTo(
+          shown,
+          { autoAlpha: 0, scale: 0.4, yPercent: 60, rotation: () => gsap.utils.random(-25, 25) },
+          {
+            autoAlpha: 1,
+            scale: 1,
+            yPercent: 0,
+            rotation: () => gsap.utils.random(-6, 6),
+            duration: 0.7,
+            ease: "back.out(2.2)",
+            stagger: { each: 0.06, from: "random" },
+            onComplete: () => {
+              shown.forEach((el) => {
+                floats.push(
+                  gsap.to(el, {
+                    yPercent: gsap.utils.random(-12, -6),
+                    rotation: `+=${gsap.utils.random(-4, 4)}`,
+                    duration: gsap.utils.random(1.8, 3),
+                    ease: "sine.inOut",
+                    yoyo: true,
+                    repeat: -1,
+                  }),
+                );
+              });
+            },
+          },
+        );
+      };
+      const leave = () => {
+        floats.forEach((f) => f.kill());
+        floats.length = 0;
+        gsap.killTweensOf(tools);
+        gsap.to(tools, { autoAlpha: 0, scale: 0.7, duration: 0.3, ease: "power2.in", stagger: { each: 0.02, from: "random" } });
+      };
+
+      half.addEventListener("pointerenter", enter);
+      half.addEventListener("pointerleave", leave);
+      half.addEventListener("focus", enter);
+      half.addEventListener("blur", leave);
+      return () => {
+        half.removeEventListener("pointerenter", enter);
+        half.removeEventListener("pointerleave", leave);
+        half.removeEventListener("focus", enter);
+        half.removeEventListener("blur", leave);
+        floats.forEach((f) => f.kill());
+        gsap.killTweensOf(tools);
+        gsap.set(tools, { clearProps: "all" });
+      };
+    });
+    return () => cleanups.forEach((fn) => fn());
+  });
+</script>
