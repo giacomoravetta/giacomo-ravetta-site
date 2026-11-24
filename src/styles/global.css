@@ -1,20 +1,126 @@
 @import "tailwindcss";
 
+/* Text face: Instrument Sans (SIL OFL), variable width + weight, self-hosted. */
 @font-face {
-  font-family: InterVariable;
+  font-family: "Instrument Sans";
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400 700;
+  font-stretch: 75% 100%;
   font-display: swap;
-  src: url("/fonts/InterVariable.woff2") format("woff2");
+  src: url("/fonts/InstrumentSans.woff2") format("woff2");
 }
 @font-face {
-  font-family: InterVariable;
+  font-family: "Instrument Sans";
   font-style: italic;
-  font-weight: 100 900;
+  font-weight: 400 700;
+  font-stretch: 75% 100%;
   font-display: swap;
-  src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
+  src: url("/fonts/InstrumentSans-Italic.woff2") format("woff2");
+}
+
+/* Display faces (both SIL OFL, from Open Foundry / Velvetyne):
+   Bluu Next Bold for headlines and the Web service, Terminal Grotesque for Automation. */
+@font-face {
+  font-family: "Bluu Next";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/BluuNext-Bold.woff2") format("woff2");
+}
+/* Young Serif Bold (SIL OFL, Open Foundry) for "About me" and the AI service; Latin subset. */
+@font-face {
+  font-family: "Young Serif";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/YoungSerif-Bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Terminal Grotesque";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/TerminalGrotesque.woff2") format("woff2");
 }
 
 @theme {
-  --font-inter: "InterVariable", "sans-serif";
+  --font-instrument: "Instrument Sans", "sans-serif";
+  --font-bluu: "Bluu Next", "Georgia", "serif";
+  --font-terminal: "Terminal Grotesque", "monospace";
+  --font-young: "Young Serif", "Georgia", "serif";
+
+  /* Two inks: yellow page, black ink. Muted is a dark olive for secondary text (5.9:1 on the yellow). */
+  --color-background: #f9dc4a;
+  --color-foreground: #0b0b0b;
+  --color-muted: #574f1f;
+}
+
+@layer base {
+  html {
+    --header-h: 5.875rem; /* Floating header flow height: mt-4 + py-6 + one line of text-lg + border; the Home hero slides under it. */
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    scroll-behavior: smooth;
+  }
+  ::selection {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Plate (header bar, footer): solid page colour, black outline and a hard offset shadow. No blur: the site is 1-bit.
+   The name is historical (it used to be frosted glass). */
+@utility glass {
+  background: var(--color-background);
+  border: 2px solid var(--color-foreground);
+  box-shadow: 4px 4px 0 var(--color-foreground);
+}
+
+/* Letters rise (About title; markup from SplitWord.astro):
+   each letter climbs out of a clipped line, tilting into place, staggered by its index. */
+.split-word {
+  position: relative;
+  display: inline-flex;
+  /* Clip below the baseline only, so the tilt stays visible above it. */
+  clip-path: inset(-50% -10% 0 -10%);
+}
+.split-word .ch {
+  display: inline-block;
+  transform-origin: 0 100%;
+}
+@keyframes letter-in {
+  from {
+    translate: 0 115%;
+    rotate: 12deg;
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    translate: 0 0;
+    rotate: 0deg;
+    opacity: 1;
+  }
+}
+@keyframes letter-out {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 115%;
+    rotate: -8deg;
+  }
+}
+/* Page title that plays the letters-rise on load. */
+@media (prefers-reduced-motion: no-preference) {
+  .title-letters .ch {
+    animation: letter-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) calc(0.1s + var(--i) * 45ms) both;
+  }
 }

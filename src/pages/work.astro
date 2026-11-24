@@ -1,0 +1,73 @@
+---
+/**
+ * Work: the projects, each with its thematic tags as plain labels.
+ * Each card shows a screenshot of the project's site, in its real colours, above its text.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { projects, tags } from "../i18n/work";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+---
+
+<BaseLayout title={t("work.title")} description={t("work.intro")}>
+  <section class="flex flex-col gap-10">
+    <header class="flex max-w-2xl flex-col gap-4">
+      <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">{t("work.heading")}</h1>
+      <p class="text-lg text-muted">{t("work.intro")}</p>
+    </header>
+
+    <ul class="grid gap-6 md:grid-cols-3">
+      {
+        projects.map(({ key, url, shot, tags: ptags }) => (
+          <li class="project flex flex-col overflow-hidden border-2 border-foreground">
+            <a href={url} target="_blank" rel="noopener noreferrer" class="project-shot" tabindex="-1" aria-hidden="true">
+              <img src={shot.src} width={shot.width} height={shot.height} alt="" loading="lazy" decoding="async" />
+            </a>
+            <div class="flex flex-1 flex-col items-start gap-3 p-6">
+              <h2 class="text-xl font-medium">
+                <a href={url} target="_blank" rel="noopener noreferrer" class="underline-offset-4 hover:underline">
+                  {t(`work.${key}.title`)}
+                </a>
+              </h2>
+              <p class="text-sm">
+                {t(`work.${key}.body`)}
+              </p>
+              <ul class="mt-auto flex flex-wrap gap-1.5 pt-2" aria-label={t("work.tags")}>
+                {ptags.map((id) => (
+                  <li class="tag">{tags[id][lang]}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .tag {
+    border: 1px solid color-mix(in oklab, var(--color-muted) 35%, transparent);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+  /* Screenshot on top of the card. */
+  .project-shot {
+    display: block;
+    border-bottom: 2px solid var(--color-foreground);
+    background: var(--color-background);
+  }
+  .project-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: top;
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+/**
+ * A word split into per-letter spans (`.ch`, each with its index as `--i`) for the
+ * staggered "letters rise" CSS animation in global.css. Screen readers get the
+ * plain text; the letters are hidden from them.
+ */
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<span class="split-word">
+  <span class="sr-only">{text}</span>
+  {
+    [...text].map((c, i) => (
+      <span class="ch" style={`--i: ${i}`} aria-hidden="true">
+        {c === " " ? " " : c}
+      </span>
+    ))
+  }
+</span>

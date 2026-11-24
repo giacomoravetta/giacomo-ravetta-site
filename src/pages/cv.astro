@@ -1,0 +1,166 @@
+---
+/** Curriculum vitae: story, experience, education, skills, languages, contacts (src/i18n/cv.ts). */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
+import { cv } from "../i18n/cv";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const data = cv[lang];
+const sections = [
+  { key: "experience", items: data.experience },
+  { key: "education", items: data.education },
+] as const;
+---
+
+<BaseLayout title={t("cv.title")}>
+  <article class="flex flex-col gap-14">
+    <a href={localizedPath("about", lang)} class="no-print text-sm text-muted hover:text-foreground">← {t("about.title")}</a>
+    <header class="flex flex-wrap items-end justify-between gap-6">
+      <div class="flex flex-col gap-4">
+        <h1 class="text-5xl font-semibold tracking-tight md:text-7xl">Giacomo Ravetta</h1>
+        <p class="text-lg text-muted">{t("cv.subtitle")}</p>
+      </div>
+      <!-- Opens the browser's print dialog ("Save as PDF"); the print styles below turn
+           this page into a clean, white A4 CV. -->
+      <button
+        type="button"
+        class="no-print rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+        data-cv-print
+      >
+        {t("cv.download")} ↓
+      </button>
+    </header>
+
+    <section class="grid gap-6 border-t border-muted/20 pt-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12">
+      <h2 class="cv-h">01 · {t("cv.story")}</h2>
+      <div class="flex flex-col gap-4 text-muted">{data.story.map((p) => <p class="story" set:html={p} />)}</div>
+    </section>
+
+    {
+      sections.map(({ key, items }, i) => (
+        <section class="grid gap-6 border-t border-muted/20 pt-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12">
+          <h2 class="cv-h">{String(i + 2).padStart(2, "0")} · {t(`cv.${key}`)}</h2>
+          <ol class="flex flex-col gap-8">
+            {items.map((e) => (
+              <li class="flex flex-col gap-1.5">
+                {e.period && <span class="text-sm text-muted">{e.period}</span>}
+                <h3 class="text-2xl tracking-tight">{e.title}</h3>
+                {e.role && <p class="text-foreground/85">{e.role}</p>}
+                {e.body && <p class="mt-1 text-muted">{e.body}</p>}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    }
+
+    <section class="grid gap-6 border-t border-muted/20 pt-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12">
+      <h2 class="cv-h">04 · {t("cv.skills")}</h2>
+      <ul class="flex flex-wrap gap-2">
+        {data.skills.map((s) => <li class="rounded-full border border-muted/30 px-3.5 py-1.5 text-sm">{s}</li>)}
+      </ul>
+    </section>
+
+    <section class="grid gap-6 border-t border-muted/20 pt-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12">
+      <h2 class="cv-h">05 · {t("cv.languages")}</h2>
+      <ul class="flex flex-col gap-2">
+        {data.languages.map((l) => <li class="flex max-w-sm justify-between"><span>{l.name}</span><span class="text-muted">{l.level}</span></li>)}
+      </ul>
+    </section>
+
+    <section class="grid gap-6 border-t border-muted/20 pt-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-12">
+      <h2 class="cv-h">06 · {t("cv.contacts")}</h2>
+      <ul class="flex flex-col gap-2">
+        <li><a class="hover:text-muted" href="mailto:info@giacomoravetta.com">info@giacomoravetta.com</a></li>
+        <li><a class="hover:text-muted" href="https://github.com/giacomoravetta" target="_blank" rel="noopener noreferrer">github.com/giacomoravetta</a></li>
+        <li><a class="hover:text-muted" href="https://www.giacomoravetta.com">www.giacomoravetta.com</a></li>
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+
+<script>
+  document.querySelector("[data-cv-print]")?.addEventListener("click", () => {
+    // The PDF's default file name comes from the document title.
+    const title = document.title;
+    document.title = "Giacomo_Ravetta_CV";
+    window.print();
+    document.title = title;
+  });
+</script>
+
+<style>
+  .story :global(a) {
+    color: var(--color-foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* Print / Save as PDF: white A4 page, dark text, no site chrome, sections kept whole. */
+  @media print {
+    /* The site background is set on <html> via a CSS variable; override it at the root. */
+    :global(:root) {
+      --color-background: #fff;
+      --color-foreground: #111;
+    }
+    /* No page margin (Chrome paints it with the canvas colour, which stays dark):
+       the white page and the spacing come from <main> instead. */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    :global(html),
+    :global(body),
+    :global(main) {
+      background: #fff !important;
+      color: #111 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    :global(header[data-header]),
+    :global(footer),
+    :global(.skip-link),
+    .no-print {
+      display: none !important;
+    }
+    :global(main) {
+      padding: 14mm 14mm !important;
+      max-width: none !important;
+      min-height: 100vh;
+    }
+    article {
+      gap: 1.25rem !important;
+      font-size: 10pt;
+    }
+    article :global(*) {
+      color: #111 !important;
+      border-color: #ccc !important;
+    }
+    article :global(.text-muted) {
+      color: #555 !important;
+    }
+    h1 {
+      font-size: 28pt !important;
+    }
+    h3 {
+      font-size: 13pt !important;
+    }
+    section {
+      break-inside: avoid;
+      padding-top: 0.75rem !important;
+    }
+    li {
+      break-inside: avoid;
+    }
+    a {
+      text-decoration: none;
+    }
+  }
+  .cv-h {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+</style>

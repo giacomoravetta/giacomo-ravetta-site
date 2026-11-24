@@ -1,12 +1,11 @@
 # giacomoravetta.com
 
-Personal portfolio site of Giacomo Ravetta — a single-page bento-style layout with animated cards.
+Personal portfolio site of Giacomo Ravetta. This branch is the 2026 redesign, currently a minimal Astro scaffold.
 
 ## Tech stack
 
 - [Astro](https://astro.build) with the [Cloudflare adapter](https://docs.astro.build/en/guides/integrations-guide/cloudflare/)
 - [Tailwind CSS v4](https://tailwindcss.com) (via `@tailwindcss/vite`)
-- [GSAP](https://gsap.com) and [Motion](https://motion.dev) for animations
 - Deployed on [Cloudflare](https://workers.cloudflare.com)
 
 ## Commands

@@ -1,0 +1,49 @@
+---
+/**
+ * Closing call to action, in reverse (yellow on black): a line, a sentence and a button
+ * that opens the meeting booking page (Proton Calendar) in a new tab, over pixel waves.
+ * Full width and nearly a screen tall; used at the end of Home and About (pages laid out
+ * with `fullBleed`).
+ */
+import type { Lang } from "../i18n/ui";
+import { useTranslations } from "../i18n/utils";
+import PixelFigure from "./PixelFigure.astro";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const bookingUrl = "https://calendar.proton.me/bookings#daaPcyN6Ut_2TBgd6F6BGCnV_fBUb4hJ5FMHnrc-e5I=";
+---
+
+<section
+  class="relative isolate flex min-h-[80dvh] flex-col items-center justify-center gap-6 overflow-hidden border-t-2 border-foreground bg-foreground px-6 pt-20 pb-32 text-center text-background"
+  data-svc-section
+>
+  <div class="absolute inset-x-0 bottom-0 -z-10 h-[38%]">
+    <PixelFigure figure="waves" />
+  </div>
+  <h2 class="max-w-4xl font-terminal text-[clamp(2.5rem,min(7vw,13dvh),6.5rem)] leading-[0.95] tracking-tight text-balance" data-rise>
+    {t("home.cta.heading")}
+  </h2>
+  <p class="max-w-xl text-lg lg:text-xl" data-rise>{t("home.cta.body")}</p>
+  <a href={bookingUrl} target="_blank" rel="noopener noreferrer" class="cta-link border-2 border-background px-7 py-4 text-xl font-semibold" data-rise>
+    {t("home.cta.button")} <span aria-hidden="true">→</span>
+  </a>
+</section>
+
+<style>
+  /* Yellow button on the black section, reversing on hover. 1-bit: it switches, it does not fade. */
+  .cta-link {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    box-shadow: 4px 4px 0 var(--color-background);
+  }
+  .cta-link:hover,
+  .cta-link:focus-visible {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+</style>

@@ -1,8 +1,12 @@
 ---
-import BentoHome from "../components/BentoHome/Web/BentoHome.astro";
-import Layout from "../layouts/Layout.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HomeHero from "../components/HomeHero.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
-<Layout title="Giacomo Ravetta">
-    <BentoHome />
-</Layout>
+<BaseLayout title={t("home.title")} fullBleed>
+  <HomeHero lang={lang} />
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+/**
+ * Page background: an animated 1-bit pixel figure fixed behind the content of every
+ * page but Home (which has its own figures). Text pages get a band along the bottom
+ * (tubes on Services, rings on About, arches on the CV; Work has a figure per card instead); a service
+ * subpage gets its own figure in the bottom-right corner.
+ * Drawn in a darker yellow, not black, so the text that scrolls over it stays readable.
+ * Not printed.
+ */
+import type { RouteKey } from "../i18n/ui";
+import type { FigureId } from "../lib/pixel-figures";
+import PixelFigure from "./PixelFigure.astro";
+
+interface Props {
+  route: RouteKey;
+}
+
+const { route } = Astro.props;
+
+const figures: Partial<Record<RouteKey, FigureId>> = {
+  services: "tubes",
+  about: "rings",
+  cv: "hero",
+  web: "web",
+  ai: "ai",
+  automation: "automation",
+  dataviz: "dataviz",
+};
+const figure = figures[route];
+const corner = figure === route; // a service subpage: its own figure, in the corner
+---
+
+{
+  figure && (
+    <div class:list={["pixel-bg", corner ? "pixel-bg-corner" : "pixel-bg-band"]}>
+      <PixelFigure figure={figure} />
+    </div>
+  )
+}
+
+<style>
+  .pixel-bg {
+    position: fixed;
+    z-index: -10;
+    pointer-events: none;
+    color: color-mix(in oklab, var(--color-foreground) 16%, var(--color-background));
+  }
+  .pixel-bg-band {
+    inset: auto 0 0 0;
+    height: 46dvh;
+  }
+  .pixel-bg-corner {
+    right: 0;
+    bottom: 0;
+    width: min(92vw, 78dvh);
+    height: min(92vw, 78dvh);
+  }
+  @media print {
+    .pixel-bg {
+      display: none;
+    }
+  }
+</style>
