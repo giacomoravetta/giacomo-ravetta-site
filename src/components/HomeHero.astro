@@ -1,9 +1,9 @@
 ---
 /**
- * Home: a full-screen hero with one animation behind everything (`focus`: pixels
- * scattered over the whole screen gather into a service figure, "I bring it into focus";
- * it ripples where it is clicked or tapped) and the quote and one line on what I do on yellow
- * plates, centred vertically on desktop; then one full-screen section per service: its name, summary and a link
+ * Home: a full-screen hero with one animation behind everything (footage of me coding,
+ * dithered live, gathering out of scattered pixels on load: "I bring it into focus") and
+ * the quote alone on a yellow plate, centred vertically on desktop; then one full-screen
+ * section per service: its name, summary and a link
  * to the subpage beside its 1-bit pixel figure (`PixelFigure.astro`).
  * The figures run on the clock: each builds up once when its section first arrives, then
  * keeps playing whatever the scroll position (see pixel-figures.ts). The hero quote rises in word by
@@ -33,7 +33,7 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
 >
   <!-- The one hero animation, behind the text and as large as the section. -->
   <div class="absolute inset-0 -z-10">
-    <PixelFigure figure="focus" ripple cells={450} video={hasHeroVideo ? heroVideo : undefined} />
+    <PixelFigure figure="focus" cells={450} video={hasHeroVideo ? heroVideo : undefined} />
   </div>
   <!-- Text sits on yellow plates so it stays readable over the black pixels. -->
   <div class="pointer-events-none flex flex-col items-start gap-5 px-6 lg:px-12">
@@ -43,7 +43,6 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
     >
       {t("home.heading")}
     </h1>
-    <p class="pointer-events-auto max-w-xl bg-background px-3 py-2 text-lg max-lg:-mx-3 lg:text-xl" data-hero-rise>{t("home.intro")}</p>
   </div>
 </section>
 
@@ -108,14 +107,13 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
 
   gsap.registerPlugin(SplitText, ScrollTrigger);
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-    // Hero: the quote rises word by word out of clipped lines, then the rest follows.
+    // Hero: the quote rises word by word out of clipped lines.
     const quote = document.querySelector<HTMLElement>("[data-hero-quote]");
     let split: SplitText | undefined;
     if (quote) {
       split = SplitText.create(quote, { type: "lines,words", mask: "lines" });
       gsap.from(split.words, { yPercent: 110, duration: 0.9, ease: "power3.out", stagger: 0.07, delay: 0.1 });
     }
-    gsap.from("[data-hero-rise]", { autoAlpha: 0, y: 24, duration: 0.7, ease: "power2.out", stagger: 0.12, delay: 0.75 });
 
     // Services: each section's text rises in when the section arrives.
     document.querySelectorAll<HTMLElement>("[data-svc-section]").forEach((section) => {
