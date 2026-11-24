@@ -1,10 +1,12 @@
 ---
 /**
- * Home: a full-screen hero (the quote, one line on what I do, and a strip of marching
- * pixel arches), then one full-screen section per service: its name, summary and a link
+ * Home: a full-screen hero with one animation behind everything (`focus`: pixels
+ * scattered over the whole screen gather into a service figure, "I bring it into focus";
+ * it ripples where it is clicked or tapped) and the quote and one line on what I do on yellow
+ * plates, centred vertically on desktop; then one full-screen section per service: its name, summary and a link
  * to the subpage beside its 1-bit pixel figure (`PixelFigure.astro`).
- * The service figures are scroll-driven: each builds up as its section enters and plays
- * as it crosses the viewport (see pixel-figures.ts). The hero quote rises in word by
+ * The figures run on the clock: each builds up once when its section first arrives, then
+ * keeps playing whatever the scroll position (see pixel-figures.ts). The hero quote rises in word by
  * word, and each section's text rises in when the section arrives (GSAP, below).
  */
 import type { Lang } from "../i18n/ui";
@@ -18,24 +20,30 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
+
+// The hero dithers real footage when the clip exists (made by scripts/hero-video.sh);
+// without it, the drawn side-view coder is shown.
+const heroVideo = "/video/hero-coding.mp4";
+// (A lazy glob only lists the file at build time; it is served from public/, not bundled.)
+const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4")).length > 0;
 ---
 
-<section class="flex min-h-dvh flex-col pt-32 md:-mt-[var(--header-h)] md:pt-[calc(var(--header-h)+3rem)]">
-  <div class="flex flex-col gap-6 px-6 lg:px-12">
+<section
+  class="relative isolate flex min-h-dvh flex-col pt-32 pb-24 md:-mt-[var(--header-h)] md:pt-[calc(var(--header-h)+3rem)] lg:justify-center lg:py-[var(--header-h)]"
+>
+  <!-- The one hero animation, behind the text and as large as the section. -->
+  <div class="absolute inset-0 -z-10">
+    <PixelFigure figure="focus" ripple cells={450} video={hasHeroVideo ? heroVideo : undefined} />
+  </div>
+  <!-- Text sits on yellow plates so it stays readable over the black pixels. -->
+  <div class="pointer-events-none flex flex-col items-start gap-5 px-6 lg:px-12">
     <h1
-      class="max-w-6xl font-bluu text-[clamp(2.75rem,min(8.5vw,15dvh),8.5rem)] leading-[0.92] tracking-tight text-balance"
+      class="pointer-events-auto w-fit max-w-[7.9em] bg-background lg:max-w-[6.2em] px-3 py-2 font-bluu text-[clamp(2.75rem,min(8.5vw,15dvh),8.5rem)] leading-[0.92] tracking-tight text-balance max-lg:-mx-3"
       data-hero-quote
     >
       {t("home.heading")}
     </h1>
-    <p class="max-w-xl text-lg lg:text-xl" data-hero-rise>{t("home.intro")}</p>
-    <a href="#services" class="flex items-center gap-3 self-start font-terminal text-sm uppercase" data-hero-rise>
-      <span class="hero-arrow" aria-hidden="true">↓</span>
-      {t("home.services")}
-    </a>
-  </div>
-  <div class="relative mt-8 min-h-48 flex-1">
-    <PixelFigure figure="hero" mode="clock" />
+    <p class="pointer-events-auto max-w-xl bg-background px-3 py-2 text-lg max-lg:-mx-3 lg:text-xl" data-hero-rise>{t("home.intro")}</p>
   </div>
 </section>
 
@@ -90,16 +98,6 @@ const t = useTranslations(lang);
   .svc-link:focus-visible {
     background: var(--color-background);
     color: var(--color-foreground);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-arrow {
-      animation: hero-bob 1s steps(2, jump-none) infinite alternate;
-    }
-  }
-  @keyframes hero-bob {
-    to {
-      translate: 0 0.3rem;
-    }
   }
 </style>
 

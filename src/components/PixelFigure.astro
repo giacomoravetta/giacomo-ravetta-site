@@ -2,20 +2,37 @@
 /**
  * An animated 1-bit pixel figure for a service, drawn by `src/lib/pixel-figures.ts`
  * (loaded when the browser is idle). Fills its positioned parent; the ink is the
- * current text colour. Scroll-driven unless `mode="clock"`. Decorative: hidden from assistive technology.
+ * current text colour. Runs on the clock; builds up once when first on screen.
+ * Decorative: hidden from assistive technology.
  */
-import type { ServiceId } from "../i18n/services";
+import type { FigureId } from "../lib/pixel-figures";
 
 interface Props {
-  figure: ServiceId | "hero";
-  mode?: "scroll" | "clock";
+  figure: FigureId;
+  /** Build up again every time it comes back on screen (the phone menu), not just the first. */
+  replay?: boolean;
+  /** Further figures it dissolves to, in turn, every few seconds. */
+  cycle?: FigureId[];
+  /** A click or tap sends a ripple through it. */
+  ripple?: boolean;
+  /** Cells along the short side, for a finer or coarser grain than the default 96. */
+  cells?: number;
+  /** URL of muted, looping footage to dither live in place of the drawn figure. */
+  video?: string;
 }
 
-const { figure, mode = "scroll" } = Astro.props;
+const { figure, replay = false, cycle, ripple = false, cells, video } = Astro.props;
 ---
 
 <div class="pixel-figure">
-  <canvas data-figure={figure} data-figure-mode={mode} aria-hidden="true"></canvas>
+  <canvas
+    data-figure={figure}
+    data-figure-replay={replay ? "" : undefined}
+    data-figure-cycle={cycle?.join(",")}
+    data-figure-ripple={ripple ? "" : undefined}
+    data-figure-cells={cells}
+    data-figure-video={video}
+    aria-hidden="true"></canvas>
 </div>
 
 <style>

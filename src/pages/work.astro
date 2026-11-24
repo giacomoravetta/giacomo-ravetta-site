@@ -3,16 +3,24 @@
  * Work: projects with thematic tags and a tag filter. Static markup lists every project;
  * the filter bar (hidden without JS) shows only the projects carrying the chosen tag,
  * keeps it in the URL (?tag=…) so a filtered view can be shared, and announces the count.
+ * Each card has its own animated pixel figure. Desktop: it fills the card behind the text,
+ * faint, and turns to full black ink while the card is hovered or focused; the text then
+ * sits on yellow plates so it stays readable. Phones: the figure is a black band on top
+ * of the card and the text sits below it on plain yellow.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
 import { projects, tags, type TagId } from "../i18n/work";
+import PixelFigure from "../components/PixelFigure.astro";
+import type { FigureId } from "../lib/pixel-figures";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 // Only tags actually used, in the order they are defined.
 const used = (Object.keys(tags) as TagId[]).filter((id) => projects.some((p) => p.tags.includes(id)));
+/** One figure per card, in turn. */
+const cardFigures: FigureId[] = ["waves", "tubes", "hero", "rings"];
 const count = (id: TagId) => projects.filter((p) => p.tags.includes(id)).length;
 ---
 
@@ -42,23 +50,30 @@ const count = (id: TagId) => projects.filter((p) => p.tags.includes(id)).length;
 
     <ul class="grid gap-6 md:grid-cols-3" data-work-list>
       {
-        projects.map(({ key, url, tags: ptags }) => (
-          <li class="project flex flex-col gap-3 rounded-2xl border border-muted/20 p-6" data-tags={ptags.join(" ")}>
-            <h2 class="text-xl font-medium">
-              <a href={url} target="_blank" rel="noopener noreferrer" class="transition-opacity hover:opacity-80">
-                {t(`work.${key}.title`)}
-              </a>
-            </h2>
-            <p class="text-sm text-muted">{t(`work.${key}.body`)}</p>
-            <ul class="mt-auto flex flex-wrap gap-1.5 pt-2" aria-label={t("work.tags")}>
-              {ptags.map((id) => (
-                <li>
-                  <button type="button" class="tag" data-tag={id}>
-                    {tags[id][lang]}
-                  </button>
-                </li>
-              ))}
-            </ul>
+        projects.map(({ key, url, tags: ptags }, i) => (
+          <li class="project relative isolate flex flex-col overflow-hidden border-2 border-foreground" data-tags={ptags.join(" ")} data-figure-host>
+            <div class="project-fig">
+              <PixelFigure figure={cardFigures[i % cardFigures.length]} />
+            </div>
+            <div class="flex flex-1 flex-col items-start gap-3 p-6">
+              <h2 class="text-xl font-medium">
+                <a href={url} target="_blank" rel="noopener noreferrer" class="plate underline-offset-4 hover:underline">
+                  {t(`work.${key}.title`)}
+                </a>
+              </h2>
+              <p class="text-sm">
+                <span class="plate">{t(`work.${key}.body`)}</span>
+              </p>
+              <ul class="mt-auto flex flex-wrap gap-1.5 pt-2" aria-label={t("work.tags")}>
+                {ptags.map((id) => (
+                  <li>
+                    <button type="button" class="tag" data-tag={id}>
+                      {tags[id][lang]}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </li>
         ))
       }
@@ -104,6 +119,50 @@ const count = (id: TagId) => projects.filter((p) => p.tags.includes(id)).length;
   }
   .project[hidden] {
     display: none;
+  }
+  /* Phones: the figure is a black band on top of the card. */
+  .project-fig {
+    position: relative;
+    height: 8rem;
+    border-bottom: 2px solid var(--color-foreground);
+  }
+  .project .tag {
+    background: var(--color-background);
+  }
+  .project .tag.is-active {
+    background: var(--color-foreground);
+  }
+  /* Text plates: invisible until the figure behind goes black, sized the same either way. */
+  .plate {
+    padding: 0.1em 0.3em;
+    margin-inline: -0.3em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  /* Tablets and up: the figure fills the card behind the text, faint. */
+  @media (min-width: 48rem) {
+    .project {
+      min-height: 17rem;
+    }
+    .project-fig {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      height: auto;
+      border: 0;
+      color: color-mix(in oklab, var(--color-foreground) 16%, var(--color-background));
+    }
+  }
+  /* Mouse: full black ink while the card is hovered or focused, text on yellow plates. */
+  @media (min-width: 48rem) and (hover: hover) {
+    .project:hover .project-fig,
+    .project:focus-within .project-fig {
+      color: var(--color-foreground);
+    }
+    .project:hover .plate,
+    .project:focus-within .plate {
+      background: var(--color-background);
+    }
   }
 </style>
 
