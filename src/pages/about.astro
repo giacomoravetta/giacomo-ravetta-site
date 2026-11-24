@@ -1,8 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import profile from "../assets/giacomo-profile-2026.webp";
-import { getLangFromUrl, useTranslations } from "../i18n/utils";
+import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
 import SplitWord from "../components/SplitWord.astro";
+import { cv } from "../i18n/cv";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -17,6 +18,19 @@ const t = useTranslations(lang);
       </h1>
       <p class="text-lg text-muted">{t("about.intro")}</p>
       <p class="text-muted">{t("about.body")}</p>
+      <!-- Same paragraph as the last one of "My story" on the CV (trusted HTML: Lichess link). -->
+      <p class="about-hobby text-muted" set:html={cv[lang].story.at(-1)} />
+
+      <section class="mt-6 flex flex-col gap-3 border-t border-muted/20 pt-8">
+        <h2 class="text-2xl font-semibold tracking-tight">{t("about.cv.heading")}</h2>
+        <p class="text-muted">{t("about.cv.body")}</p>
+        <a
+          href={localizedPath("cv", lang)}
+          class="mt-2 self-start rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+        >
+          {t("about.cv.link")} →
+        </a>
+      </section>
     </div>
 
     <!-- Original file, untouched: no re-encoding so the portrait stays as sharp as the source. -->
@@ -31,3 +45,11 @@ const t = useTranslations(lang);
     />
   </article>
 </BaseLayout>
+
+<style>
+  .about-hobby :global(a) {
+    color: var(--color-foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

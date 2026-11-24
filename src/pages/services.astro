@@ -1,69 +1,78 @@
 ---
 /**
- * Services: the page split in two halves, Designer and Developer, each with its own
- * face and key colour (as on the Home hero), the list of its services and a link to
- * its subpage. Side by side on wide screens, stacked on phones. On wide screens the
- * halves share the parent's rows (subgrid), so title, intro, list and link line up
- * across both halves even though the texts and lists differ in length.
- * Hovering a half (mouse only) brings in the marks of its tools — design-tool icons
- * (pen, brush, eyedropper…) for Designer, frameworks and languages for Developer — scattered in the empty space above the title,
- * popping in one after another and then floating gently.
+ * Services: four panels, one per service (Web design & development, AI integration,
+ * Automation, Data visualization), each with its own face and key colour (`serviceStyle`), the list of what
+ * it includes and a link to its subpage. Side by side and exactly one viewport tall on
+ * wide screens (xl+), two per row on tablets, stacked on phones. Side by side the panels share the parent's rows
+ * (subgrid), so title, intro, list and link line up across them even though the texts
+ * and lists differ in length.
+ * Hovering a panel (mouse only) brings in the marks of its tools (`tool-icons.ts`),
+ * scattered in the empty space above the title, popping in one after another and then
+ * floating gently.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getLangFromUrl, localizedPath, useTranslations } from "../i18n/utils";
-import { services } from "../i18n/services";
-import { FX_COLORS } from "../lib/hero-scenes";
+import { serviceIds, services, serviceStyle } from "../i18n/services";
 import { toolIcons } from "../lib/tool-icons";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const halves = [
-  { key: "designer", title: t("services.designer.title"), body: t("services.designer.body"), font: "font-bluu", color: FX_COLORS.left.key },
-  { key: "developer", title: t("services.developer.title"), body: t("services.developer.body"), font: "font-terminal", color: FX_COLORS.right.key },
-] as const;
+const last = serviceIds.length - 1;
 ---
 
 <BaseLayout title={t("services.title")} fullBleed>
   <h1 class="sr-only">{t("services.heading")}</h1>
-  <div class="split grid md:h-[calc(100dvh-var(--header-h))] md:grid-cols-2 md:grid-rows-[1fr_auto_auto_auto_auto] md:gap-y-[clamp(1rem,3.5dvh,2rem)] md:overflow-hidden">
+  <div class="split grid xl:h-[calc(100dvh-var(--header-h))] md:grid-cols-2 xl:grid-cols-4 xl:grid-rows-[1fr_auto_auto_auto_auto] xl:gap-y-[clamp(1rem,3.5dvh,2rem)] xl:overflow-hidden">
     {
-      halves.map(({ key, title, body, font, color }, i) => (
-        <a
-          href={localizedPath(key, lang)}
-          class:list={["half group relative flex flex-col justify-end gap-8 overflow-hidden px-6 md:row-span-5 md:grid md:grid-cols-1 md:grid-rows-subgrid md:justify-stretch md:gap-y-[clamp(1rem,3.5dvh,2rem)] md:px-12 md:pb-[clamp(4rem,9dvh,6rem)] md:pt-8", i === 0 ? "pt-36 pb-14 md:border-r border-muted/20 max-md:border-b" : "pt-14 pb-32"]}
-          style={`--key: ${color}`}
-        >
-          <span class="max-md:hidden" aria-hidden="true" />
-          <span class="tools" aria-hidden="true" data-tools>
-            {toolIcons[key].map((icon, k) => (
-              <span class:list={["tool", icon.stroke && "is-stroke"]} style={`--k: ${k}`} data-tool>
-                <svg viewBox="0 0 24 24" set:html={icon.svg} />
-                <span class="tool-name">{icon.name[lang]}</span>
-              </span>
-            ))}
-          </span>
-          <h2 class:list={["text-7xl leading-none tracking-tight transition-colors md:text-[clamp(3.5rem,min(9vw,14dvh),9rem)] group-hover:text-[var(--key)]", font]}>{title}</h2>
-          <p class="max-w-md text-lg text-muted">{body}</p>
-          <ol class="flex flex-col border-t border-muted/20">
-            {services[key][lang].map((s, k) => (
-              <li class="flex items-baseline gap-4 border-b border-muted/20 py-3 md:py-[clamp(0.4rem,1.3dvh,0.75rem)]">
-                <span class="font-mono text-xs" style="color: var(--key)">{String(k + 1).padStart(2, "0")}</span>
-                <span class="text-lg">{s.name}</span>
-              </li>
-            ))}
-          </ol>
-          <span class="text-sm text-foreground/80 group-hover:text-foreground">
-            {t("services.more")} <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
-          </span>
-        </a>
-      ))
+      serviceIds.map((id, i) => {
+        const s = services[id][lang];
+        const { key, font } = serviceStyle[id];
+        return (
+          <a
+            href={localizedPath(id, lang)}
+            class:list={[
+              "half group relative flex flex-col justify-end gap-8 overflow-hidden border-muted/20 px-6 pt-14 pb-14 xl:row-span-5 xl:grid xl:grid-cols-1 xl:grid-rows-subgrid xl:justify-stretch xl:gap-y-[clamp(1rem,3.5dvh,2rem)] xl:px-8 xl:pb-[clamp(4rem,9dvh,6rem)] xl:pt-8",
+              i === 0 && "max-md:pt-36",
+              i < last && "max-xl:border-b xl:border-r",
+              i % 2 === 0 && "md:max-xl:border-r",
+              i >= last - 1 && "md:max-xl:pb-32",
+              i === last && "max-md:pb-32",
+            ]}
+            style={`--key: ${key}`}
+            data-svc-id={id}
+            data-svc-key={key}
+          >
+            <span class="max-xl:hidden" aria-hidden="true" />
+            <span class="tools" aria-hidden="true" data-tools>
+              {toolIcons[id].map((icon, k) => (
+                <span class:list={["tool", icon.stroke && "is-stroke"]} style={`--k: ${k}`} data-tool>
+                  <svg viewBox="0 0 24 24" set:html={icon.svg} />
+                  <span class="tool-name">{icon.name[lang]}</span>
+                </span>
+              ))}
+            </span>
+            <h2 class:list={["text-5xl leading-[0.95] tracking-tight text-balance transition-colors xl:text-[clamp(2rem,min(3vw,7dvh),3.5rem)] group-hover:text-[var(--key)]", font]}>{s.name}</h2>
+            <p class="max-w-md text-lg text-muted xl:text-[clamp(0.9rem,min(1.1vw,2.3dvh),1.125rem)]">{s.summary}</p>
+            <ol class="flex flex-col border-t border-muted/20">
+              {s.items.map((item, k) => (
+                <li class="flex items-baseline gap-4 border-b border-muted/20 py-3 xl:py-[clamp(0.4rem,1.3dvh,0.75rem)]">
+                  <span class="font-mono text-xs" style="color: var(--key)">{String(k + 1).padStart(2, "0")}</span>
+                  <span class="text-lg">{item.name}</span>
+                </li>
+              ))}
+            </ol>
+            <span class="text-sm text-foreground/80 group-hover:text-foreground">
+              {t("services.more")} <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </span>
+          </a>
+        );
+      })
     }
   </div>
 </BaseLayout>
 
 <style>
-  /* A soft glow of each half's key colour rises from the bottom on hover. */
+  /* A soft glow of each panel's key colour rises from the bottom on hover. */
   .half::before {
     content: "";
     position: absolute;
@@ -73,9 +82,14 @@ const halves = [
     opacity: 0;
     transition: opacity 0.5s ease;
   }
+  /* data-svc-active: the 3D background is showing this service's shape on its own. */
   .half:hover::before,
-  .half:focus-visible::before {
+  .half:focus-visible::before,
+  .half[data-svc-active]::before {
     opacity: 1;
+  }
+  .half[data-svc-active] h2 {
+    color: var(--key);
   }
   .half {
     isolation: isolate;
@@ -126,7 +140,7 @@ const halves = [
     color: var(--color-muted);
     white-space: nowrap;
   }
-  @media (max-width: 767px), (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  @media (max-width: 1279px), (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
     .tools {
       display: none;
     }
@@ -137,7 +151,7 @@ const halves = [
   import gsap from "gsap";
 
   const mm = gsap.matchMedia();
-  mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)", () => {
+  mm.add("(min-width: 1280px) and (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)", () => {
     const halves = Array.from(document.querySelectorAll<HTMLElement>(".half"));
     const cleanups = halves.map((half) => {
       const layer = half.querySelector<HTMLElement>("[data-tools]")!;

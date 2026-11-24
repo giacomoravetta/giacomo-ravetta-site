@@ -15,8 +15,11 @@ export const routes = {
   work: { en: "work", it: "lavori" },
   about: { en: "about", it: "chi-sono" },
   services: { en: "services", it: "servizi" },
-  designer: { en: "services/designer", it: "servizi/designer" },
-  developer: { en: "services/developer", it: "servizi/sviluppatore" },
+  web: { en: "services/web-design-development", it: "servizi/web-design-sviluppo" },
+  ai: { en: "services/ai-integration", it: "servizi/integrazione-ai" },
+  automation: { en: "services/automation", it: "servizi/automazione" },
+  dataviz: { en: "services/data-visualization", it: "servizi/visualizzazione-dati" },
+  cv: { en: "cv", it: "cv" },
 } as const;
 
 export type RouteKey = keyof typeof routes;
@@ -24,9 +27,9 @@ export type RouteKey = keyof typeof routes;
 export const ui = {
   en: {
     "site.name": "Giacomo Ravetta",
-    "site.tagline": "Designer & developer",
+    "site.tagline": "Web design, AI, automation & data visualization",
     "site.description":
-      "Giacomo Ravetta — designer and developer building thoughtful digital products.",
+      "Giacomo Ravetta — web design and development, AI integration, automation and data visualization.",
 
     "nav.home": "Home",
     "nav.about": "About me",
@@ -38,20 +41,10 @@ export const ui = {
     "nav.menu.close": "Close menu",
 
     "home.title": "Home",
-    "home.heading": "Designer & developer.",
-    "hero.left": "designer",
-    "hero.center": "Giacomo Ravetta",
-    "hero.right": "developer",
-    "hero.alt.left": "The Battle of Shijo Nawate, left panel",
-    "hero.alt.center": "The Battle of Shijo Nawate, center panel",
-    "hero.alt.right": "The Battle of Shijo Nawate, right panel",
-    "hero.fx.brand": "Brand identity",
-    "hero.fx.color": "Color systems",
-    "hero.fx.layout": "Layout & UI",
-    "hero.fx.type": "Typography",
-    "hero.fx.automation": "Automation & AI",
-    "hero.fx.web": "Websites",
-    "hero.fx.shop": "E-commerce",
+    "home.heading": "You bring the idea. I bring it into focus.",
+    "home.intro":
+      "I design and build websites, bring AI into the tools you already use, automate the work that repeats itself and make data readable.",
+    "home.services": "Services",
 
     "work.title": "Work",
     "work.heading": "Work",
@@ -75,40 +68,38 @@ export const ui = {
     "about.title": "About me",
     "about.heading": "About me",
     "about.intro":
-      "I am Giacomo, a designer and developer working at the intersection of visual design and engineering.",
+      "Mine is an atypical path into tech: from Philosophy and photography to freelance development across web, data visualization and AI.",
     "about.body":
-      "I care about details, clear communication and products that feel considered. I work with startups, studios and independent clients.",
+      "What I bring to a project is the combination that shaped me: a philosopher's habit of asking what a problem really is, a photographer's eye for how things should look and feel, and a developer's toolkit for actually making them. I like work that lives at the intersection of technology and creativity — and I'm always open to conversations about what to build next.",
     "about.photo.alt": "Portrait of Giacomo Ravetta",
+    "about.cv.heading": "Curriculum vitae",
+    "about.cv.body": "Experience at Accurat and Setflow, a degree in Philosophy, and the tools I work with.",
+    "about.cv.link": "Read the full CV",
+    "cv.title": "Curriculum vitae",
+    "cv.subtitle": "Freelance developer · web, data visualization & AI",
+    "cv.story": "My story",
+    "cv.experience": "Experience",
+    "cv.education": "Education",
+    "cv.skills": "Skills",
+    "cv.languages": "Languages",
+    "cv.contacts": "Contacts",
+    "cv.download": "Download PDF",
 
     "services.title": "Services",
     "services.heading": "Services",
-    "services.intro": "Two sides of the same practice.",
-    "services.designer.title": "Designer",
-    "services.designer.body":
-      "Brand identity, interfaces and design systems. Considered, legible work that holds up from the first sketch to the last pixel.",
-    "services.developer.title": "Developer",
-    "services.developer.body":
-      "Fast, accessible websites and web apps built with modern tooling, with the craft to match the design.",
     "services.benefits": "What it brings",
-    "services.more": "See the services",
+    "services.includes": "What it includes",
+    "services.more": "See the service",
     "services.back": "All services",
     "services.cta": "Get in touch",
-    "designer.title": "Designer",
-    "designer.heading": "Designer",
-    "designer.intro":
-      "Brand identity, interfaces and design systems. Considered, legible work that holds up from the first sketch to the last pixel.",
-    "developer.title": "Developer",
-    "developer.heading": "Developer",
-    "developer.intro":
-      "Fast, accessible websites and web apps built with modern tooling, with the craft to match the design.",
 
     "footer.rights": "All rights reserved.",
   },
   it: {
     "site.name": "Giacomo Ravetta",
-    "site.tagline": "Designer & sviluppatore",
+    "site.tagline": "Web design, AI, automazione e visualizzazione dati",
     "site.description":
-      "Giacomo Ravetta — designer e sviluppatore di prodotti digitali curati.",
+      "Giacomo Ravetta — web design e sviluppo, integrazione AI, automazione e visualizzazione dati.",
 
     "nav.home": "Home",
     "nav.about": "Chi sono",
@@ -120,20 +111,10 @@ export const ui = {
     "nav.menu.close": "Chiudi il menu",
 
     "home.title": "Home",
-    "home.heading": "Designer & sviluppatore.",
-    "hero.left": "designer",
-    "hero.center": "Giacomo Ravetta",
-    "hero.right": "sviluppatore",
-    "hero.alt.left": "La battaglia di Shijo Nawate, pannello sinistro",
-    "hero.alt.center": "La battaglia di Shijo Nawate, pannello centrale",
-    "hero.alt.right": "La battaglia di Shijo Nawate, pannello destro",
-    "hero.fx.brand": "Identità visiva",
-    "hero.fx.color": "Sistemi colore",
-    "hero.fx.layout": "Layout e UI",
-    "hero.fx.type": "Tipografia",
-    "hero.fx.automation": "Automazione e AI",
-    "hero.fx.web": "Siti web",
-    "hero.fx.shop": "E-commerce",
+    "home.heading": "Tu porti l'idea. Io la metto a fuoco.",
+    "home.intro":
+      "Progetto e sviluppo siti web, porto l'AI negli strumenti che usi già, automatizzo il lavoro che si ripete e rendo leggibili i dati.",
+    "home.services": "Servizi",
 
     "work.title": "Lavori",
     "work.heading": "Lavori",
@@ -158,32 +139,30 @@ export const ui = {
     "about.title": "Chi sono",
     "about.heading": "Chi sono",
     "about.intro":
-      "Sono Giacomo, designer e sviluppatore. Lavoro dove il design visivo incontra l'ingegneria.",
+      "Il mio è un percorso atipico verso la tecnologia: dalla Filosofia e dalla fotografia allo sviluppo freelance tra web, visualizzazione dati e AI.",
     "about.body":
-      "Mi interessano i dettagli, la comunicazione chiara e i prodotti che sembrano pensati con cura. Lavoro con startup, studi e clienti indipendenti.",
+      "Quello che porto in un progetto è la combinazione che mi ha formato: l'abitudine del filosofo a chiedersi quale sia davvero il problema, l'occhio del fotografo per come le cose dovrebbero apparire e trasmettere, e gli strumenti dello sviluppatore per realizzarle davvero. Mi piace il lavoro che vive all'incrocio tra tecnologia e creatività, e sono sempre aperto a conversazioni su cosa costruire.",
     "about.photo.alt": "Ritratto di Giacomo Ravetta",
+    "about.cv.heading": "Curriculum vitae",
+    "about.cv.body": "Esperienze in Accurat e Setflow, una laurea in Filosofia e gli strumenti con cui lavoro.",
+    "about.cv.link": "Leggi il CV completo",
+    "cv.title": "Curriculum vitae",
+    "cv.subtitle": "Sviluppatore freelance · web, data visualization e AI",
+    "cv.story": "La mia storia",
+    "cv.experience": "Esperienza",
+    "cv.education": "Istruzione",
+    "cv.skills": "Competenze",
+    "cv.languages": "Lingue",
+    "cv.contacts": "Contatti",
+    "cv.download": "Scarica PDF",
 
     "services.title": "Servizi",
     "services.heading": "Servizi",
-    "services.intro": "Due facce dello stesso mestiere.",
-    "services.designer.title": "Designer",
-    "services.designer.body":
-      "Identità visiva, interfacce e design system. Un lavoro curato e leggibile, dal primo schizzo all'ultimo pixel.",
-    "services.developer.title": "Sviluppatore",
-    "services.developer.body":
-      "Siti e web app veloci e accessibili, costruiti con strumenti moderni e con la stessa cura del design.",
     "services.benefits": "Cosa porta",
-    "services.more": "Vedi i servizi",
+    "services.includes": "Cosa comprende",
+    "services.more": "Vedi il servizio",
     "services.back": "Tutti i servizi",
     "services.cta": "Contattami",
-    "designer.title": "Designer",
-    "designer.heading": "Designer",
-    "designer.intro":
-      "Identità visiva, interfacce e design system. Un lavoro curato e leggibile, dal primo schizzo all'ultimo pixel.",
-    "developer.title": "Sviluppatore",
-    "developer.heading": "Sviluppatore",
-    "developer.intro":
-      "Siti e web app veloci e accessibili, costruiti con strumenti moderni e con la stessa cura del design.",
 
     "footer.rights": "Tutti i diritti riservati.",
   },

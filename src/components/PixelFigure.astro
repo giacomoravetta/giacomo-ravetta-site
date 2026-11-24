@@ -1,0 +1,44 @@
+---
+/**
+ * An animated 1-bit pixel figure for a service, drawn by `src/lib/pixel-figures.ts`
+ * (loaded when the browser is idle). Fills its positioned parent; the ink is the
+ * current text colour. Scroll-driven unless `mode="clock"`. Decorative: hidden from assistive technology.
+ */
+import type { ServiceId } from "../i18n/services";
+
+interface Props {
+  figure: ServiceId | "hero";
+  mode?: "scroll" | "clock";
+}
+
+const { figure, mode = "scroll" } = Astro.props;
+---
+
+<div class="pixel-figure">
+  <canvas data-figure={figure} data-figure-mode={mode} aria-hidden="true"></canvas>
+</div>
+
+<style>
+  .pixel-figure {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  canvas {
+    position: absolute;
+    image-rendering: pixelated;
+    visibility: hidden;
+  }
+  canvas[data-ready] {
+    visibility: visible;
+  }
+</style>
+
+<script>
+  const canvases = [...document.querySelectorAll<HTMLCanvasElement>("canvas[data-figure]")];
+  if (canvases.length) {
+    const load = () => import("../lib/pixel-figures").then((m) => m.initFigures(canvases));
+    if ("requestIdleCallback" in window) requestIdleCallback(load, { timeout: 1500 });
+    else setTimeout(load, 200);
+  }
+</script>

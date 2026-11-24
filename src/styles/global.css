@@ -19,7 +19,7 @@
 }
 
 /* Display faces (both SIL OFL, from Open Foundry / Velvetyne):
-   Bluu Next Bold for the Designer side, Terminal Grotesque for the Developer side. */
+   Bluu Next Bold for headlines and the Web service, Terminal Grotesque for Automation. */
 @font-face {
   font-family: "Bluu Next";
   font-style: normal;
@@ -27,7 +27,7 @@
   font-display: swap;
   src: url("/fonts/BluuNext-Bold.woff2") format("woff2");
 }
-/* Young Serif Bold (SIL OFL, Open Foundry) for everything "About me"; Latin subset. */
+/* Young Serif Bold (SIL OFL, Open Foundry) for "About me" and the AI service; Latin subset. */
 @font-face {
   font-family: "Young Serif";
   font-style: normal;
@@ -49,18 +49,22 @@
   --font-terminal: "Terminal Grotesque", "monospace";
   --font-young: "Young Serif", "Georgia", "serif";
 
-  --color-background: oklch(14% 0 0);
-  --color-foreground: oklch(96% 0 0);
-  --color-muted: oklch(65% 0 0);
-  --color-accent: oklch(75% 0.15 220);
+  /* Two inks: yellow page, black ink. Muted is a dark olive for secondary text (5.9:1 on the yellow). */
+  --color-background: #f9dc4a;
+  --color-foreground: #0b0b0b;
+  --color-muted: #574f1f;
 }
 
 @layer base {
   html {
-    --header-h: 5.875rem; /* Floating header flow height: mt-4 + py-6 + one line of text-lg + border; the Home triptych slides under it. */
+    --header-h: 5.875rem; /* Floating header flow height: mt-4 + py-6 + one line of text-lg + border; the Home hero slides under it. */
     background-color: var(--color-background);
     color: var(--color-foreground);
     scroll-behavior: smooth;
+  }
+  ::selection {
+    background: var(--color-foreground);
+    color: var(--color-background);
   }
 }
 
@@ -70,42 +74,15 @@
   }
 }
 
-/* Scroll-driven hero (MobileTriptych.svelte): shown on phones, tablets and any
-   touch device; hidden where the pointer-driven triptych runs. Keep this query
-   in sync with the client:media in pages/index.astro and Triptych.astro. */
-.scroll-hero {
-  display: none;
-}
-@media (max-width: 1023px), (hover: none), (pointer: coarse) {
-  .scroll-hero {
-    display: block;
-  }
-}
-/* With the sticky desktop header (md+), slide the scroll hero under it too. */
-@media (min-width: 768px) {
-  .scroll-hero {
-    margin-top: calc(-1 * var(--header-h));
-  }
-}
-
-/* Frosted glass (header pill, footer): transparent over content, gaussian blur of whatever sits beneath. */
+/* Plate (header bar, footer): solid page colour, black outline and a hard offset shadow. No blur: the site is 1-bit.
+   The name is historical (it used to be frosted glass). */
 @utility glass {
-  background: color-mix(in oklab, var(--color-background) 35%, transparent);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 0.25);
+  background: var(--color-background);
+  border: 2px solid var(--color-foreground);
+  box-shadow: 4px 4px 0 var(--color-foreground);
 }
 
-/* Home: while the centre hero panel is hovered its caption takes the footer's place. */
-.site-footer {
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-:root[data-hero-center="in"] .site-footer {
-  transform: translateY(110%);
-}
-
-/* Letters rise (Home centre caption, About title; markup from SplitWord.astro):
+/* Letters rise (About title; markup from SplitWord.astro):
    each letter climbs out of a clipped line, tilting into place, staggered by its index. */
 .split-word {
   position: relative;

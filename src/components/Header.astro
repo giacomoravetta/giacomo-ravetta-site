@@ -1,5 +1,6 @@
 ---
 import { languages, type Lang, type RouteKey } from "../i18n/ui";
+import { serviceIds } from "../i18n/services";
 import { getRouteFromUrl, localizedPath, useTranslations } from "../i18n/utils";
 
 interface Props {
@@ -11,7 +12,7 @@ const t = useTranslations(lang);
 const current = getRouteFromUrl(Astro.url);
 // Subpages of Services keep "Services" highlighted in the nav.
 const isCurrent = (key: RouteKey) =>
-  current === key || (key === "services" && (current === "designer" || current === "developer"));
+  current === key || (key === "services" && (serviceIds as readonly RouteKey[]).includes(current));
 
 const nav: { key: RouteKey; label: string }[] = [
   { key: "home", label: t("nav.home") },
@@ -131,9 +132,7 @@ const langs = Object.keys(languages) as Lang[];
 
 <style>
   .mobile-menu {
-    background: color-mix(in oklab, var(--color-background) 70%, transparent);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    backdrop-filter: blur(24px) saturate(140%);
+    background: var(--color-background);
   }
   .mobile-menu.is-open {
     display: flex;

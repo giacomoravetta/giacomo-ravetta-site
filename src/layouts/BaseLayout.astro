@@ -11,12 +11,17 @@ interface Props {
   /** Drop the content container so a section can span the full viewport width;
    *  the footer then floats over the content instead of sitting below it. */
   fullBleed?: boolean;
+  /** Key colour for the 3D background on this page (service subpages). */
+  bgColour?: string;
+  /** Service id whose shape the 3D background takes on this page (service subpages). */
+  bgShape?: string;
 }
 
 const lang: Lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const route = getRouteFromUrl(Astro.url);
 
+// bgColour / bgShape fed the old 3D background; unused until the service subpages get their pixel figure.
 const { title, description = t("site.description"), fullBleed = false } = Astro.props;
 const fullTitle = route === "home" ? `${t("site.name")} — ${t("site.tagline")}` : `${title} — ${t("site.name")}`;
 const site = Astro.site ?? new URL("http://localhost:4321");
@@ -31,7 +36,8 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f9dc4a" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
@@ -60,9 +66,9 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
     </main>
     <Footer lang={lang} overlay={fullBleed} />
     <script>
-      // Page titles replay their Home hero word animation:
-      // [data-title-reveal="rise"] letters settle one by one (like "designer"),
-      // [data-title-reveal="scramble"] decodes (like "developer").
+      // Page title reveals (service subpages):
+      // [data-title-reveal="rise"] letters settle one by one,
+      // [data-title-reveal="scramble"] decodes.
       import gsap from "gsap";
       import { SplitText } from "gsap/SplitText";
       import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
@@ -71,7 +77,7 @@ const alternates = (Object.keys(languages) as Lang[]).map((code) => ({
       gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
         document.querySelectorAll<HTMLElement>("[data-title-reveal]").forEach((el) => {
           if (el.dataset.titleReveal === "rise") {
-            const split = SplitText.create(el, { type: "chars" });
+            const split = SplitText.create(el, { type: "words,chars" });
             gsap.fromTo(
               split.chars,
               { autoAlpha: 0, yPercent: 45, rotation: -5 },

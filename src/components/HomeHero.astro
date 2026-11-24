@@ -1,0 +1,135 @@
+---
+/**
+ * Home: a full-screen hero (the quote, one line on what I do, and a strip of marching
+ * pixel arches), then one full-screen section per service: its name, summary and a link
+ * to the subpage beside its 1-bit pixel figure (`PixelFigure.astro`).
+ * The service figures are scroll-driven: each builds up as its section enters and plays
+ * as it crosses the viewport (see pixel-figures.ts). The hero quote rises in word by
+ * word, and each section's text rises in when the section arrives (GSAP, below).
+ */
+import type { Lang } from "../i18n/ui";
+import { localizedPath, useTranslations } from "../i18n/utils";
+import { serviceIds, services, serviceStyle } from "../i18n/services";
+import PixelFigure from "./PixelFigure.astro";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<section class="flex min-h-dvh flex-col pt-32 md:-mt-[var(--header-h)] md:pt-[calc(var(--header-h)+3rem)]">
+  <div class="flex flex-col gap-6 px-6 lg:px-12">
+    <h1
+      class="max-w-6xl font-bluu text-[clamp(2.75rem,min(8.5vw,15dvh),8.5rem)] leading-[0.92] tracking-tight text-balance"
+      data-hero-quote
+    >
+      {t("home.heading")}
+    </h1>
+    <p class="max-w-xl text-lg lg:text-xl" data-hero-rise>{t("home.intro")}</p>
+    <a href="#services" class="flex items-center gap-3 self-start font-terminal text-sm uppercase" data-hero-rise>
+      <span class="hero-arrow" aria-hidden="true">↓</span>
+      {t("home.services")}
+    </a>
+  </div>
+  <div class="relative mt-8 min-h-48 flex-1">
+    <PixelFigure figure="hero" mode="clock" />
+  </div>
+</section>
+
+<div id="services">
+  {
+    serviceIds.map((id, i) => (
+      <section class="grid min-h-dvh border-t-2 border-foreground lg:grid-cols-2" data-svc-section>
+        <div
+          class:list={[
+            "flex flex-col justify-center gap-6 px-6 py-12 lg:px-12 lg:py-24",
+            i % 2 === 1 && "lg:order-2 lg:border-l-2 lg:border-foreground",
+          ]}
+        >
+          <span class="font-terminal text-xl" data-rise>
+            {String(i + 1).padStart(2, "0")} / {String(serviceIds.length).padStart(2, "0")}
+          </span>
+          <h2
+            class:list={["text-[clamp(2.5rem,min(5.4vw,11dvh),5.5rem)] leading-[0.95] tracking-tight text-balance", serviceStyle[id].font]}
+            data-rise
+          >
+            {services[id][lang].name}
+          </h2>
+          <p class="max-w-xl text-lg lg:text-xl" data-rise>{services[id][lang].summary}</p>
+          <ul class="flex max-w-xl flex-wrap gap-2 font-terminal text-sm" data-rise>
+            {services[id][lang].items.map((item) => <li class="border-2 border-foreground px-2.5 py-1">{item.name}</li>)}
+          </ul>
+          <a href={localizedPath(id, lang)} class="svc-link self-start border-2 border-foreground px-5 py-3 text-lg font-semibold" data-rise>
+            {t("services.more")} <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div
+          class:list={[
+            "relative min-h-[55dvh] max-lg:order-first max-lg:border-b-2 max-lg:border-foreground",
+            i % 2 === 0 && "lg:border-l-2 lg:border-foreground",
+          ]}
+        >
+          <PixelFigure figure={id} />
+        </div>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  /* 1-bit: states switch, they do not fade. */
+  .svc-link {
+    background: var(--color-foreground);
+    color: var(--color-background);
+    box-shadow: 4px 4px 0 var(--color-foreground);
+  }
+  .svc-link:hover,
+  .svc-link:focus-visible {
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-arrow {
+      animation: hero-bob 1s steps(2, jump-none) infinite alternate;
+    }
+  }
+  @keyframes hero-bob {
+    to {
+      translate: 0 0.3rem;
+    }
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { SplitText } from "gsap/SplitText";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(SplitText, ScrollTrigger);
+  gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+    // Hero: the quote rises word by word out of clipped lines, then the rest follows.
+    const quote = document.querySelector<HTMLElement>("[data-hero-quote]");
+    let split: SplitText | undefined;
+    if (quote) {
+      split = SplitText.create(quote, { type: "lines,words", mask: "lines" });
+      gsap.from(split.words, { yPercent: 110, duration: 0.9, ease: "power3.out", stagger: 0.07, delay: 0.1 });
+    }
+    gsap.from("[data-hero-rise]", { autoAlpha: 0, y: 24, duration: 0.7, ease: "power2.out", stagger: 0.12, delay: 0.75 });
+
+    // Services: each section's text rises in when the section arrives.
+    document.querySelectorAll<HTMLElement>("[data-svc-section]").forEach((section) => {
+      gsap.from(section.querySelectorAll("[data-rise]"), {
+        autoAlpha: 0,
+        y: 40,
+        duration: 0.7,
+        ease: "power2.out",
+        stagger: 0.09,
+        scrollTrigger: { trigger: section, start: "top 65%", once: true },
+      });
+    });
+    return () => split?.revert();
+  });
+</script>
