@@ -207,7 +207,7 @@ export const services: Record<ServiceId, Record<Lang, Service>> = {
     en: {
       name: "Data visualization",
       summary:
-        "Interactive charts, maps and dashboards that turn complex data into clear, explorable stories, built with the craft I learned at Accurat.",
+        "Interactive charts, maps and dashboards that turn complex data into clear, explorable stories.",
       items: [
         {
           name: "Interactive charts & maps",
@@ -231,7 +231,7 @@ export const services: Record<ServiceId, Record<Lang, Service>> = {
     it: {
       name: "Visualizzazione dati",
       summary:
-        "Grafici, mappe e dashboard interattivi che trasformano dati complessi in storie chiare ed esplorabili, con il mestiere imparato in Accurat.",
+        "Grafici, mappe e dashboard interattivi che trasformano dati complessi in storie chiare ed esplorabili.",
       items: [
         {
           name: "Grafici e mappe interattivi",

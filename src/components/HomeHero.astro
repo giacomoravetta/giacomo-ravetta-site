@@ -1,10 +1,12 @@
 ---
 /**
  * Home: a full-screen hero with one animation behind everything (footage of me coding,
- * dithered live, gathering out of scattered pixels on load: "I bring it into focus") and
- * the quote alone on a yellow plate, centred vertically on desktop; then one full-screen
+ * dithered live, gathering out of scattered pixels on load) and
+ * the slogan alone on a yellow plate (Terminal Grotesque, hollow block cursor, a glitch running
+ * through it every few seconds), centred vertically on desktop and horizontally below lg; then one full-screen
  * section per service: its name, summary and a link
- * to the subpage beside its 1-bit pixel figure (`PixelFigure.astro`).
+ * to the subpage beside its 1-bit pixel figure (`PixelFigure.astro`); and a closing call
+ * to action in reverse (yellow on black) that links to the meeting booking page.
  * The figures run on the clock: each builds up once when its section first arrives, then
  * keeps playing whatever the scroll position (see pixel-figures.ts). The hero quote rises in word by
  * word, and each section's text rises in when the section arrives (GSAP, below).
@@ -13,6 +15,7 @@ import type { Lang } from "../i18n/ui";
 import { localizedPath, useTranslations } from "../i18n/utils";
 import { serviceIds, services, serviceStyle } from "../i18n/services";
 import PixelFigure from "./PixelFigure.astro";
+import BookingCta from "./BookingCta.astro";
 
 interface Props {
   lang: Lang;
@@ -29,16 +32,16 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
 ---
 
 <section
-  class="relative isolate flex min-h-dvh flex-col pt-32 pb-24 md:-mt-[var(--header-h)] md:pt-[calc(var(--header-h)+3rem)] lg:justify-center lg:py-[var(--header-h)]"
+  class="relative isolate flex min-h-dvh flex-col pt-44 pb-24 md:-mt-[var(--header-h)] md:pt-[calc(var(--header-h)+3rem)] lg:justify-center lg:py-[var(--header-h)]"
 >
   <!-- The one hero animation, behind the text and as large as the section. -->
   <div class="absolute inset-0 -z-10">
     <PixelFigure figure="focus" cells={450} video={hasHeroVideo ? heroVideo : undefined} />
   </div>
   <!-- Text sits on yellow plates so it stays readable over the black pixels. -->
-  <div class="pointer-events-none flex flex-col items-start gap-5 px-6 lg:px-12">
+  <div class="pointer-events-none flex flex-col items-center gap-5 px-6 lg:items-start lg:px-12">
     <h1
-      class="pointer-events-auto w-fit max-w-[7.9em] bg-background lg:max-w-[6.2em] px-3 py-2 font-bluu text-[clamp(2.75rem,min(8.5vw,15dvh),8.5rem)] leading-[0.92] tracking-tight text-balance max-lg:-mx-3"
+      class="pointer-events-auto w-fit max-w-[7.9em] bg-background lg:max-w-[6.2em] px-3 py-2 font-terminal text-[clamp(2.75rem,min(8.5vw,15dvh),8.5rem)] max-lg:text-[clamp(2.75rem,13dvw,7rem)] leading-[0.92] tracking-tight text-balance max-lg:text-center"
       data-hero-quote
     >
       {t("home.heading")}
@@ -86,6 +89,8 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
   }
 </div>
 
+<BookingCta lang={lang} />
+
 <style>
   /* 1-bit: states switch, they do not fade. */
   .svc-link {
@@ -98,6 +103,21 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
     background: var(--color-background);
     color: var(--color-foreground);
   }
+  /* Hollow block cursor after the hero slogan (added by the script below, so not scoped). */
+  :global(.hero-cursor) {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 0.48em;
+    height: 0.72em;
+    margin-left: 0.08em;
+    border: 0.07em solid currentColor;
+    animation: hero-cursor 1.1s steps(1, end) infinite;
+  }
+  @keyframes hero-cursor {
+    50% {
+      opacity: 0;
+    }
+  }
 </style>
 
 <script>
@@ -107,12 +127,54 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
 
   gsap.registerPlugin(SplitText, ScrollTrigger);
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-    // Hero: the quote rises word by word out of clipped lines.
+    // Hero: the slogan rises word by word out of clipped lines, a block cursor blinks at
+    // its end, and every few seconds a glitch runs through it left to right: each letter
+    // flickers through a few code characters and settles back. Letters keep their width
+    // (set in em once the font is in), so nothing reflows while they flicker.
     const quote = document.querySelector<HTMLElement>("[data-hero-quote]");
     let split: SplitText | undefined;
+    let alive = true;
+    let chars: HTMLElement[] = [];
     if (quote) {
-      split = SplitText.create(quote, { type: "lines,words", mask: "lines" });
-      gsap.from(split.words, { yPercent: 110, duration: 0.9, ease: "power3.out", stagger: 0.07, delay: 0.1 });
+      const cursor = document.createElement("span");
+      cursor.className = "hero-cursor";
+      cursor.setAttribute("aria-hidden", "true");
+      // Split only once the font is in (with the fallback face the lines break differently);
+      // autoSplit then splits again whenever the lines change (resize), so the letters,
+      // their widths and the cursor are set up afresh each time.
+      const create = () => {
+        if (!alive) return;
+        split = SplitText.create(quote, {
+        type: "lines,words,chars",
+        mask: "lines",
+        autoSplit: true,
+        onSplit(self) {
+          const size = parseFloat(getComputedStyle(quote).fontSize);
+          chars = self.chars as HTMLElement[];
+          for (const el of chars) {
+            el.dataset.char = el.textContent ?? "";
+            el.style.width = `${el.getBoundingClientRect().width / size}em`;
+            el.style.textAlign = "center";
+          }
+          self.lines[self.lines.length - 1]?.append(cursor);
+          return gsap.from(self.words, { yPercent: 110, duration: 0.9, ease: "power3.out", stagger: 0.07, delay: 0.1 });
+        },
+        });
+      };
+      document.fonts.ready.then(create);
+
+      const GLYPHS = "01<>/[]{}#*=+-_";
+      const flicker = (el: HTMLElement, left: number) => {
+        if (!alive || !el.isConnected) return;
+        el.textContent = left > 0 ? GLYPHS[Math.floor(Math.random() * GLYPHS.length)] : (el.dataset.char ?? "");
+        if (left > 0) gsap.delayedCall(0.055, flicker, [el, left - 1]);
+      };
+      const glitch = () => {
+        if (!alive) return;
+        chars.forEach((el, i) => gsap.delayedCall(i * 0.035, flicker, [el, 4]));
+        gsap.delayedCall(6, glitch);
+      };
+      gsap.delayedCall(3.5, glitch);
     }
 
     // Services: each section's text rises in when the section arrives.
@@ -126,6 +188,9 @@ const hasHeroVideo = Object.keys(import.meta.glob("/public/video/hero-coding.mp4
         scrollTrigger: { trigger: section, start: "top 65%", once: true },
       });
     });
-    return () => split?.revert();
+    return () => {
+      alive = false;
+      split?.revert();
+    };
   });
 </script>

@@ -367,7 +367,7 @@ float figCoder(vec2 q, vec2 c, float t) {
   return col;
 }
 
-// Focus (Home hero, "I bring it into focus"): the coder scene, placed for the box (lower
+// Focus (Home hero): the coder scene, placed for the box (lower
 // right on a wide one, where the quote is on the left; along the bottom of a tall one),
 // gathering out of cells scattered all over the screen while it builds up.
 float figFocus(vec2 p, vec2 c, float t) {
